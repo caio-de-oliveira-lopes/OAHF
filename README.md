@@ -17,17 +17,15 @@ Briefly describe the purpose of the project. Include its main functionalities, g
 
 ## Requirements
 - Operating system requirements (e.g., Linux, Windows, MacOS)
-- Python version (e.g., Python 3.8+)
-- List any other system dependencies (e.g., Docker, specific packages)
+- Python 3.12+
 
 ## Installation
 
 ### Virtual Environment (Optional)
-If using a virtual environment:
-
+If using a virtual environment manager:
+(Example with conda)
 ```bash
-python -m venv venv
-source venv/bin/activate   # On Windows use: venv\Scripts\activate
+conda create --name <env_name> python=3.12
 ```
 
 ### Installation Steps
