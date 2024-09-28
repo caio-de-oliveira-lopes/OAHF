@@ -12,6 +12,7 @@
     <Name>oahf</Name>
     <RootNamespace>oahf</RootNamespace>
     <InterpreterId>CondaEnv|CondaEnv|oahf</InterpreterId>
+    <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
