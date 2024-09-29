@@ -5,6 +5,8 @@ from typing import Dict
 
 from LogMessages import LogMessages
 
+from oahf.Utils.Util import Util
+
 
 class LogManager:
     """Static class to manage log messages and convert .resx files to JSON format."""
@@ -41,12 +43,12 @@ class LogManager:
                         cls._log_messages[LogMessages[key]] = str(value)
                     else:
                         # Handle the case when value is None or empty
-                        print(
-                            f"Warning: No valid value found for key '{key}' in '{resx_file}'"
+                        Util.logger.warning(
+                            f"No valid value found for key '{key}' in '{resx_file}'"
                         )
                 else:
                     # Handle the case when <value> element is not found
-                    print(
+                    Util.logger.warning(
                         f"Warning: No <value> element found for key '{key}' in '{resx_file}'"
                     )
         except Exception as e:

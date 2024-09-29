@@ -1,5 +1,6 @@
 import random
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Callable, Dict, Iterable, TypeVar
 
 TSource = TypeVar("TSource")
@@ -59,3 +60,21 @@ class ThreadManager:
         if not cls._random_keys:
             cls.initialize(num_threads)
         cls.for_range(0, num_threads, action)
+
+    @classmethod
+    def main_for_wait_all(cls, num_threads: int, action: Callable[[int], None]) -> None:
+        """Executes the specified action for each thread in parallel and waits for all to complete."""
+        with ThreadPoolExecutor(max_workers=num_threads) as executor:
+            futures = [executor.submit(action, i) for i in range(num_threads)]
+            for future in futures:
+                future.result()  # Wait for each future to complete
+
+    @classmethod
+    def main_for_wait_any(cls, num_threads: int, action: Callable[[int], None]) -> None:
+        """Executes the specified action for each thread in parallel and waits for any to complete."""
+        with ThreadPoolExecutor(max_workers=num_threads) as executor:
+            futures = [executor.submit(action, i) for i in range(num_threads)]
+            # Wait for any one future to complete
+            for future in as_completed(futures):
+                future.result()  # This will block until the first future is done
+                break  # Exit after the first completed future
