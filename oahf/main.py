@@ -6,9 +6,12 @@ def main():
 
 
 def create_init_files(root_dir):
-    for dirpath, dirnames, filenames in os.walk(root_dir):
-        # Skip the root directory
-        if dirpath == root_dir:
+    # Define the target directory to search for subdirectories
+    target_dir = os.path.join(root_dir, "oahf")
+
+    for dirpath, dirnames, filenames in os.walk(target_dir):
+        # Skip the target directory itself
+        if dirpath == target_dir:
             continue
 
         py_files = [f for f in filenames if f.endswith(".py") and f != "__init__.py"]
