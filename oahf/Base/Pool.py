@@ -1,23 +1,33 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Optional, Iterator
+from typing import Iterator, List, Optional, Tuple
+
 from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
 from oahf.Base.Entity import Entity
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.Solution import Solution
 from oahf.Base.ThreadManager import ThreadManager
 
+
 class PoolEventReport:
-    def __init__(self, accepted: bool, objective_function: float, diversity: float, constraints: List[ConstraintEvaluation]):
+    def __init__(
+        self,
+        accepted: bool,
+        objective_function: float,
+        diversity: float,
+        constraints: List[ConstraintEvaluation],
+    ):
         self.accepted = accepted
         self.constraints = constraints
         self.objective_function = objective_function
         self.diversity = diversity
+
 
 class PoolReport:
     def __init__(self):
         self.events: List[Tuple[int, PoolEventReport]] = []
         self.name: str = ""
         self.id: int = 0
+
 
 class Pool(Entity, ABC):
     def __init__(self):
@@ -50,7 +60,7 @@ class Pool(Entity, ABC):
         pass
 
     @abstractmethod
-    def copy(self) -> 'Pool':
+    def copy(self) -> "Pool":
         """Create a copy of the pool."""
         pass
 
@@ -59,7 +69,17 @@ class Pool(Entity, ABC):
         accepted = self.add_solution(solution)
         eval = evaluator.evaluate(solution)
         diversity = 0.0  # Assuming diversity calculation logic will be added
-        self.report.events.append((ThreadManager.watch.elapsed_milliseconds, PoolEventReport(accepted, eval.get_objective_function(), diversity, eval.get_infeasible_constraints())))
+        self.report.events.append(
+            (
+                ThreadManager.watch.elapsed_milliseconds,
+                PoolEventReport(
+                    accepted,
+                    eval.get_objective_function(),
+                    diversity,
+                    eval.get_infeasible_constraints(),
+                ),
+            )
+        )
         return accepted
 
     def get_report(self) -> PoolReport:

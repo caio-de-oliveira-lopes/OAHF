@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Iterable
+from typing import Iterable, List, Optional
+
 from oahf.Base.Entity import Entity
 from oahf.Base.Neighborhood import Neighborhood
+
 
 class NeighborhoodSelection(Entity, ABC):
     def __init__(self):
@@ -25,7 +27,7 @@ class NeighborhoodSelection(Entity, ABC):
         pass
 
     @abstractmethod
-    def copy(self) -> 'NeighborhoodSelection':
+    def copy(self) -> "NeighborhoodSelection":
         """Create a copy of the current neighborhood selection."""
         pass
 

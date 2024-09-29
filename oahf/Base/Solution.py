@@ -1,18 +1,20 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
+
 from oahf.Base.Entity import Entity
+
 
 class Solution(Entity, ABC):
     def __init__(self) -> None:
         super().__init__()  # Call the constructor of the Entity class
 
     @abstractmethod
-    def copy(self) -> 'Solution':
+    def copy(self) -> "Solution":
         """Creates a copy of the solution."""
         pass
 
     @abstractmethod
-    def decompose_solution(self, k: int) -> Optional[List['Solution']]:
+    def decompose_solution(self, k: int) -> Optional[List["Solution"]]:
         """Decomposes the solution into smaller parts.
 
         Args:
@@ -24,7 +26,7 @@ class Solution(Entity, ABC):
         return None
 
     @abstractmethod
-    def merge_solutions(self, solutions: List['Solution']) -> 'Solution':
+    def merge_solutions(self, solutions: List["Solution"]) -> "Solution":
         """Merges multiple solutions into one.
 
         Args:
@@ -45,7 +47,7 @@ class Solution(Entity, ABC):
         return hash(self)
 
     @abstractmethod
-    def solution_diff(self, other: 'Solution') -> float:
+    def solution_diff(self, other: "Solution") -> float:
         """Calculates the difference between this solution and another.
 
         Args:

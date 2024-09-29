@@ -2,7 +2,8 @@ import random
 import time
 from typing import Callable, Dict, Iterable, TypeVar
 
-TSource = TypeVar('TSource')
+TSource = TypeVar("TSource")
+
 
 class ThreadManager:
     _random_keys: Dict[int, random.Random] = {}
@@ -30,13 +31,24 @@ class ThreadManager:
         return cls._random_keys[thread_id].randint(min_value, max_value)
 
     @classmethod
-    def for_each(cls, thread_id: int, source: Iterable[TSource], action: Callable[[TSource], None]) -> None:
+    def for_each(
+        cls,
+        thread_id: int,
+        source: Iterable[TSource],
+        action: Callable[[TSource], None],
+    ) -> None:
         """Executes an action for each element in the source iterable using the specified thread ID."""
         for item in source:
             action(item)
 
     @classmethod
-    def for_range(cls, thread_id: int, from_index: int, to_index: int, action: Callable[[int], None]) -> None:
+    def for_range(
+        cls,
+        thread_id: int,
+        from_index: int,
+        to_index: int,
+        action: Callable[[int], None],
+    ) -> None:
         """Executes an action for each integer in the specified range using the specified thread ID."""
         for i in range(from_index, to_index):
             action(i)

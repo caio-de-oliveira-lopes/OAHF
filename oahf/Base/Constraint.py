@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
+
+from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
 from oahf.Base.Entity import Entity
 from oahf.Base.Solution import Solution
-from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
 from oahf.Base.StopCriteria import StopCriteria
 
+
 class Constraint(Entity, ABC):
-    
+
     @abstractmethod
-    def evaluate(self, solution: 'Solution') -> 'ConstraintEvaluation':
+    def evaluate(self, solution: "Solution") -> "ConstraintEvaluation":
         """
         Abstract method to evaluate the constraint based on a solution.
         :param solution: A Solution object.
@@ -15,7 +17,9 @@ class Constraint(Entity, ABC):
         """
         pass
 
-    def evaluate_with_stop_criteria(self, solution: 'Solution', stop_criteria: 'StopCriteria') -> 'ConstraintEvaluation':
+    def evaluate_with_stop_criteria(
+        self, solution: "Solution", stop_criteria: "StopCriteria"
+    ) -> "ConstraintEvaluation":
         """
         Virtual method to evaluate the constraint, optionally considering stop criteria.
         :param solution: A Solution object.

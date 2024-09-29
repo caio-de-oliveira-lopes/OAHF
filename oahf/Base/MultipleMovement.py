@@ -1,10 +1,18 @@
 from typing import List, Optional
+
 from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
 
+
 class MultipleMovement(Movement):
-    def __init__(self, solution: 'Solution', report: 'EfficiencyReport', movements: List[Movement], override_cost: Optional[float] = None):
+    def __init__(
+        self,
+        solution: "Solution",
+        report: "EfficiencyReport",
+        movements: List[Movement],
+        override_cost: Optional[float] = None,
+    ):
         super().__init__(solution, report)
         self.movements: List[Movement] = movements
         self.override_cost: Optional[float] = override_cost

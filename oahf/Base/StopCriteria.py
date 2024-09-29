@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Iterable
+
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.ThreadManager import ThreadManager
+
 
 class StopCriteria(ABC):
     def __init__(self) -> None:
@@ -21,7 +23,7 @@ class StopCriteria(ABC):
         """Resets the stopping criteria."""
         pass
 
-    def stop_on_evaluations(self, evaluations: Iterable['Evaluation']) -> bool:
+    def stop_on_evaluations(self, evaluations: Iterable["Evaluation"]) -> bool:
         """Checks if the stopping criteria are met based on evaluations.
 
         Args:
@@ -62,6 +64,6 @@ class StopCriteria(ABC):
         return f"Time: {ThreadManager.Watch.ElapsedMilliseconds};"
 
     @abstractmethod
-    def copy(self) -> 'StopCriteria':
+    def copy(self) -> "StopCriteria":
         """Creates a copy of the stop criteria instance."""
         pass

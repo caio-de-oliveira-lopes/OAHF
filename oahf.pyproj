@@ -50,6 +50,7 @@
     <Compile Include="oahf\Base\Solution.py" />
     <Compile Include="oahf\Base\StopCriteria.py" />
     <Compile Include="oahf\Base\ThreadManager.py" />
+    <Compile Include="oahf\Base\__init__.py" />
     <Compile Include="oahf\main.py" />
     <Compile Include="oahf\Logger\LogManager.py" />
     <Compile Include="oahf\Logger\LogMessages.py" />
