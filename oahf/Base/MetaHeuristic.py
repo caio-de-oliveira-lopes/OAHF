@@ -3,9 +3,14 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple, Union
 
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
+from oahf.Base.EfficiencyReport import Event
 from oahf.Base.Entity import Entity
+from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Evaluator import Evaluator
+from oahf.Base.Neighborhood import Neighborhood
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
+from oahf.Base.Pool import Pool
+from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 
 

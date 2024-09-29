@@ -24,6 +24,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="oahf\" />
+    <Folder Include="oahf\ImplementedBase\" />
     <Folder Include="oahf\Logger\" />
     <Folder Include="oahf\Logger\__pycache__\" />
     <Folder Include="oahf\Base\" />
@@ -51,6 +52,20 @@
     <Compile Include="oahf\Base\StopCriteria.py" />
     <Compile Include="oahf\Base\ThreadManager.py" />
     <Compile Include="oahf\Base\__init__.py" />
+    <Compile Include="oahf\ImplementedBase\SimulatedAnnealing.py" />
+    <Compile Include="oahf\ImplementedBase\ListPool.py" />
+    <Compile Include="oahf\ImplementedBase\ElitePool.py" />
+    <Compile Include="oahf\ImplementedBase\EliteDiversePool.py" />
+    <Compile Include="oahf\ImplementedBase\ListSelection.py" />
+    <Compile Include="oahf\ImplementedBase\ProbabilityListSelection.py" />
+    <Compile Include="oahf\ImplementedBase\RandomListSelection.py" />
+    <Compile Include="oahf\ImplementedBase\StopTimeIterationCriteria.py" />
+    <Compile Include="oahf\ImplementedBase\StopNoImprovement.py" />
+    <Compile Include="oahf\ImplementedBase\ThresholdAcceptance.py" />
+    <Compile Include="oahf\ImplementedBase\BetterUnknownAcceptance.py" />
+    <Compile Include="oahf\ImplementedBase\BetterOrSameAcceptanceCriteria.py" />
+    <Compile Include="oahf\ImplementedBase\BetterAcceptanceCriteria.py" />
+    <Compile Include="oahf\ImplementedBase\__init__.py" />
     <Compile Include="oahf\main.py" />
     <Compile Include="oahf\Logger\LogManager.py" />
     <Compile Include="oahf\Logger\LogMessages.py" />

@@ -1,5 +1,6 @@
 import hashlib
 import multiprocessing
+import threading
 from typing import ClassVar, List, Optional
 
 from oahf.Logger.Logger import Logger
@@ -74,3 +75,7 @@ class Util:
 
         # Return the final hexadecimal digest
         return hash_object.hexdigest()
+
+    @classmethod
+    def get_current_thread_id() -> int:
+        return threading.current_thread().ident
