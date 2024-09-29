@@ -1,11 +1,16 @@
 import logging
 from abc import ABC, abstractmethod
 from typing import Optional
+from oahf.Base.EfficiencyReport import EfficiencyReport
+from oahf.Base.Entity import Entity
+from oahf.Base.Evaluation import Evaluation
+from oahf.Base.Solution import Solution
 
-class Movement(ABC):
+class Movement(Entity, ABC):
     logger = logging.getLogger(__name__)
 
     def __init__(self, solution: 'Solution', report: 'EfficiencyReport'):
+        super().__init__()
         self.report: EfficiencyReport = report
         self.solution: Solution = solution
 

@@ -1,6 +1,11 @@
 import logging
 from abc import ABC, abstractmethod
 from typing import List, Tuple, Optional, Union
+from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
+from oahf.Base.Entity import Entity
+from oahf.Base.Evaluator import Evaluator
+from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
+from oahf.Base.StopCriteria import StopCriteria
 
 class MetaHeuristicReport:
     def __init__(self, name: str):
@@ -20,7 +25,7 @@ class SolutionReport:
         self.end_time: int = 0
 
 
-class MetaHeuristic(ABC):
+class MetaHeuristic(Entity, ABC):
     logger = logging.getLogger(__name__)
 
     def __init__(self, 
@@ -31,6 +36,7 @@ class MetaHeuristic(ABC):
                  acceptance_criteria: Optional['AcceptanceCriteria'] = None,
                  meta_heuristics_used: Optional[Union['MetaHeuristic', List['MetaHeuristic']]] = None):
 
+        super().__init__()
         self.neighborhood_selection: Optional['NeighborhoodSelection'] = neighborhood_selection
         self.evaluator: 'Evaluator' = evaluator
         self.thread_id: int = thread_id

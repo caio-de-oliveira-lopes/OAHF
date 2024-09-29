@@ -1,9 +1,12 @@
 import logging
 from abc import ABC, abstractmethod
+from oahf.Base.Entity import Entity
 from oahf.Utils.Util import Util
 from oahf.Base.EfficiencyReport import EfficiencyReport
+from oahf.Base.StopCriteria import StopCriteria
+from oahf.Base.Solution import Solution
 
-class CrossOver(ABC):
+class CrossOver(Entity, ABC):
     def __init__(self, stop_criteria: 'StopCriteria') -> None:
         """
         Initializes the CrossOver with the given stopping criteria.
@@ -11,6 +14,7 @@ class CrossOver(ABC):
         Args:
             stop_criteria (StopCriteria): The stopping criteria for the crossover.
         """
+        super().__init__()
         self.report = EfficiencyReport(self.__class__.__name__.split('.')[-1])
         self.stop_criteria = stop_criteria
 

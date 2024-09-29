@@ -1,9 +1,12 @@
 from collections import defaultdict
 from typing import Dict
+from oahf.Base.Entity import Entity
+from oahf.Base.Evaluation import Evaluation
 
-class SharedMemory:
+class SharedMemory(Entity):
     def __init__(self):
-        """Initialize the shared memory with a thread-safe dictionary for solution nodes."""
+        """Initialize the shared memory with a thread-safe dictionary for solution nodes."""        
+        super().__init__()
         self.solution_nodes: Dict[str, Evaluation] = defaultdict(Evaluation)
 
     def add_solution_node(self, key: str, evaluation: Evaluation) -> bool:

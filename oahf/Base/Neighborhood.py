@@ -1,4 +1,7 @@
 from typing import List, Dict, Optional, Tuple, Type
+from oahf.Base.Movement import Movement
+from oahf.Base.Solution import Solution
+from oahf.Base.StopCriteria import StopCriteria
 from oahf.Utils.Util import Util
 from oahf.Base.EfficiencyReport import EfficiencyReport
 
@@ -11,6 +14,7 @@ class Neighborhood:
             stop_criteria (StopCriteria): The stopping criteria for the neighborhood operations.
             is_perturbation (bool): A flag indicating if the neighborhood is a perturbation. Default is False.
         """
+        super().__init__()
         self.report: 'EfficiencyReport' = EfficiencyReport(type(self).__name__)
         self.stop_criteria: 'StopCriteria' = stop_criteria
         self.is_perturbation: bool = is_perturbation

@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Iterable
+from oahf.Base.Evaluation import Evaluation
+from oahf.Base.ThreadManager import ThreadManager
 
 class StopCriteria(ABC):
     def __init__(self) -> None:
