@@ -1,14 +1,12 @@
-from typing import List, ClassVar
+from typing import List, ClassVar, Optional
 import multiprocessing
-import logging
+from oahf.Logger.Logger import Logger
 import hashlib
-
-logging.basicConfig(level=logging.INFO)
 
 class Util:
     _eps: ClassVar[float] = 1e-5
     _threads: ClassVar[int] = multiprocessing.cpu_count() - 1
-    _logger: ClassVar[logging.Logger] = logging.getLogger()
+    _logger: ClassVar[Optional[Logger]] = None
 
     @property
     def eps(cls) -> float:
@@ -23,9 +21,17 @@ class Util:
         Returns the number of available threads, subtracting 1 from the total CPU count.
         """
         return cls._threads
+
+    @property
+    def logger(cls) -> Optional[Logger]:
+        """        
+        Returns:
+            Optional[Logger]: logger currently associated with the class.
+        """
+        return cls._logger
     
     @classmethod
-    def set_logger(cls, value: logging.Logger) -> None:
+    def set_logger(cls, value: Logger) -> None:
         """
         Sets a new logger for the Util class.
         """
@@ -44,13 +50,6 @@ class Util:
         # Get the method name from the previous frame
         method_name = frame.f_back.f_code.co_name
         return method_name
-    
-    @classmethod
-    def write_message(cls, msg: str) -> None:
-        """
-        Logs a message using the class's logger.
-        """
-        cls._logger.info(msg)
         
     @classmethod 
     def create_hash_from_list(cls, strings: List[str]) -> str:
