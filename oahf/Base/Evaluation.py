@@ -1,12 +1,14 @@
 from typing import List, Iterable, Optional
+from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
 from oahf.Base.Entity import Entity
 
-class Evaluation:
+class Evaluation(Entity):
     def __init__(self, constraints: Iterable['ConstraintEvaluation']):
         """
         Initializes the Evaluation object with constraints.
         :param constraints: Iterable of ConstraintEvaluation objects.
         """
+        super().__init__()
         self.constraints: Iterable['ConstraintEvaluation'] = constraints
         self._infeasible_constraints: Optional[List['ConstraintEvaluation']] = None
 

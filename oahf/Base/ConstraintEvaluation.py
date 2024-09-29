@@ -1,6 +1,8 @@
 from typing import Type
+from oahf.Base.Constraint import Constraint
+from oahf.Base.Entity import Entity
 
-class ConstraintEvaluation:
+class ConstraintEvaluation(Entity):
     def __init__(self, constraint: 'Constraint', infeasibility: bool, penalty: float = 0.0):
         """
         Initializes a ConstraintEvaluation object.
@@ -8,6 +10,7 @@ class ConstraintEvaluation:
         :param infeasibility: Boolean indicating whether the constraint is infeasible.
         :param penalty: The penalty associated with the constraint (default is 0.0).
         """
+        super().__init__()
         self._infeasible: bool = infeasibility
         self._penalty: float = penalty
         self._constraint_type: Type['Constraint'] = type(constraint)

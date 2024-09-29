@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
+from oahf.Base.Entity import Entity
 
-class Solution(Entity):
+class Solution(Entity, ABC):
     def __init__(self) -> None:
         super().__init__()  # Call the constructor of the Entity class
 

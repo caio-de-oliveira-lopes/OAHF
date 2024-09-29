@@ -1,5 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import List, Tuple, Optional, Iterator
+from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
+from oahf.Base.Entity import Entity
+from oahf.Base.Evaluator import Evaluator
+from oahf.Base.Solution import Solution
+from oahf.Base.ThreadManager import ThreadManager
 
 class PoolEventReport:
     def __init__(self, accepted: bool, objective_function: float, diversity: float, constraints: List[ConstraintEvaluation]):
@@ -14,8 +19,9 @@ class PoolReport:
         self.name: str = ""
         self.id: int = 0
 
-class Pool(ABC):
+class Pool(Entity, ABC):
     def __init__(self):
+        super().__init__()
         self.report = PoolReport()
 
     @abstractmethod

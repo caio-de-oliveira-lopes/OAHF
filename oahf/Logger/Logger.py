@@ -1,8 +1,9 @@
 import logging
 from typing import Any
 from JsonFormatter import JsonFormatter
+from oahf.Base.Entity import Entity
 
-class Logger:
+class Logger(Entity):
     """
     Custom class to encapsulate the logging process with JSON formatting.
     
@@ -18,6 +19,7 @@ class Logger:
             log_file (str): The path to the file where logs will be recorded.
             level (int): The logging level. The default is DEBUG.
         """
+        super().__init__()
         self.logger: logging.Logger = logging.getLogger('JsonLogger')
         self.logger.setLevel(level)
         

@@ -1,6 +1,9 @@
 import time
 from typing import List, Dict, Tuple, Type, Optional
-from oahf.Base.Event import *
+from oahf.Base.Constraint import Constraint
+from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
+from oahf.Base.Entity import Entity
+from oahf.Base.Evaluation import Evaluation
 
 class Event:
     class TYPE:
@@ -23,7 +26,7 @@ class Event:
         self.objective_function: float = 0.0
         self.start_time: float = time.time() * 1000  # Current time in milliseconds
 
-class EfficiencyReport:
+class EfficiencyReport(Entity):
     def __init__(self, name: str) -> None:
         """
         Initializes the EfficiencyReport with the specified name.
@@ -31,6 +34,7 @@ class EfficiencyReport:
         Args:
             name (str): The name of the report.
         """
+        super().__init__()
         self.name: str = name
         self.count_searches: int = 0
         self.count_apply: int = 0

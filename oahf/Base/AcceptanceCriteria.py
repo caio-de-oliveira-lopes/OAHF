@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from oahf.Base.Entity import Entity
+from oahf.Base.Evaluation import Evaluation
+from oahf.Base.Solution import Solution
 
-class AcceptanceCriteria(ABC):
+class AcceptanceCriteria(Entity, ABC):
     
     @abstractmethod
     def accept(self, curr_eval: 'Evaluation', next_eval: 'Evaluation', next_sol: 'Solution') -> bool:

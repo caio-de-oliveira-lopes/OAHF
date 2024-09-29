@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
 from oahf.Base.Entity import Entity
+from oahf.Base.Solution import Solution
+from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
+from oahf.Base.StopCriteria import StopCriteria
 
-class Constraint(ABC):
+class Constraint(Entity, ABC):
     
     @abstractmethod
     def evaluate(self, solution: 'Solution') -> 'ConstraintEvaluation':

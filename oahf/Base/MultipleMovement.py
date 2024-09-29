@@ -1,4 +1,7 @@
 from typing import List, Optional
+from oahf.Base.EfficiencyReport import EfficiencyReport
+from oahf.Base.Movement import Movement
+from oahf.Base.Solution import Solution
 
 class MultipleMovement(Movement):
     def __init__(self, solution: 'Solution', report: 'EfficiencyReport', movements: List[Movement], override_cost: Optional[float] = None):

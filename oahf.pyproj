@@ -26,10 +26,30 @@
     <Folder Include="oahf\" />
     <Folder Include="oahf\Logger\" />
     <Folder Include="oahf\Logger\__pycache__\" />
+    <Folder Include="oahf\Base\" />
     <Folder Include="oahf\Utils\" />
     <Folder Include="oahf\Utils\__pycache__\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="oahf\Base\AcceptanceCriteria.py" />
+    <Compile Include="oahf\Base\Constraint.py" />
+    <Compile Include="oahf\Base\ConstraintEvaluation.py" />
+    <Compile Include="oahf\Base\CrossOver.py" />
+    <Compile Include="oahf\Base\EfficiencyReport.py" />
+    <Compile Include="oahf\Base\Entity.py" />
+    <Compile Include="oahf\Base\Evaluation.py" />
+    <Compile Include="oahf\Base\Evaluator.py" />
+    <Compile Include="oahf\Base\MetaHeuristic.py" />
+    <Compile Include="oahf\Base\Movement.py" />
+    <Compile Include="oahf\Base\MultipleMovement.py" />
+    <Compile Include="oahf\Base\Neighborhood.py" />
+    <Compile Include="oahf\Base\NeighborhoodSelection.py" />
+    <Compile Include="oahf\Base\Pool.py" />
+    <Compile Include="oahf\Base\Selection.py" />
+    <Compile Include="oahf\Base\SharedMemory.py" />
+    <Compile Include="oahf\Base\Solution.py" />
+    <Compile Include="oahf\Base\StopCriteria.py" />
+    <Compile Include="oahf\Base\ThreadManager.py" />
     <Compile Include="oahf\main.py" />
     <Compile Include="oahf\Logger\LogManager.py" />
     <Compile Include="oahf\Logger\LogMessages.py" />

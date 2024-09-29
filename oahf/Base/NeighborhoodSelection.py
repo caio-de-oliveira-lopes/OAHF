@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Iterable
+from oahf.Base.Entity import Entity
 from oahf.Base.Neighborhood import Neighborhood
 
-class NeighborhoodSelection(ABC):
+class NeighborhoodSelection(Entity, ABC):
     def __init__(self):
+        super().__init__()
         self.neighborhoods: List[Neighborhood] = []
         self.circular: bool = False
 

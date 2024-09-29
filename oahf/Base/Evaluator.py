@@ -1,13 +1,20 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-class Evaluator(ABC):
+from oahf.Base.Constraint import Constraint
+from oahf.Base.Entity import Entity
+from oahf.Base.Evaluation import Evaluation
+from oahf.Base.Solution import Solution
+from oahf.Base.StopCriteria import StopCriteria
+
+class Evaluator(Entity, ABC):
     def __init__(self, stop_on_first: bool, *constraints: 'Constraint'):
         """
         Initializes an Evaluator with the option to stop on the first infeasibility.
         :param stop_on_first: Boolean indicating whether to stop on first infeasibility.
         :param constraints: Variable-length list of Constraint objects.
         """
+        super().__init__()
         self._constraints: List['Constraint'] = list(constraints)
         self._stop_on_first_infeasibility: bool = stop_on_first
         self.stop_criteria: Optional['StopCriteria'] = None
