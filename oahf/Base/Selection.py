@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
+
 from oahf.Base.Entity import Entity
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
+
 
 class Selection(Entity, ABC):
     def __init__(self, thread_id: int, evaluator: Evaluator):
@@ -17,6 +19,6 @@ class Selection(Entity, ABC):
         pass
 
     @abstractmethod
-    def copy(self, thread: int) -> 'Selection':
+    def copy(self, thread: int) -> "Selection":
         """Create a copy of the selection for a specified thread."""
         pass

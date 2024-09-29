@@ -1,4 +1,4 @@
-from .Util import Util
 from .EnumUtil import EnumUtil
+from .Util import Util
 
-__all__ = ['Util', 'EnumUtil']
+__all__ = ["EnumUtil", "Util"]

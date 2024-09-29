@@ -1,9 +1,11 @@
 from enum import Enum, auto
 
+
 class LogMessages(Enum):
     """
     Enum class to represent different types of log messages dynamically.
     """
+
     DUPLICATED_VARIABLE = auto()
     OPTIMIZATION_ERROR = auto()
     DUPLICATED_CONSTRAINT = auto()

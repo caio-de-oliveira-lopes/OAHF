@@ -1,18 +1,20 @@
-from typing import List, Iterable, Optional
+from typing import Iterable, List, Optional
+
 from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
 from oahf.Base.Entity import Entity
 
+
 class Evaluation(Entity):
-    def __init__(self, constraints: Iterable['ConstraintEvaluation']):
+    def __init__(self, constraints: Iterable["ConstraintEvaluation"]):
         """
         Initializes the Evaluation object with constraints.
         :param constraints: Iterable of ConstraintEvaluation objects.
         """
         super().__init__()
-        self.constraints: Iterable['ConstraintEvaluation'] = constraints
-        self._infeasible_constraints: Optional[List['ConstraintEvaluation']] = None
+        self.constraints: Iterable["ConstraintEvaluation"] = constraints
+        self._infeasible_constraints: Optional[List["ConstraintEvaluation"]] = None
 
-    def better_than(self, ev: 'Evaluation') -> bool:
+    def better_than(self, ev: "Evaluation") -> bool:
         """
         Determines if the current evaluation is better than another.
         :param ev: Another Evaluation object.
@@ -24,7 +26,7 @@ class Evaluation(Entity):
             return True
         return self.get_objective_function() < ev.get_objective_function()
 
-    def better_or_equal_to(self, ev: 'Evaluation') -> bool:
+    def better_or_equal_to(self, ev: "Evaluation") -> bool:
         """
         Determines if the current evaluation is better than or equal to another.
         :param ev: Another Evaluation object.
@@ -36,7 +38,7 @@ class Evaluation(Entity):
             return True
         return self.get_objective_function() <= ev.get_objective_function()
 
-    def get_infeasible_constraints(self) -> List['ConstraintEvaluation']:
+    def get_infeasible_constraints(self) -> List["ConstraintEvaluation"]:
         """
         Retrieves the list of infeasible constraints.
         :return: List of infeasible ConstraintEvaluation objects.
@@ -64,4 +66,6 @@ class Evaluation(Entity):
         Calculates the objective function value, including penalties for constraints.
         :return: The objective function value.
         """
-        return self.get_objective_function_value() + sum(x.penalty for x in self.constraints if self.constraints)
+        return self.get_objective_function_value() + sum(
+            x.penalty for x in self.constraints if self.constraints
+        )
