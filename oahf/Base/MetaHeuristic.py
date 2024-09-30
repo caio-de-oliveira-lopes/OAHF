@@ -105,7 +105,9 @@ class MetaHeuristic(Entity, ABC):
                 print(f"{r[0]} {r[1]}")
 
     @abstractmethod
-    def run(self, sol: "Solution") -> "Solution":
+    def run(
+        self, sol: Optional[Union[Solution, Pool]]
+    ) -> Optional[Union[Solution, Pool]]:
         """Run the heuristic on a given solution."""
         pass
 

@@ -64,7 +64,7 @@ class GenericMultipleMetaheuristic(MetaHeuristic):
         curr_sol = mh.run_operation(curr_sol, self)
         solutions[thread_id] = curr_sol
 
-    def run(self, sol) -> "Solution":
+    def run(self, sol: Solution) -> Solution:
         solutions_current = (
             [sol.copy() for _ in range(self.num_threads)]
             if sol
