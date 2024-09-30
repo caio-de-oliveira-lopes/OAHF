@@ -58,14 +58,14 @@ class GRC(MetaHeuristic):
             self.acceptance_criteria.copy(),
         )
 
-    def run(self, sol: Optional[Solution]) -> Solution:
+    def run(self, sol: Optional[Solution]) -> Optional[Solution]:
         """Executes the GRC meta-heuristic.
 
         Args:
             sol (Optional[Solution]): The initial solution, which can be None.
 
         Returns:
-            Solution: The best solution found during execution.
+            Optional[Solution]: The best solution found during execution.
         """
         curr_sol = sol.copy() if sol is not None else sol
         best_eval = self.evaluator.evaluate(sol)

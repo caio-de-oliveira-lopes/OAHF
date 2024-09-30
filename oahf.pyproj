@@ -28,6 +28,7 @@
     <Folder Include="oahf\Logger\" />
     <Folder Include="oahf\Logger\__pycache__\" />
     <Folder Include="oahf\Base\" />
+    <Folder Include="oahf\MetaHeuristics\" />
     <Folder Include="oahf\Utils\" />
     <Folder Include="oahf\Utils\__pycache__\" />
   </ItemGroup>
@@ -72,6 +73,15 @@
     <Compile Include="oahf\Logger\JsonFormatter.py" />
     <Compile Include="oahf\Logger\Logger.py" />
     <Compile Include="oahf\Logger\__init__.py" />
+    <Compile Include="oahf\MetaHeuristics\GeneticAlgorithm.py" />
+    <Compile Include="oahf\MetaHeuristics\ParallelILS.py" />
+    <Compile Include="oahf\MetaHeuristics\Pertubation.py" />
+    <Compile Include="oahf\MetaHeuristics\ILS.py" />
+    <Compile Include="oahf\MetaHeuristics\GRC.py" />
+    <Compile Include="oahf\MetaHeuristics\GRASP.py" />
+    <Compile Include="oahf\MetaHeuristics\GenericMultipleMetaheuristic.py" />
+    <Compile Include="oahf\MetaHeuristics\FirstImprovement.py" />
+    <Compile Include="oahf\MetaHeuristics\BestImprovement.py" />
     <Compile Include="oahf\Utils\EnumUtil.py" />
     <Compile Include="oahf\Utils\Util.py" />
     <Compile Include="oahf\Utils\__init__.py" />
