@@ -6,11 +6,10 @@ from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Entity import Entity
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Solution import Solution
+from oahf.Logger.LogManager import LogManager
 
 
 class Movement(Entity, ABC):
-    logger = logging.getLogger(__name__)
-
     def __init__(self, solution: "Solution", report: "EfficiencyReport"):
         super().__init__()
         self.report: EfficiencyReport = report
@@ -34,10 +33,7 @@ class Movement(Entity, ABC):
         try:
             result = self.apply()
         except Exception as ex:
-            self.logger.warning(
-                f"Unable to apply movement, movement: {type(self).__name__}"
-            )
-            self.logger.error(str(ex))
+            LogManager.invalid_action("apply movement", type(self).__name__, ex)
             raise
 
         if result:
@@ -65,10 +61,7 @@ class Movement(Entity, ABC):
         try:
             result = self.unapply()
         except Exception as ex:
-            self.logger.warning(
-                f"Unable to unapply movement, movement: {type(self).__name__}"
-            )
-            self.logger.error(str(ex))
+            LogManager.invalid_action("unapply movement", type(self).__name__, ex)
             raise
 
         self.report.report_unapply_end()

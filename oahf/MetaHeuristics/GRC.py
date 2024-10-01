@@ -8,6 +8,7 @@ from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.ThreadManager import ThreadManager
+from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
 
 
@@ -133,8 +134,7 @@ class GRC(MetaHeuristic):
                     break  # fail on building NS
 
             except Exception as ex:
-                Util.logger.trace_warning("Something wrong happened.")
-                Util.logger.trace_error(str(ex))
+                LogManager.something_went_wrong(ns, ex)
                 raise
 
         return curr_sol

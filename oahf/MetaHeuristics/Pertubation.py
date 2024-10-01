@@ -6,7 +6,7 @@ from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
-from oahf.Utils.Util import Util
+from oahf.Logger.LogManager import LogManager
 
 
 class Pertubation(MetaHeuristic):
@@ -73,7 +73,7 @@ class Pertubation(MetaHeuristic):
             try:
                 ns = NeighborhoodSelection.get_next(self.thread_id)
             except Exception as ex:
-                Util.logger.error("Unable to get neighborhood.")
+                LogManager.unable_to_get_neighborhood()
 
             try:
                 if ns is None:
@@ -102,9 +102,7 @@ class Pertubation(MetaHeuristic):
                         move = ns.get_move_operation()
                         self.stop_criteria.increment_counter()
             except Exception as ex:
-                Util.logger.error(
-                    f"Something went wrong while trying to use {ns}.\n{ex}"
-                )
+                LogManager.something_went_wrong(ns, ex)
 
                 curr_sol = best_sol.copy()
 

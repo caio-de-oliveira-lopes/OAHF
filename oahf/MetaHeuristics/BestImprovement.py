@@ -4,6 +4,7 @@ from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
 
 
@@ -56,7 +57,7 @@ class BestImprovement(MetaHeuristic):
                 if ns is None:
                     ns = self.neighborhood_selection.get_next(self.thread_id)
             except Exception as ex:
-                Util.logger.error(f"Unable to get neighborhood.")
+                LogManager.unable_to_get_neighborhood()
 
             try:
                 # Warning: circular selections with no time StopCriteria may get in an infinite loop
@@ -88,9 +89,7 @@ class BestImprovement(MetaHeuristic):
                         if self.log_solutions:
                             self.log_best_solution(best_eval)
             except Exception as ex:
-                Util.logger.error(
-                    f"Something wrong happened while trying to use {ns}.\n{ex}"
-                )
+                LogManager.something_went_wrong(ns, ex)
                 curr_sol = best_sol.copy() if best_sol else None
 
         self.evaluator.save_evaluation_state(best_sol)

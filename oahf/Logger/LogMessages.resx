@@ -126,8 +126,11 @@
   <data name="DUPLICATED_VARIABLE" xml:space="preserve">
     <value>Trying to add duplicated variable {0} to the model's structure.</value>
   </data>
-  <data name="INPUT_NAME_NOT_MATCHING" xml:space="preserve">
-    <value>No name match found for {0}. The expected format is: "input_&lt;model_name&gt;.pickle".</value>
+  <data name="INVALID_ACTION" xml:space="preserve">
+    <value>Unable to {0}: {1}.</value>
+  </data>
+  <data name="LOG_SOLUTION" xml:space="preserve">
+    <value>Current Solution: {0}</value>
   </data>
   <data name="OPTIMIZATION_ERROR" xml:space="preserve">
     <value>The solver was unable to optimize the model.</value>
@@ -135,11 +138,11 @@
   <data name="OUTPUT_WRITING_ERROR" xml:space="preserve">
     <value>Error while writing output: {0}</value>
   </data>
-  <data name="UNRELATED_VARIABLES" xml:space="preserve">
-    <value>Some variables have no constraint related to them. List of Variables: {0}.</value>
+  <data name="SOMETHING_WENT_WRONG" xml:space="preserve">
+    <value>Something went wrong while trying to use {0}. Error: {1}</value>
   </data>
-  <data name="VARIABLE_DATA_MISSING" xml:space="preserve">
-    <value>Variable {0} is missing data at the input file, please check!</value>
+  <data name="UNABLE_TO_GET_NEIGHBORHOOD" xml:space="preserve">
+    <value>Unable to get neighborhood search.</value>
   </data>
   <data name="VARIABLE_NOT_FOUND" xml:space="preserve">
     <value>Variable {0} was not found when searched by name at {1}.</value>

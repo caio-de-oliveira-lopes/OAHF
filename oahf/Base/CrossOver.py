@@ -5,6 +5,7 @@ from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Entity import Entity
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
 
 
@@ -50,8 +51,8 @@ class CrossOver(Entity, ABC):
         try:
             new_sol = self.cross(sol1, sol2)
         except Exception as ex:
-            Util.logger.error(
-                f"Unable to do cross-over, neighborhood: {self.__class__.__name__}\n{ex}"
+            LogManager.invalid_action(
+                "do cross-over, neighborhood", self.__class__.__name__, ex
             )
             raise
 

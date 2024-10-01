@@ -4,6 +4,7 @@ from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
 
 
@@ -55,7 +56,7 @@ class FirstImprovement(MetaHeuristic):
                 if ns is None:
                     ns = self.neighborhood_selection.get_next(self.thread_id)
             except Exception as ex:
-                Util.logger.error(f"Unable to get neighborhood.\n")
+                LogManager.unable_to_get_neighborhood()
 
             try:
                 if ns is None:
@@ -84,9 +85,7 @@ class FirstImprovement(MetaHeuristic):
                         move = ns.get_move_operation()
                         self.stop_criteria.increment_counter()
             except Exception as ex:
-                Util.logger.error(
-                    f"Something wrong happened while trying to use {ns}.\n{ex}"
-                )
+                LogManager.something_went_wrong(ns, ex)
                 curr_sol = best_sol.copy() if best_sol else None
 
         self.evaluator.save_evaluation_state(best_sol)

@@ -7,6 +7,7 @@ from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.ThreadManager import ThreadManager
+from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
 
 
@@ -128,8 +129,8 @@ class GenericMultipleMetaheuristic(MetaHeuristic):
                         if tasks[i].done():
                             threads_not_finished.remove(i)
                             if self.log_solutions:
-                                Util.logger.error(
-                                    f"Current Solution: {self.evaluator.evaluate(solutions_current[i])}"
+                                LogManager.log_solution(
+                                    self.evaluator.evaluate(solutions_current[i])
                                 )
                             self.solution_pool.add(solutions_current[i], self.evaluator)
                             best_eval = self.evaluator.evaluate(

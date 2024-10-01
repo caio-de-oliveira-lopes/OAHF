@@ -12,6 +12,7 @@ from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.Logger.LogManager import LogManager
 
 
 class MetaHeuristicReport:
@@ -125,10 +126,7 @@ class MetaHeuristic(Entity, ABC):
             self.end_time = self._current_milliseconds()
             return result
         except Exception as ex:
-            self.logger.warning(
-                f"Something went wrong while trying to run {self.__class__}"
-            )
-            self.logger.error(str(ex))
+            LogManager.something_went_wrong(self.__class__, ex)
             raise
 
     def stop(self) -> bool:
