@@ -1,6 +1,4 @@
-import logging
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Entity import Entity

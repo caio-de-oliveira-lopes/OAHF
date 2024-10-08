@@ -53,6 +53,7 @@
     <Compile Include="oahf\Base\StopCriteria.py" />
     <Compile Include="oahf\Base\ThreadManager.py" />
     <Compile Include="oahf\Base\__init__.py" />
+    <Compile Include="oahf\ImplementedBase\ALWABP.py" />
     <Compile Include="oahf\ImplementedBase\SimulatedAnnealing.py" />
     <Compile Include="oahf\ImplementedBase\ListPool.py" />
     <Compile Include="oahf\ImplementedBase\ElitePool.py" />
