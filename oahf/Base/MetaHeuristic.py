@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union, Iterable
 
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.EfficiencyReport import Event
@@ -16,9 +16,9 @@ from oahf.Logger.LogManager import LogManager
 
 
 class MetaHeuristicReport:
-    def __init__(self, name: str):
+    def __init__(self, name: str, report: List[Tuple[float, "Event"]] = []):
         self.name: str = name
-        self.report: List[Tuple[int, "Event"]] = []
+        self.report: List[Tuple[float, "Event"]] = report
         self.reports: List["MetaHeuristicReport"] = []
         self.start_time: int = 0
         self.end_time: int = 0
@@ -41,27 +41,19 @@ class MetaHeuristic(Entity, ABC):
         thread_id: int,
         stop_criteria: "StopCriteria",
         evaluator: "Evaluator",
-        neighborhood_selection: Optional["NeighborhoodSelection"] = None,
-        acceptance_criteria: Optional["AcceptanceCriteria"] = None,
-        meta_heuristics_used: Optional[
-            Union["MetaHeuristic", List["MetaHeuristic"]]
-        ] = None,
+        neighborhood_selection: "NeighborhoodSelection",
+        acceptance_criteria: "AcceptanceCriteria",
+        meta_heuristics_used: List["MetaHeuristic"] = [],
     ):
 
         super().__init__()
-        self.neighborhood_selection: Optional["NeighborhoodSelection"] = (
-            neighborhood_selection
-        )
+        self.neighborhood_selection: "NeighborhoodSelection" = neighborhood_selection
         self.evaluator: "Evaluator" = evaluator
         self.thread_id: int = thread_id
         self.stop_criteria: "StopCriteria" = stop_criteria
         self.parent_metaheuristic: Optional["MetaHeuristic"] = None
-        self.meta_heuristics_used: List["MetaHeuristic"] = (
-            meta_heuristics_used
-            if isinstance(meta_heuristics_used, list)
-            else [meta_heuristics_used] if meta_heuristics_used else []
-        )
-        self.acceptance_criteria: Optional["AcceptanceCriteria"] = acceptance_criteria
+        self.meta_heuristics_used: List["MetaHeuristic"] = meta_heuristics_used
+        self.acceptance_criteria: "AcceptanceCriteria" = acceptance_criteria
         self.solution_reports: SolutionReport = SolutionReport()
         self.log_solutions: bool = False
         self.start_time: int = 0
@@ -102,12 +94,13 @@ class MetaHeuristic(Entity, ABC):
                 print("------------")
         else:
             reports = self.get_efficiency_reports()
-            for r in reports:
-                print(f"{r[0]} {r[1]}")
+            if reports:
+                for r in reports:
+                    print(f"{r[0]} {r[1]}")
 
     @abstractmethod
     def run(
-        self, sol: Optional[Union[Solution, Pool]]
+        self, sol: Union[Solution, Pool]
     ) -> Optional[Union[Solution, Pool]]:
         """Run the heuristic on a given solution."""
         pass
@@ -124,9 +117,12 @@ class MetaHeuristic(Entity, ABC):
             self.start_time = self._current_milliseconds()
             result = self.run(sol)
             self.end_time = self._current_milliseconds()
-            return result
+            if result is Pool:
+                return result
+            else:
+                raise TypeError("Wrong solution type returned by 'run' method.")
         except Exception as ex:
-            LogManager.something_went_wrong(self.__class__, ex)
+            LogManager.something_went_wrong(self.__class__.__name__, ex)
             raise
 
     def stop(self) -> bool:
@@ -158,10 +154,10 @@ class MetaHeuristic(Entity, ABC):
     def set_log_solution(self):
         self.log_solutions = True
 
-    def stop_on_evaluations(self, ev: "Evaluation") -> bool:
-        return self.stop_on_evaluations([ev])
+    #def stop_on_evaluations(self, ev: "Evaluation") -> bool:
+    #    return self.stop_on_evaluations([ev])
 
-    def stop_on_evaluations(self, evs: List["Evaluation"]) -> bool:
+    def stop_on_evaluations(self, evs: Iterable["Evaluation"]) -> bool:
         return self.stop_criteria.stop_on_evaluations(evs) or (
             self.parent_metaheuristic is not None
             and self.parent_metaheuristic.stop_on_evaluations(evs)
@@ -179,12 +175,9 @@ class MetaHeuristic(Entity, ABC):
                 n.set_thread_id(thread_id)
 
     def reset_neighborhoods(self, sol: "Solution"):
-        for neighborhood in self.neighborhood_selection.get_all():
-            neighborhood.reset(sol)
-
-    @abstractmethod
-    def set_neighborhood(self, neighborhood: "Neighborhood"):
-        pass
+        if self.neighborhood_selection:
+            for neighborhood in self.neighborhood_selection.get_all():
+                neighborhood.reset(sol)
 
     def get_neighborhood_selection(self) -> Optional["NeighborhoodSelection"]:
         return self.neighborhood_selection

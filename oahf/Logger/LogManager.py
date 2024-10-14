@@ -53,7 +53,7 @@ class LogManager:
                         f"Warning: No <value> element found for key '{key}' in '{resx_file}'"
                     )
         except Exception as e:
-            LogManager.log_error(e)
+            LogManager.something_went_wrong(type(cls).__name__, e)
 
     @staticmethod
     def get_message(message_type: LogMessages) -> str:

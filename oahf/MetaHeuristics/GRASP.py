@@ -28,7 +28,7 @@ class GRASP(MetaHeuristic):
             criteria (AcceptanceCriteria): The acceptance criteria for solutions.
         """
         super().__init__(
-            thread_id, stop, evaluator, criteria, constructions, local_search
+            thread_id, stop, evaluator, None, criteria, [constructions, local_search]
         )
 
     def copy(self, thread: int) -> "GRASP":

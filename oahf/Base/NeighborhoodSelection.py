@@ -12,7 +12,7 @@ class NeighborhoodSelection(Entity, ABC):
         self.circular: bool = False
 
     @abstractmethod
-    def get_next(self, thread_id: int) -> Optional[Neighborhood]:
+    def get_next(self, thread_id: int) -> Neighborhood:
         """Retrieve the next neighborhood based on the thread ID."""
         pass
 

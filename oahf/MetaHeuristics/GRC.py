@@ -59,7 +59,7 @@ class GRC(MetaHeuristic):
             self.acceptance_criteria.copy(),
         )
 
-    def run(self, sol: Optional[Solution]) -> Optional[Solution]:
+    def run(self, sol: Solution) -> Optional[Solution]:
         """Executes the GRC meta-heuristic.
 
         Args:
@@ -77,7 +77,7 @@ class GRC(MetaHeuristic):
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
 
-        while not self.stop_on_evaluations(best_eval):
+        while not self.stop_on_evaluations([best_eval]):
             try:
                 build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
                 improved = False
@@ -104,7 +104,7 @@ class GRC(MetaHeuristic):
                         reverse=True,
                     )
 
-                    while ordered_moves and not self.stop_on_evaluations(best_eval):
+                    while ordered_moves and not self.stop_on_evaluations([best_eval]):
                         self.stop_criteria.increment_counter()
                         move = ordered_moves.pop()  # Get the last (least desirable)
                         worked = move.apply_operation()
@@ -134,7 +134,7 @@ class GRC(MetaHeuristic):
                     break  # fail on building NS
 
             except Exception as ex:
-                LogManager.something_went_wrong(ns, ex)
+                LogManager.something_went_wrong(str(ns), ex)
                 raise
 
         return curr_sol

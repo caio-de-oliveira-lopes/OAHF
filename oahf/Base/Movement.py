@@ -6,6 +6,7 @@ from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Solution import Solution
 from oahf.Logger.LogManager import LogManager
 
+from typing import Optional
 
 class Movement(Entity, ABC):
     def __init__(self, solution: "Solution", report: "EfficiencyReport"):
@@ -51,7 +52,7 @@ class Movement(Entity, ABC):
         """Revert the movement on the solution."""
         pass
 
-    def unapply_operation(self, evaluation: "Evaluation") -> bool:
+    def unapply_operation(self, evaluation: Optional["Evaluation"]) -> bool:
         """Wrapper method to unapply the movement and report the outcome."""
         self.report.report_unapply_start(evaluation)
         result = False

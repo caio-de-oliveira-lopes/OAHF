@@ -25,7 +25,7 @@ class Util:
         """
         return cls._threads
 
-    @property
+    @classmethod
     def logger(cls) -> Optional[Logger]:
         """
         Returns:
@@ -77,5 +77,5 @@ class Util:
         return hash_object.hexdigest()
 
     @classmethod
-    def get_current_thread_id() -> int:
+    def get_current_thread_id(cls) -> Optional[int]:
         return threading.current_thread().ident

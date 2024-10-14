@@ -1,8 +1,9 @@
 from typing import Dict, List, Optional, Tuple, Type
 
-from oahf.Base.EfficiencyReport import EfficiencyReport
+from oahf.Base.EfficiencyReport import EfficiencyReport, Event
 from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
+from oahf.Base.Constraint import Constraint
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
@@ -97,11 +98,11 @@ class Neighborhood:
         """Returns the efficiency report as a string."""
         return str(self.report)
 
-    def get_efficiency_to_json(self) -> List[Tuple[int, "Event"]]:
+    def get_efficiency_to_json(self) -> List[Tuple[float, Event]]:
         """Returns the efficiency report in JSON format."""
         return self.report.to_json()
 
-    def get_constraints(self) -> Dict[Type["Constraint"], int]:
+    def get_constraints(self) -> Dict[Type[Constraint], int]:
         """Returns the constraints associated with the efficiency report."""
         return self.report.get_constraints()
 
