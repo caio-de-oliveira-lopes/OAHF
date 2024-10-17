@@ -11,7 +11,7 @@ class Evaluation(Entity):
         :param constraints: Iterable of ConstraintEvaluation objects.
         """
         super().__init__()
-        self.constraints: Iterable["ConstraintEvaluation"] = constraints
+        self.constraints: List["ConstraintEvaluation"] = list(constraints)
         self._infeasible_constraints: Optional[List["ConstraintEvaluation"]] = None
 
     def better_than(self, ev: "Evaluation") -> bool:

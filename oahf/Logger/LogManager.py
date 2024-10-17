@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from LogMessages import LogMessages
+from oahf.Logger.LogMessages import LogMessages
 
 from oahf.Base.Evaluation import Evaluation
 from oahf.Utils.Util import Util
@@ -75,32 +75,37 @@ class LogManager:
     @classmethod
     def something_went_wrong(cls, class_name: str, exception: Union[Exception, str]):
         log_message: LogMessages = LogMessages.SOMETHING_WENT_WRONG
-        if Util.logger:
-            Util.logger.error(
+        logger = Util.logger()
+        if logger:
+            logger.error(
                 LogManager.get_message(log_message).format(class_name, exception)
             )
 
     @classmethod
     def unable_to_get_neighborhood(cls):
         log_message: LogMessages = LogMessages.UNABLE_TO_GET_NEIGHBORHOOD
-        if Util.logger:
-            Util.logger.error(LogManager.get_message(log_message))
+        logger = Util.logger()
+        if logger:
+            logger.error(LogManager.get_message(log_message))
 
     @classmethod
     def log_solution(cls, evaluation: Evaluation):
         log_message: LogMessages = LogMessages.LOG_SOLUTION
-        if Util.logger:
-            Util.logger.info(LogManager.get_message(log_message).format(evaluation))
+        logger = Util.logger()
+        if logger:
+            logger.info(LogManager.get_message(log_message).format(evaluation))
 
     @classmethod
     def invalid_action(
         cls, action: str, structure_name: str, exception: Optional[Exception] = None
     ):
         log_message: LogMessages = LogMessages.INVALID_ACTION
-        if Util.logger:
-            Util.logger.error(
+        logger = Util.logger()
+        if logger:
+            logger.error(
                 LogManager.get_message(log_message).format(action, structure_name)
             )
 
             if exception:
                 cls.something_went_wrong(structure_name, exception)
+                

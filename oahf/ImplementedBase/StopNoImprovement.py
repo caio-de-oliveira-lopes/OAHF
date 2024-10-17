@@ -1,4 +1,4 @@
-from typing import Iterable, LinkedList, Optional
+from typing import Iterable, List, Optional
 
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.StopCriteria import StopCriteria
@@ -21,7 +21,7 @@ class StopNoImprovement(StopTimeIterationCriteria):
         :param perc_improv: The percentage improvement required.
         """
         super().__init__(seconds, iterations)
-        self.ofs: LinkedList[float] = LinkedList()
+        self.ofs: List[float] = []
         self.iterations_no_improv = iterations_no_improv
         self.perc_improvement = (
             perc_improv if perc_improv is not None else float("epsilon")

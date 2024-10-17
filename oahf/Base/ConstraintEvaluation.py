@@ -1,6 +1,5 @@
 from typing import Type
 
-from oahf.Base.Constraint import Constraint
 from oahf.Base.Entity import Entity
 
 

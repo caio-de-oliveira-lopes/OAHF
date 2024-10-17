@@ -1,7 +1,7 @@
 import random
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Callable, Dict, Iterable, TypeVar
+from typing import Callable, Dict, Iterable, TypeVar, Optional
 
 TSource = TypeVar("TSource")
 
@@ -11,7 +11,7 @@ class ThreadManager:
     _watch: float = 0.0
 
     @classmethod
-    def initialize(cls, num_threads: int, seed: int = None) -> None:
+    def initialize(cls, num_threads: int, seed: Optional[int] = None) -> None:
         """Initializes the ThreadManager with a specified number of threads and an optional seed for randomness."""
         cls._watch = time.time()
         cls._random_keys = {}
@@ -21,6 +21,10 @@ class ThreadManager:
             else:
                 cls._random_keys[i] = random.Random(seed + i)
 
+    @property
+    def elapsed_milliseconds(cls) -> int:
+        return int((cls._watch - time.time()) * 1000)
+    
     @classmethod
     def get_next_double(cls, thread_id: int) -> float:
         """Gets the next random double for the specified thread ID."""
@@ -59,7 +63,7 @@ class ThreadManager:
         """Executes the specified action for each thread in parallel."""
         if not cls._random_keys:
             cls.initialize(num_threads)
-        cls.for_range(0, num_threads, action)
+        cls.for_range(0, 0, num_threads, action)
 
     @classmethod
     def main_for_wait_all(cls, num_threads: int, action: Callable[[int], None]) -> None:

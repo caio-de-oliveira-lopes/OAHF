@@ -1,7 +1,9 @@
 import hashlib
 import multiprocessing
-import threading
-from typing import ClassVar, List, Optional
+from typing import ClassVar, List, Optional, Type, Tuple
+from oahf.Base.Solution import Solution
+from pathlib import Path
+import json
 
 from oahf.Logger.Logger import Logger
 
@@ -76,6 +78,106 @@ class Util:
         # Return the final hexadecimal digest
         return hash_object.hexdigest()
 
+    #
+    #@classmethod
+    #def get_current_thread_id(cls) -> Optional[int]:
+    #    return threading.current_thread().ident
+    
     @classmethod
-    def get_current_thread_id(cls) -> Optional[int]:
-        return threading.current_thread().ident
+    def read_input(cls, input_file: Path, input_type: Type) -> Optional[Solution]:
+        from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
+        if input_type is Type[AlwabpSolution]:
+            return cls.read_ALWABP_input(input_file)
+        else:
+            pass
+
+    @classmethod
+    def read_ALWABP_input(cls, input_file: Path) -> Optional["ALWABP"]:
+        """
+        Reads ALWABP input file and returns an ALWABP instance.
+        """
+        from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
+        from oahf.Logger.LogManager import LogManager
+        
+        line: Optional[str] = None
+        number_of_workers: int = 0
+        number_of_stations: int = 0
+        number_of_tasks: int = 0
+        alwabp_instance: Optional[AlwabpSolution] = None
+
+        try:
+            with open(input_file, "r") as sr:
+                # Read first line (number of tasks)
+                line = sr.readline().strip()
+                if not line:
+                    return None
+
+                number_of_tasks = int(line)
+
+                # Read second line (task-worker relationship matrix)
+                line = sr.readline().strip()
+                if not line:
+                    return None
+
+                splited_lines = line.split()
+                number_of_workers = len(splited_lines)
+                number_of_stations = number_of_workers
+                
+                alwabp_instance = AlwabpSolution(number_of_tasks, number_of_workers, number_of_stations)
+
+                task = 1
+                while task <= number_of_tasks:
+                    values = [float(i) for i in splited_lines]
+                    alwabp_instance.set_task_execution_times(task, values)
+
+                    line = sr.readline().strip()
+                    if not line:
+                        return None
+                    splited_lines = line.split()
+                    task += 1
+
+                # Read precedence graph (task pairs)
+                while True:
+                    u_task = int(splited_lines[0])
+                    v_task = int(splited_lines[-1])
+
+                    if u_task != -1 and v_task != -1:
+                        alwabp_instance.add_precedence(u_task, v_task)
+
+                        line = sr.readline().strip()
+                        if not line:
+                            break
+                        splited_lines = line.split()
+                    else:
+                        break
+        except Exception as e:
+            LogManager.something_went_wrong(cls.__name__, e)
+        finally:
+            print("Input Reading Finished!")
+
+        if alwabp_instance:
+            alwabp_instance.process_graph_data()
+            return alwabp_instance
+        else:
+            LogManager.something_went_wrong(cls.__name__, "Not a Valid Input!")
+            return None
+
+    @classmethod
+    def get_recommeded_maximum_mean_cycle_time(cls, file_path: Path, input_name: str) -> int:
+        """
+        This function reads a JSON file and retrieves the integer value 
+        corresponding to a key (input_name).
+
+        :param file_path: The full path of the JSON file to read from.
+        :param input_name: The key whose value needs to be retrieved.
+        :return: The integer value associated with the key, or None if not found.
+        """
+
+        # Load JSON data from the file
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+
+        # Get the value from the JSON data
+        value: int = int(data.get(input_name, None))
+        
+        return value

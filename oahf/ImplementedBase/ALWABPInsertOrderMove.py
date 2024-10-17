@@ -1,15 +1,15 @@
 from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
-from oahf.ImplementedBase.ALWABP import ALWABP
+from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 from oahf.Utils.Util import Util
 from typing import Optional
 
 
-class ALWABPInsertOrderMove(Movement):
-    def __init__(self, task: Optional[int], worker: Optional[int], station: Optional[int], solution: ALWABP, report: EfficiencyReport):
+class AlwabpInsertOrderMove(Movement):
+    def __init__(self, task: Optional[int], worker: Optional[int], station: Optional[int], solution: AlwabpSolution, report: EfficiencyReport):
         super().__init__(solution, report)
-        self.solution: ALWABP = solution
+        self.solution: AlwabpSolution = solution
         self.task: Optional[int] = task
         self.worker: Optional[int] = worker
         self.station: Optional[int] = station
@@ -23,14 +23,18 @@ class ALWABPInsertOrderMove(Movement):
         return -1.0
 
     def apply(self) -> bool:
-        # Implement logic to apply the movement in the ALWABP solution
-        # e.g., reassign task to the worker and station in the solution
+        if self.task and self.station:
+            return self.solution.add_task_to_station(self.task, self.station)
+            
         return True
 
     def unapply(self) -> bool:
         # Implement logic to revert the movement in the ALWABP solution
+        if self.task and self.station:
+            return self.solution.remove_task_from_station(self.task, self.station)
+        
         return True
 
     def __str__(self) -> str:
-        return f"ALWABPInsertOrderMove(Task: {self.task}, Worker: {self.worker}, Station: {self.station})"
+        return f"AlwabpInsertOrderMove(Task: {self.task}, Worker: {self.worker}, Station: {self.station})"
 

@@ -1,5 +1,5 @@
 import time
-from typing import List
+from typing import List, Iterable, Optional
 
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
@@ -15,14 +15,14 @@ class GenericMultipleMetaheuristic(MetaHeuristic):
     def __init__(
         self,
         thread_id: int,
-        stop: StopCriteria,
+        stop_criteria: StopCriteria,
         evaluator: Evaluator,
-        meta_heuristics,
+        meta_heuristics: List[MetaHeuristic],
         pool: Pool,
         num_threads: int,
         repeatable: bool,
         change_solution: StopCriteria,
-        criteria,
+        acceptance_criteria,
     ):
         """
         Initializes the GenericMultipleMetaheuristic.
@@ -36,7 +36,7 @@ class GenericMultipleMetaheuristic(MetaHeuristic):
         :param change_solution: Criteria to change the solution.
         :param criteria: Acceptance criteria for new solutions.
         """
-        super().__init__(thread_id, stop, evaluator, criteria, meta_heuristics)
+        super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, None, meta_heuristics)
         self.solution_pool = pool
         self.mhs = [
             [None for _ in range(num_threads)] for _ in range(len(meta_heuristics))
@@ -66,7 +66,7 @@ class GenericMultipleMetaheuristic(MetaHeuristic):
         solutions[thread_id] = curr_sol
 
     def run(self, sol: Solution) -> Solution:
-        solutions_current = (
+        solutions_current: List[Optional[Solution]]= (
             [sol.copy() for _ in range(self.num_threads)]
             if sol
             else [None] * self.num_threads
@@ -76,7 +76,7 @@ class GenericMultipleMetaheuristic(MetaHeuristic):
         self.stop_criteria.set_progress_report(0.1)
         threads_not_finished = set()
 
-        while not self.stop_on_evaluations(best_eval):
+        while not self.stop_on_evaluations([best_eval]):
             self.change_solution_criteria.reset()
 
             for m in range(len(self.meta_heuristics_used)):

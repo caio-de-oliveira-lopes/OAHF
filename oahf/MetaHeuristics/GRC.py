@@ -22,10 +22,10 @@ class GRC(MetaHeuristic):
         self,
         thread_id: int,
         greediness: float,
-        stop: StopCriteria,
+        stop_criteria: StopCriteria,
         evaluator: Evaluator,
-        ns: NeighborhoodSelection,
-        criteria: AcceptanceCriteria,
+        criteria: AcceptanceCriteria,        
+        ns: Optional[NeighborhoodSelection],
     ) -> None:
         """Initialize the GRC meta-heuristic.
 
@@ -37,7 +37,11 @@ class GRC(MetaHeuristic):
             ns (NeighborhoodSelection): The neighborhood selection strategy.
             criteria (AcceptanceCriteria): The acceptance criteria for solutions.
         """
-        super().__init__(thread_id, stop, evaluator, ns, criteria)
+        
+        if not ns:
+            raise ValueError("GRC must have a neighborhood selection method.")
+        
+        super().__init__(thread_id, stop_criteria, evaluator, criteria, ns)
         self.greediness = greediness
         self.original_greediness = greediness
 
@@ -55,8 +59,8 @@ class GRC(MetaHeuristic):
             self.greediness,
             self.stop_criteria.copy(),
             self.evaluator,
-            self.neighborhood_selection.copy(),
-            self.acceptance_criteria.copy(),
+            self.acceptance_criteria.copy(),            
+            self.neighborhood_selection.copy() if self.neighborhood_selection else None,
         )
 
     def run(self, sol: Solution) -> Optional[Solution]:
@@ -71,6 +75,9 @@ class GRC(MetaHeuristic):
         curr_sol = sol.copy() if sol is not None else sol
         best_eval = self.evaluator.evaluate(sol)
 
+        if not self.neighborhood_selection:
+            raise ValueError("GRC must have a neighborhood selection method.")
+        
         ns = self.neighborhood_selection.get_next(self.thread_id)
         improved = False
 
@@ -91,7 +98,7 @@ class GRC(MetaHeuristic):
                     if not all_moves:
                         break  # no moves available
 
-                    num_chosen = max(1, int(len(all_moves) * self.greediness))
+                    num_chosen = max(1, int(len(all_moves) *  (1 - self.greediness)))
                     ordered_moves = sorted(all_moves, key=lambda x: x.get_cost())[
                         :num_chosen
                     ]
@@ -106,7 +113,7 @@ class GRC(MetaHeuristic):
 
                     while ordered_moves and not self.stop_on_evaluations([best_eval]):
                         self.stop_criteria.increment_counter()
-                        move = ordered_moves.pop()  # Get the last (least desirable)
+                        move = ordered_moves.pop()
                         worked = move.apply_operation()
 
                         if worked:

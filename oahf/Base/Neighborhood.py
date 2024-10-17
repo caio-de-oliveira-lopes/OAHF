@@ -11,7 +11,7 @@ from oahf.Utils.Util import Util
 
 class Neighborhood:
     def __init__(
-        self, stop_criteria: "StopCriteria", is_perturbation: bool = False
+        self, stop_criteria: Optional["StopCriteria"] = None, is_perturbation: bool = False
     ) -> None:
         """
         Initializes the Neighborhood object with the specified stop criteria and perturbation flag.
@@ -22,7 +22,7 @@ class Neighborhood:
         """
         super().__init__()
         self.report: "EfficiencyReport" = EfficiencyReport(type(self).__name__)
-        self.stop_criteria: "StopCriteria" = stop_criteria
+        self.stop_criteria: Optional["StopCriteria"] = stop_criteria
         self.is_perturbation: bool = is_perturbation
 
     def copy(self) -> "Neighborhood":
@@ -106,6 +106,6 @@ class Neighborhood:
         """Returns the constraints associated with the efficiency report."""
         return self.report.get_constraints()
 
-    def set_stop_criteria(self, stop: "StopCriteria") -> None:
+    def set_stop_criteria(self, stop: Optional["StopCriteria"]) -> None:
         """Sets the stopping criteria for the neighborhood."""
         self.stop_criteria = stop

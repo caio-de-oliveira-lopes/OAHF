@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-from JsonFormatter import JsonFormatter
+from oahf.Logger.JsonFormatter import JsonFormatter
 
 from oahf.Base.Entity import Entity
 

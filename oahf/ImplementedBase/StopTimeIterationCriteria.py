@@ -12,7 +12,8 @@ class StopTimeIterationCriteria(StopCriteria):
         Initializes a StopTimeIterationCriteria instance.
         :param seconds: The maximum time allowed for the process in seconds.
         :param iterations: The maximum number of iterations.
-        """
+        """        
+        super().__init__()
         self.sw_start = time.time()
         self.milliseconds = int(seconds * 1000) if seconds is not None else None
         self.counter = 0
@@ -26,6 +27,10 @@ class StopTimeIterationCriteria(StopCriteria):
             iterations=self.max_iterations,
         )
 
+    @property
+    def seconds(self) -> Optional[float]:
+        return self.milliseconds / 1000 if self.milliseconds else None
+
     def set_progress_report(self, perc_counter: float) -> None:
         """Sets the progress report based on the current percentage counter."""
         if self.max_iterations is not None:
@@ -34,7 +39,7 @@ class StopTimeIterationCriteria(StopCriteria):
 
     def print_progress_report(self) -> None:
         """Prints the progress report if conditions are met."""
-        if self.progress_report and (
+        if self._progress_report and (
             self.max_iterations is not None
             and self.counter
             % (

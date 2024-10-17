@@ -3,7 +3,8 @@ from oahf.Base.Solution import Solution
 from oahf.Logger.LogManager import LogManager
 from enum import Enum, auto
 from oahf.Utils import EnumUtil
-import math
+import numpy as np
+import copy
 
 class GraphOrientation(Enum):
     FORWARD = auto()
@@ -14,7 +15,7 @@ class MaxPositionalWeightType(Enum):
     MIN = auto()
     AVERAGE = auto()
     
-class ALWABP(Solution):
+class AlwabpSolution(Solution):
     def __init__(self, number_of_tasks: int, number_of_workers: int, number_of_stations: int) -> None:
         """
         Initializes the ALWABP problem with the given number of tasks, workers, and stations.
@@ -30,29 +31,28 @@ class ALWABP(Solution):
         self.stations: List[int] = [(s + 1) for s in range(number_of_stations)]  # List of stations [1, 2, ..., number_of_stations]
 
         # Dictionary where key = task, value = list of execution times for each worker (can have float('inf') values)
-        self.task_execution_times: Dict[int, List[float]] = {task: [] for task in self.tasks}
+        self._task_execution_times: Dict[int, List[float]] = {task: [float('inf') for _ in range(number_of_workers)] for task in self.tasks}
+        self._bounded_task_execution_times: Dict[int, List[float]] = copy.deepcopy(self._task_execution_times)
 
         # Dictionary where key = station, value = worker assigned to that station
         self.station_worker_assignment: Dict[int, Optional[int]] = {station: None for station in self.stations}  # Which worker is assigned to each station
         
-        # Dictionary where key = worker, value = list of tasks assigned to that worker
-        self.worker_tasks_assignment: Dict[int, List[int]] = {worker: [] for worker in self.workers}
+        # Dictionary where key = worker, value = station assigned to that station
+        self.worker_station_assignment: Dict[int, Optional[int]] = {worker: None for worker in self.workers}  # Which station is assigned to each worker
         
-        self.unassigned_workers: List[int] = list(self.workers)
-        self.unassigned_tasks: List[int] = list(self.tasks)
+        # Dictionary where key = worker, value = list of tasks assigned to that worker
+        self.station_tasks_assignment: Dict[int, List[int]] = {station: [] for station in self.stations}
+        
+        self.__unassigned_workers: List[int] = list(self.workers)
+        self.__unassigned_tasks: List[int] = list(self.tasks)
         
         # Dictionary where key = GraphOrientation (Forward or Backward), than key = task, value = list of tasks that must precede (be allocated before) the key task
         self.immediate_task_precedences: Dict[GraphOrientation, Dict[int, List[int]]] = {graph_orientation: {task: [] for task in self.tasks} # type: ignore
                                                                                for graph_orientation in EnumUtil.get_values(GraphOrientation)}
-        
         # Initialize an empty dictionary to store the results for each worker
-        self.tasks_executed_by_worker: Dict[int, List[int]] = {}
-
-        # Iterate over each worker and retrieve their executed tasks
-        for worker in self.workers:
-            self.tasks_executed_by_worker[worker] = self.get_tasks_executed_by_worker(worker)
+        self.tasks_executed_by_worker: Dict[int, List[int]] = {worker: [] for worker in self.workers}
             
-        self.cycle_time_limit: Optional[float] = None
+        self._cycle_time_limit: Optional[float] = None
 
         # Similar structure to self.immediate_task_precedences, needs to call 'process_graph_data' to fill it
         self.all_task_precedences: Dict[GraphOrientation, Dict[int, List[int]]] = {graph_orientation: {task: [] for task in self.tasks} # type: ignore
@@ -61,9 +61,66 @@ class ALWABP(Solution):
         self.max_positional_weight: Dict[MaxPositionalWeightType, Dict[int, float]] = {positional_weight_type: {task: -1 for task in self.tasks} # type: ignore
                                                                                for positional_weight_type in EnumUtil.get_values(MaxPositionalWeightType)}
 
+    def copy(self) -> "AlwabpSolution":
+        """
+        Creates a copy of the current solution.
+
+        Returns:
+            ALWABP: A new instance of the ALWABP solution with the same data.
+        """
+        # Deep copy to avoid common reference
+        new_copy = AlwabpSolution(len(self.tasks), len(self.workers), len(self.stations))
+        new_copy._task_execution_times = copy.deepcopy(self._task_execution_times)    
+        new_copy._bounded_task_execution_times = copy.deepcopy(self._bounded_task_execution_times)
+        new_copy.station_worker_assignment = copy.deepcopy(self.station_worker_assignment) 
+        new_copy.worker_station_assignment = copy.deepcopy(self.worker_station_assignment) 
+        new_copy.station_tasks_assignment = copy.deepcopy(self.station_tasks_assignment) 
+        new_copy.__unassigned_workers = copy.deepcopy(self.__unassigned_workers)
+        new_copy.__unassigned_tasks = copy.deepcopy(self.__unassigned_tasks)
+        new_copy.immediate_task_precedences = copy.deepcopy(self.immediate_task_precedences)
+        new_copy.tasks_executed_by_worker = copy.deepcopy(self.tasks_executed_by_worker)
+        new_copy.all_task_precedences = copy.deepcopy(self.all_task_precedences)
+        new_copy.max_positional_weight = copy.deepcopy(self.max_positional_weight)
+        
+        # Basic types do not need deep copy
+        new_copy._cycle_time_limit = self._cycle_time_limit
+        
+        return new_copy
+    
     def process_graph_data(self) -> None:
-        self.__fill_all_task_precedences()
-        self.__calculate_max_positional_weights()
+        self._update_tasks_executed_by_worker()
+        self._fill_all_task_precedences()
+        self._calculate_max_positional_weights()
+        
+    def _update_tasks_executed_by_worker(self) -> None:
+        self.tasks_executed_by_worker: Dict[int, List[int]] = {worker: self.get_tasks_executed_by_worker(worker) for worker in self.workers}
+    
+    @property
+    def unassigned_workers(self):
+        return self.__unassigned_workers
+    
+    @property
+    def cycle_time_limit(self) -> Optional[float]:
+        return self._cycle_time_limit
+    
+    @cycle_time_limit.setter
+    def cycle_time_limit(self, value: float) -> None:
+        self._cycle_time_limit = value        
+        self._update_bounded_task_execution_times()
+        self._calculate_max_positional_weights()
+            
+    def _update_bounded_task_execution_times(self) -> None:
+        self._bounded_task_execution_times = copy.deepcopy(self._task_execution_times)
+        
+        if self._cycle_time_limit:
+            for task in self.tasks:
+                float_array = np.array(self._bounded_task_execution_times[task]) # Convert the list to a NumPy array for vectorized operations
+                float_array[float_array == np.inf] = self._cycle_time_limit + 1 # Replace float('inf')
+                self._bounded_task_execution_times[task] = float_array.tolist()
+    
+    @property
+    def unassigned_tasks(self):
+        return self.__unassigned_tasks
         
     def set_task_execution_times(self, task_number: int, execution_times: List[float]) -> None:
         """
@@ -83,22 +140,9 @@ class ALWABP(Solution):
             raise ValueError(f"Execution times must be provided for all {len(self.workers)} workers.")
 
         # Set the execution times for the task
-        self.task_execution_times[task_number] = execution_times
+        self._task_execution_times[task_number] = execution_times
 
-    def copy(self) -> "ALWABP":
-        """
-        Creates a copy of the current solution.
-
-        Returns:
-            ALWABP: A new instance of the ALWABP solution with the same data.
-        """
-        new_copy = ALWABP(len(self.tasks), len(self.workers), len(self.stations))
-        new_copy.task_execution_times = {task: times[:] for task, times in self.task_execution_times.items()}
-        new_copy.station_worker_assignment = self.station_worker_assignment.copy()
-        new_copy.worker_tasks_assignment = {worker: tasks[:] for worker, tasks in self.worker_tasks_assignment.items()}
-        return new_copy
-
-    def decompose_solution(self, k: int) -> Optional[List["ALWABP"]]:
+    def decompose_solution(self, k: int) -> Optional[List["AlwabpSolution"]]:
         """
         Decomposes the solution into smaller parts (not implemented).
 
@@ -110,7 +154,7 @@ class ALWABP(Solution):
         """
         raise NotImplementedError("Decomposition is not supported for this problem.")
 
-    def merge_solutions(self, solutions: List["ALWABP"]) -> "ALWABP":
+    def merge_solutions(self, solutions: List["AlwabpSolution"]) -> "AlwabpSolution":
         """
         Merges multiple solutions into one (not implemented).
 
@@ -133,7 +177,7 @@ class ALWABP(Solution):
             tuple(self.tasks), 
             tuple(self.workers), 
             tuple(self.stations),
-            frozenset((task, tuple(times)) for task, times in self.task_execution_times.items()),
+            frozenset((task, tuple(times)) for task, times in self._task_execution_times.items()),
             frozenset((station, worker) for station, worker in self.station_worker_assignment.items())
         ))
 
@@ -155,7 +199,7 @@ class ALWABP(Solution):
             result.append(f"  Station {station}:")
             worker = self.station_worker_assignment.get(station, None)
             if worker is not None:
-                tasks_str = ", ".join(map(str, self.worker_tasks_assignment[worker]))
+                tasks_str = ", ".join(map(str, self.station_tasks_assignment[station]))
                 result.append(f"    Worker {worker}: Tasks -> [{tasks_str}]")
 
         return "\n".join(result)
@@ -172,8 +216,7 @@ class ALWABP(Solution):
         """
         total_time = 0
         worker = self.station_worker_assignment.get(station, None)
-        if worker is not None:
-            total_time += sum(self.task_execution_times[task][worker - 1] for task in self.worker_tasks_assignment[worker])
+        total_time += sum(self.get_task_execution_time(task, worker) for task in self.station_tasks_assignment[station])
         return total_time
 
     def get_max_cycle_time(self) -> float:
@@ -203,7 +246,7 @@ class ALWABP(Solution):
         """
         return self.get_max_cycle_time() - self.get_min_cycle_time()
 
-    def solution_diff(self, other: "ALWABP") -> float:
+    def solution_diff(self, other: "AlwabpSolution") -> float:
         """
         Calculates the difference between this solution and another based on idle time.
 
@@ -213,7 +256,7 @@ class ALWABP(Solution):
         Returns:
             float: The difference in idle time between the two solutions.
         """
-        if not isinstance(other, ALWABP):
+        if not isinstance(other, AlwabpSolution):
             raise TypeError("The other solution must be of type ALWABP.")
         
         idle_time_self = self.get_idle_time()
@@ -230,10 +273,10 @@ class ALWABP(Solution):
         """
         unassigned_workers = []
         for worker in self.workers:
-            if not self.worker_tasks_assignment[worker]:  # No tasks assigned to this worker
+            if not self.station_worker_assignment.values():
                 unassigned_workers.append(worker)
                 
-        self.unassigned_workers = unassigned_workers
+        self.__unassigned_workers = unassigned_workers
 
     def __update_unassigned_tasks(self) -> None:
         """
@@ -243,37 +286,58 @@ class ALWABP(Solution):
             List[int]: A list of task IDs that are currently unassigned.
         """
         assigned_tasks = set(
-            task for worker_tasks in self.worker_tasks_assignment.values() 
-            for task in worker_tasks
+            task for station_tasks in self.station_tasks_assignment.values() 
+            for task in station_tasks
         )
         
-        self.unassigned_tasks = [task for task in self.tasks if task not in assigned_tasks]
+        self.__unassigned_tasks = [task for task in self.tasks if task not in assigned_tasks]
         
-    def add_precedence(self, task_u: int, task_v: int, graph_orientation: GraphOrientation = GraphOrientation.FORWARD) -> bool:
+    def add_precedence(self, task_u: int, task_v: int, graph_orientation: Optional[GraphOrientation] = None) -> bool:
         """
         Adds a precedence relation indicating that task_u must be allocated before task_v.
     
         Args:
             task_u (int): The task that must precede.
             task_v (int): The task that must come after.
+            graph_orientation (Optional[GraphOrientation]): Optional value to set graph orientation, if not set, both ways will be set. 
+            The parameters will be set as FORWARD and reversed to set BACKWARD.
     
         Returns:
             bool: True if the precedence relation was successfully added, False if it already exists.
         """
-        try:
-            if task_u not in self.immediate_task_precedences:
-                self.immediate_task_precedences[graph_orientation][task_u] = []
+        task_1: int = task_u
+        task_2: int = task_v
+        orientations: List[GraphOrientation] = []
+        success: bool = False
+        
+        if graph_orientation is None:
+            orientations = EnumUtil.get_values(GraphOrientation) # type: ignore
+        else:
+            orientations.append(graph_orientation)
+            
+        for orientation in orientations:
+            if graph_orientation is None:
+                if orientation is GraphOrientation.FORWARD:
+                    task_1 = task_u
+                    task_2 = task_v
+                else:
+                    task_1 = task_v
+                    task_2 = task_u
+            try:
+                if task_2 not in self.immediate_task_precedences[orientation]:
+                    self.immediate_task_precedences[orientation][task_2] = []
 
-            # Add task_v to the list of tasks that must come after task_u
-            if task_u not in self.immediate_task_precedences[graph_orientation][task_v]:
-                self.immediate_task_precedences[graph_orientation][task_v].append(task_u)
-                return True
-            else:
-                LogManager.invalid_action("add duplicated precedence between tasks {task_u} and {task_v}", self.name)
-                return False
-        except Exception as e:
-            LogManager.invalid_action("add precedence between tasks {task_u} and {task_v}", self.name, e)
-            return False
+                # Add task_2 to the list of tasks that must come after task_1
+                if task_1 not in self.immediate_task_precedences[orientation][task_2]:
+                    self.immediate_task_precedences[orientation][task_2].append(task_1)
+                    success = True
+                else:
+                    LogManager.invalid_action("add duplicated precedence between tasks {task_1} and {task_2}", self.name)
+            except Exception as e:
+                LogManager.invalid_action("add precedence between tasks {task_1} and {task_2}", self.name, e)
+                
+        return success
+        
         
     def __calculate_all_precedences(self, task: int, graph_orientation: GraphOrientation = GraphOrientation.FORWARD) -> List[int]:
         """
@@ -304,15 +368,15 @@ class ALWABP(Solution):
         # Start DFS from the given task
         dfs(task)
     
-        return precedences
+        return sorted(precedences)
     
-    def __fill_all_task_precedences(self) -> None:
+    def _fill_all_task_precedences(self) -> None:
         """
         Fills the `all_task_precedences` dictionary with all precedences (both immediate and transitive)
         for every task in both forward and backward graph orientations.
         """
         for graph_orientation in EnumUtil.get_values(GraphOrientation):
-            if graph_orientation is GraphOrientation:
+            if isinstance(graph_orientation, GraphOrientation):
                 for task in self.tasks:
                     # Calculate all precedences for the current task and graph orientation
                     all_precedences = self.__calculate_all_precedences(task, graph_orientation)
@@ -338,7 +402,7 @@ class ALWABP(Solution):
         tasks_executed = []
     
         # Iterate through all tasks to check if the worker can execute them
-        for task, execution_times in self.task_execution_times.items():
+        for task, execution_times in self._task_execution_times.items():
             # Check if the worker has a valid execution time for the task
             if execution_times[worker - 1] != float('inf'):  # worker - 1 for index adjustment
                 tasks_executed.append(task)
@@ -359,6 +423,7 @@ class ALWABP(Solution):
         try:
             if self.station_worker_assignment.get(station) != worker:
                 self.station_worker_assignment[station] = worker
+                self.worker_station_assignment[worker] = station
                 return True
             else:
                 LogManager.invalid_action("add worker to station, it was already assigned to it", self.name)
@@ -380,13 +445,60 @@ class ALWABP(Solution):
         """
         try:
             if self.station_worker_assignment.get(station) == worker:
-                self.station_worker_assignment[station] = None  # Remove the worker
+                self.station_worker_assignment[station] = None
+                self.worker_station_assignment[worker] = None
                 return True
             else:
                 LogManager.invalid_action("remove worker from station, it wasn't assigned to it", self.name)
                 return False
         except Exception as e:
             LogManager.invalid_action("remove worker from station", self.name, e)
+            return False
+
+    def add_task_to_station(self, task: int, station: int) -> bool:
+        """
+        Add a task to a specific station, if not already assigned to it.
+
+        Args:
+            task (int): The task to be added.
+            station (int): The station from which the task will be added.
+
+        Returns:
+            bool: True if the task was successfully added, False otherwise.
+        """
+        try:
+            if task not in self.station_tasks_assignment.get(station, []):
+                self.station_tasks_assignment[station].append(task)
+                self.__unassigned_tasks.remove(task)
+                return True
+            else:
+                LogManager.invalid_action("add task to station, it was already assigned to it", self.name)
+                return False
+        except Exception as e:
+            LogManager.invalid_action("add task to worker", self.name, e)
+            return False
+        
+    def remove_task_from_station(self, task: int, station: int) -> bool:
+        """
+        Removes a task from a specific station by removing the task from their assignment.
+
+        Args:
+            task (int): The task to be removed.
+            station (int): The station from which the task will be removed.
+
+        Returns:
+            bool: True if the task was successfully removed, False otherwise.
+        """
+        try:
+            if task in self.station_tasks_assignment.get(station, []):
+                self.station_tasks_assignment[station].remove(task)  # Remove the task from the station's list
+                self.__unassigned_tasks.append(task)
+                return True
+            else:
+                LogManager.invalid_action("remove task from station, it wasn't assigned to it", self.name)
+                return False
+        except Exception as e:
+            LogManager.invalid_action("remove task from worker", self.name, e)
             return False
         
     def add_task_to_worker(self, task: int, worker: int) -> bool:
@@ -401,11 +513,11 @@ class ALWABP(Solution):
             bool: True if the task was successfully added, False otherwise.
         """
         try:
-            if task not in self.worker_tasks_assignment.get(worker, []):
-                self.worker_tasks_assignment[worker].append(task)
-                return True
+            station = self.worker_station_assignment[worker]
+            if station:
+                return self.add_task_to_station(task, station)
             else:
-                LogManager.invalid_action("add task to worker, it was already assigned to it", self.name)
+                LogManager.invalid_action("add task to worker, worker was not assigned to a station", self.name)
                 return False
         except Exception as e:
             LogManager.invalid_action("add task to worker", self.name, e)
@@ -423,11 +535,11 @@ class ALWABP(Solution):
             bool: True if the task was successfully removed, False otherwise.
         """
         try:
-            if task in self.worker_tasks_assignment.get(worker, []):
-                self.worker_tasks_assignment[worker].remove(task)  # Remove the task from the worker's list
-                return True
+            station = self.worker_station_assignment[worker]
+            if station:
+                return self.remove_task_from_station(task, station)
             else:
-                LogManager.invalid_action("remove task from worker, it wasn't assigned to it", self.name)
+                LogManager.invalid_action("remove task from worker, worker was not assigned to a station", self.name)
                 return False
         except Exception as e:
             LogManager.invalid_action("remove task from worker", self.name, e)
@@ -444,12 +556,9 @@ class ALWABP(Solution):
             Optional[int]: The station ID where the task is assigned, or None if the task is not assigned to any station.
         """
         # Iterate through workers to find the task
-        for worker, tasks in self.worker_tasks_assignment.items():
+        for station, tasks in self.station_tasks_assignment.items():
             if task in tasks:
-                # Once the worker is found, look up the station
-                for station, assigned_worker in self.station_worker_assignment.items():
-                    if assigned_worker == worker:
-                        return station
+                return station
         
         # If the task is not found in any worker's tasks, return None
         return None
@@ -464,10 +573,7 @@ class ALWABP(Solution):
         Returns:
             Optional[int]: The station ID where the worker is allocated, or None if the worker is not allocated to any station.
         """
-        for station, assigned_worker in self.station_worker_assignment.items():
-            if worker == assigned_worker:
-                return station
-        return None
+        return self.worker_station_assignment[worker]
     
     def get_available_tasks_to_assign_to_worker(self, worker: int) -> List[int]:
         station = self.find_station_for_worker(worker)
@@ -485,8 +591,8 @@ class ALWABP(Solution):
         """
         available_tasks_to_assign: List[int] = []
 
-        for unassigned_task in self.unassigned_tasks:
-            if any(preceding_task in self.unassigned_tasks for preceding_task in self.immediate_task_precedences[graph_orientation][unassigned_task]):
+        for unassigned_task in self.__unassigned_tasks:
+            if any(preceding_task in self.__unassigned_tasks for preceding_task in self.immediate_task_precedences[graph_orientation][unassigned_task]):
                 continue
             available_tasks_to_assign.append(unassigned_task)
     
@@ -501,32 +607,12 @@ class ALWABP(Solution):
 
         return [task for task in available_tasks_to_assign if task not in unassigned_tasks_to_remove]
     
-    def __apply_upper_bound_to_task_times(self, task: int) -> List[float]:
-        """
-        Adjusts the task execution times by applying an upper bound limit if defined.
-    
-        If a cycle time limit is specified, this function replaces any infinite execution 
-        time values (`math.inf`) in the task's execution times with the defined cycle time limit.
-        If no cycle time limit is set, it filters out any infinite execution times and returns 
-        only finite values.
-    
-        Args:
-            task (int): The index of the task whose execution times are to be processed.
-    
-        Returns:
-            List[float]: A list of execution times with the upper bound applied, or 
-            infinite times filtered out if no cycle time limit is defined.
-        """
-        #if self.cycle_time_limit:
-        #    # Replace 'inf' with cycle time limit if it is defined
-        #    upper_bound = [self.cycle_time_limit if x == math.inf else x for x in self.task_execution_times[task]]
-            
-        # Filter out 'inf' values if no cycle time limit is defined
-        upper_bound = [x for x in self.task_execution_times[task] if x != math.inf]
-    
-        return upper_bound
+    def get_task_execution_time(self, task: int, worker: Optional[int] = None) -> float:
+        if worker and task in self.get_tasks_executed_by_worker(worker):
+            return self._task_execution_times[task][worker]
+        else:
+            return max(self._bounded_task_execution_times[task])
 
-    
     def max_task_execution_time(self, task: int) -> float:
         """
         Calculates the maximum execution time for task.
@@ -537,7 +623,7 @@ class ALWABP(Solution):
         Returns:
             float: The maximum task execution time.
         """
-        return max(self.__apply_upper_bound_to_task_times(task))
+        return max(self._bounded_task_execution_times[task])
     
     def min_task_execution_time(self, task: int) -> float:
         """
@@ -550,7 +636,7 @@ class ALWABP(Solution):
             float: The minimum task execution time.
         """
         
-        return min(self.__apply_upper_bound_to_task_times(task))
+        return min(self._bounded_task_execution_times[task])
     
     def average_task_execution_time(self, task: int) -> float:
         """
@@ -562,7 +648,7 @@ class ALWABP(Solution):
         Returns:
             float: The average task execution time.
         """
-        applied_upper_bound = self.__apply_upper_bound_to_task_times(task)
+        applied_upper_bound = self._bounded_task_execution_times[task]
         number_of_workers = max(1, len(applied_upper_bound))
         return sum(applied_upper_bound)/number_of_workers
     
@@ -586,7 +672,7 @@ class ALWABP(Solution):
         else:
             return self.average_task_execution_time
 
-    def __calculate_max_positional_weights(self) -> None:
+    def _calculate_max_positional_weights(self) -> None:
         """
         Calculate and store the maximum positional weights for each task based on 
         the different types of positional weights (MAX, MIN, AVERAGE).
@@ -602,13 +688,13 @@ class ALWABP(Solution):
         for task in self.tasks:
             for positional_weight_type in EnumUtil.get_values(MaxPositionalWeightType):
                 # Check if positional_weight_type is of the right type
-                if positional_weight_type is MaxPositionalWeightType:
+                if isinstance(positional_weight_type, MaxPositionalWeightType):
                     # Get the function for the current positional weight type
                     weight_function = self.__get_func_for_max_positional_weight(positional_weight_type)
                     # Call the returned function with `task` as the argument
                     self.max_positional_weight[positional_weight_type][task] = weight_function(task)
                     
-    def get_max_positional_weight(self, task: int, variation: MaxPositionalWeightType) -> float:
+    def get_max_positional_weight_value(self, task: int, variation: MaxPositionalWeightType) -> float:
         """
         Retrieve the maximum positional weight for a given task and variation.
 
@@ -625,6 +711,20 @@ class ALWABP(Solution):
         # Attempt to retrieve the positional weight from the max_positional_weight dictionary.
         # If the weight is not set, it is assumed to be -1 (indicating an error or absence of value).
         return self.max_positional_weight[variation][task]
+    
+    def get_max_positional_weight_list(self, variation: MaxPositionalWeightType) -> List[float]:
+        """
+        Retrieve the maximum positional weight for a given variation.
 
+        Args:
+            variation (MaxPositionalWeightType): The type of positional weight variation 
+            (e.g., MAX, MIN, AVERAGE) to be used in the lookup.
+
+        Returns:
+            List[float]: The list of maximum positional weights associated with the specified variation.
+        """
+        # Attempt to retrieve the positional weight from the max_positional_weight dictionary.
+        # If the weight is not set, it is assumed to be -1 (indicating an error or absence of value).
+        return list(self.max_positional_weight[variation])
 
             

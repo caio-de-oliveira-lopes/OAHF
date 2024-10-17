@@ -16,7 +16,7 @@ class Entity(ABC):
         # Increment the class-level counter for the ID
         with Entity._lock:
             if entity_id is None:
-                Entity._instance_counter += 1
+                Entity._instance_counter -= 1
                 self.__id = Entity._instance_counter
             else:
                 self.__id = entity_id

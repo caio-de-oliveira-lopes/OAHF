@@ -1,27 +1,30 @@
 from oahf.Base.Neighborhood import Neighborhood
 from oahf.Base.Solution import Solution
-from oahf.ImplementedBase.ALWABP import ALWABP
+from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 from oahf.Base.ThreadManager import ThreadManager
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.Movement import Movement
 from abc import ABC
 from typing import Iterator, Optional
 from oahf.Logger.LogManager import LogManager
-from oahf.ImplementedBase.ALWABPInsertOrderMove import ALWABPInsertOrderMove
+from oahf.ImplementedBase.AlwabpInsertOrderMove import AlwabpInsertOrderMove
+from oahf.ImplementedBase.AlwabpSolution import MaxPositionalWeightType
 
-class ALWABPInsertOrderNS(Neighborhood, ABC):
-    def __init__(self, stop_criteria: StopCriteria, kseed: int = 0):
-        super().__init__(stop_criteria)
+class AlwabpInsertOrderNS(Neighborhood, ABC):
+    def __init__(self, max_positional_weight_type: MaxPositionalWeightType, station: int, greediness: float = 0, stop_criteria: Optional[StopCriteria] = None):
+        super().__init__(stop_criteria, False)
         self.enumerator: Optional[Iterator[Movement]] = None
-        self.solution: Optional[ALWABP] = None
+        self.solution: Optional[AlwabpSolution] = None
+        self.station: Optional[int] = station
+        self.max_positional_weight_type = max_positional_weight_type
         self.thread_id: int = 0
-        self.kseed: int = kseed
         self.cost_function = None
+        self.greediness: float = greediness
 
-    def build_neighborhood(self, thread_id: int, solution: ALWABP) -> bool:
-        self.enumerator = self.all_moves()
+    def build_neighborhood(self, thread_id: int, solution: AlwabpSolution) -> bool:
         self.solution = solution
         self.thread_id = thread_id
+        self.enumerator = self.all_moves()
         return True
 
     def get_move(self) -> Optional[Movement]:
@@ -34,21 +37,27 @@ class ALWABPInsertOrderNS(Neighborhood, ABC):
 
     def all_moves(self) -> Iterator[Movement]:
         # Generate movements based on ALWABP context
-        # This part should be updated based on how ALWABP assigns tasks to workers, etc.
-        # For now, it contains a placeholder for task assignments.
-        if self.solution:
-            for worker in self.solution.unassigned_workers:
-                for task in self.solution.get_available_tasks_to_assign_to_worker(worker):
-                    # Generate insertion movements based on some logic (order, worker capability, etc.)
-                    move = ALWABPInsertOrderMove(task, worker, self.solution, self.report)
+        if self.solution and self.station:
+            # Strategy for threshold
+            max_positional_weight_list = self.solution.get_max_positional_weight_list(self.max_positional_weight_type)
+            c_min = min(max_positional_weight_list)
+            c_max = max(max_positional_weight_list)
+            threshold_value = c_min + ((1 - self.greediness)*(c_max - c_min))
+            
+            lcr = [task for task in self.solution.unassigned_tasks 
+                   if self.solution.get_max_positional_weight_value(task, self.max_positional_weight_type) 
+                   <= threshold_value]
+            
+            for task in lcr:
+                move = AlwabpInsertOrderMove(task, None, self.station, self.solution, self.report)
                 
-                    # Assuming some cost evaluation function might be added here for ALWABP
-                    if self.cost_function:
-                        move.override_cost += self.cost_function(move)
+                # Assuming some cost evaluation function might be added here for ALWABP
+                if self.cost_function:
+                    move.override_cost += self.cost_function(move)
                 
-                    yield move
+                yield move
         else:
             LogManager.invalid_action("generate movements", type(self).__name__)
 
-    def copy(self) -> 'ALWABPInsertOrderNS':
-        return ALWABPInsertOrderNS(self.stop_criteria.copy(), self.kseed)
+    def copy(self) -> 'AlwabpInsertOrderNS':
+        return AlwabpInsertOrderNS(self.max_positional_weight_type, self.stop_criteria.copy() if self.stop_criteria else None)
