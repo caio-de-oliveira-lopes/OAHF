@@ -2,13 +2,18 @@ import os
 
 from oahf.Base import Solution
 from oahf.Base.ThreadManager import ThreadManager
+from oahf.ImplementedBase.AlwabpWorkerInsertOrderNS import AlwabpWorkerInsertOrderNS
+from oahf.ImplementedBase.CompleteAssignmentStopCriteria import CompleteAssignmentStopCriteria
 from oahf.ImplementedBase.MaxCycleTimeConstraint import MaxCycleTimeConstraint
 from oahf.ImplementedBase.AlwabpEvaluator import AlwabpEvaluator
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution, MaxPositionalWeightType
-from oahf.ImplementedBase.AlwabpInsertOrderNS import AlwabpInsertOrderNS
+from oahf.ImplementedBase.AlwabpTaskInsertOrderNS import AlwabpTaskInsertOrderNS
 from oahf.ImplementedBase.BetterOrSameAcceptanceCriteria import BetterOrSameAcceptanceCriteria
 from oahf.ImplementedBase.ListSelection import ListSelection
+from oahf.ImplementedBase.MultipleStopCriteria import MultipleStopCriteria
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
+from oahf.ImplementedBase.StopNoImprovement import StopNoImprovement
+from oahf.ImplementedBase.WorkersUnassignedStopCriteria import WorkersUnassignedStopCriteria
 from oahf.MetaHeuristics.GRC import GRC
 from oahf.Utils import EnumUtil, Util
 from typing import Optional, Type
@@ -36,28 +41,28 @@ def main():
         pw = positional_weight_types[thread]
         if not isinstance(pw, MaxPositionalWeightType): continue
         
-        stop_criteria = StopTimeIterationCriteria(iterations = len(solution.tasks))
         evaluator = AlwabpEvaluator(True, MaxCycleTimeConstraint())
         acceptance_criteria = BetterOrSameAcceptanceCriteria()
         
-        solution.cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(cycle_time_path, file_name) - 1
+        solution.cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(cycle_time_path, file_name)
         
         for station in solution.stations:
-            ns = ListSelection(False, AlwabpInsertOrderNS(pw, station, greediness, stop_criteria))
-            constructed_solution1: Optional[Solution] = None
+            stop_criteria = MultipleStopCriteria(True, WorkersUnassignedStopCriteria(len(solution.unassigned_workers)), StopNoImprovement(len(solution.unassigned_workers)))
+            ns = ListSelection(False, AlwabpTaskInsertOrderNS(pw, station, True, greediness, None), AlwabpWorkerInsertOrderNS(station, True, greediness, None))
+            constructed_solution: Optional[AlwabpSolution] = None
             
-            while not constructed_solution1:
-                solution.cycle_time_limit += 1
-                grc = GRC(thread, greediness, stop_criteria, evaluator, acceptance_criteria, ns)
-                constructed_solution1 = grc.run(solution)
-                
-            constructed_solution2: Optional[Solution] = None
-            if constructed_solution2:
-                while not constructed_solution2:
-                
-
+            while not constructed_solution:
+                grc = GRC(thread, greediness, stop_criteria, evaluator, acceptance_criteria, ns, True)
+                sol = grc.run(solution)
+                constructed_solution = sol if isinstance(sol, AlwabpSolution) else None
+                if constructed_solution:
+                    if solution == constructed_solution:  
+                        solution.cycle_time_limit += 1 # type: ignore
+                        constructed_solution = None
+                    else:
+                        solution = constructed_solution
             
-        print(constructed_solution1)
+        print(constructed_solution)
 
 
 def create_init_files(root_dir):

@@ -1,4 +1,4 @@
-from typing import Iterator, List
+from typing import Iterator, List, Optional
 
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Evaluator import Evaluator
@@ -17,7 +17,7 @@ class ElitePool(Pool):
         super().__init__()
         self._list: List[Solution] = []
         self.limit = limit_size
-        self.worst_evaluation: Evaluation = None
+        self.worst_evaluation: Optional[Evaluation] = None
         self.worst_sol_index: int = 0
         self.evaluator = evaluator
 

@@ -10,19 +10,24 @@ from oahf.Logger.LogManager import LogManager
 from oahf.ImplementedBase.AlwabpInsertOrderMove import AlwabpInsertOrderMove
 from oahf.ImplementedBase.AlwabpSolution import MaxPositionalWeightType
 
-class AlwabpInsertOrderNS(Neighborhood, ABC):
-    def __init__(self, max_positional_weight_type: MaxPositionalWeightType, station: int, greediness: float = 0, stop_criteria: Optional[StopCriteria] = None):
+class AlwabpWorkerInsertOrderNS(Neighborhood, ABC):
+    def __init__(self, station: int, change_station: bool = True, greediness: float = 0, stop_criteria: Optional[StopCriteria] = None):
         super().__init__(stop_criteria, False)
         self.enumerator: Optional[Iterator[Movement]] = None
         self.solution: Optional[AlwabpSolution] = None
-        self.station: Optional[int] = station
-        self.max_positional_weight_type = max_positional_weight_type
+        self.station: int = station
+        self.change_station: bool = change_station
         self.thread_id: int = 0
         self.cost_function = None
         self.greediness: float = greediness
 
     def build_neighborhood(self, thread_id: int, solution: AlwabpSolution) -> bool:
         self.solution = solution
+        
+        if self.change_station:
+            station = self.solution.get_first_unassigned_station()
+            self.station = station if station else self.station
+            
         self.thread_id = thread_id
         self.enumerator = self.all_moves()
         return True
@@ -37,19 +42,12 @@ class AlwabpInsertOrderNS(Neighborhood, ABC):
 
     def all_moves(self) -> Iterator[Movement]:
         # Generate movements based on ALWABP context
-        if self.solution and self.station:
+        if self.solution:
             # Strategy for threshold
-            max_positional_weight_list = self.solution.get_max_positional_weight_list(self.max_positional_weight_type)
-            c_min = min(max_positional_weight_list)
-            c_max = max(max_positional_weight_list)
-            threshold_value = c_min + ((1 - self.greediness)*(c_max - c_min))
+            workers = self.solution.get_min_restricted_lower_bound()
             
-            lcr = [task for task in self.solution.unassigned_tasks 
-                   if self.solution.get_max_positional_weight_value(task, self.max_positional_weight_type) 
-                   <= threshold_value]
-            
-            for task in lcr:
-                move = AlwabpInsertOrderMove(task, None, self.station, self.solution, self.report)
+            for worker in workers:
+                move = AlwabpInsertOrderMove(None, worker, self.station, self.solution, self.report)
                 
                 # Assuming some cost evaluation function might be added here for ALWABP
                 if self.cost_function:
@@ -59,5 +57,5 @@ class AlwabpInsertOrderNS(Neighborhood, ABC):
         else:
             LogManager.invalid_action("generate movements", type(self).__name__)
 
-    def copy(self) -> 'AlwabpInsertOrderNS':
-        return AlwabpInsertOrderNS(self.max_positional_weight_type, self.stop_criteria.copy() if self.stop_criteria else None)
+    def copy(self) -> 'AlwabpWorkerInsertOrderNS':
+        return AlwabpWorkerInsertOrderNS(self.station, self.greediness, self.stop_criteria.copy() if self.stop_criteria else None)

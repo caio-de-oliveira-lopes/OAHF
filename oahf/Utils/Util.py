@@ -9,11 +9,11 @@ from oahf.Logger.Logger import Logger
 
 
 class Util:
-    _eps: ClassVar[float] = 1e-5
+    _eps: ClassVar[float] = 1e-3
     _threads: ClassVar[int] = multiprocessing.cpu_count() - 1
     _logger: ClassVar[Optional[Logger]] = None
 
-    @property
+    @classmethod
     def eps(cls) -> float:
         """
         Returns the numerical precision value (epsilon).

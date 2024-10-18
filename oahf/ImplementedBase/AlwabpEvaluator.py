@@ -20,4 +20,5 @@ class AlwabpEvaluator(Evaluator):
         :return: An Evaluation object.
         """
         from oahf.ImplementedBase.AlwabpEvaluation import AlwabpEvaluation
-        return AlwabpEvaluation((constraint.evaluate(sol) for constraint in self._constraints), sol.get_max_cycle_time())
+        return AlwabpEvaluation((constraint.evaluate(sol) for constraint in self._constraints), 
+                                sol.get_max_cycle_time(), len(sol.unassigned_tasks), len(sol.unassigned_workers))

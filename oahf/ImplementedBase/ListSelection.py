@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 from oahf.Base.Neighborhood import Neighborhood
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
@@ -25,7 +25,7 @@ class ListSelection(NeighborhoodSelection):
         """Returns all neighborhoods."""
         return self.neighborhoods
 
-    def get_next(self, thread_id: int) -> Neighborhood:
+    def get_next(self, thread_id: int) -> Optional[Neighborhood]:
         """Returns the next neighborhood, cycling if necessary."""
         try:
             return next(self.enumerator)
@@ -34,7 +34,7 @@ class ListSelection(NeighborhoodSelection):
                 self.reset(thread_id)
                 return next(self.enumerator)
             else:
-                raise
+                return None
 
     def reset(self, thread_id: int) -> None:
         """Resets the enumerator."""

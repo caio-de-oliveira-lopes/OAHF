@@ -8,6 +8,8 @@ from oahf.Base.StopCriteria import StopCriteria
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
 
+from typing import Optional
+
 
 class CrossOver(Entity, ABC):
     def __init__(self, stop_criteria: "StopCriteria") -> None:
@@ -31,7 +33,7 @@ class CrossOver(Entity, ABC):
         """Performs the crossover operation between two solutions."""
         pass
 
-    def cross_operation(self, sol1: "Solution", sol2: "Solution") -> "Solution":
+    def cross_operation(self, sol1: "Solution", sol2: "Solution") -> Optional["Solution"]:
         """
         Executes the crossover operation if the stopping criteria are not met.
 

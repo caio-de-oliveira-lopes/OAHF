@@ -15,7 +15,7 @@ class MaxCycleTimeConstraint(Constraint):
         """        
         from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
         if isinstance(solution, AlwabpSolution):
-            penalty = sum(solution.get_task_execution_time(task) for task in solution.unassigned_tasks)
+            penalty = sum(solution.get_task_execution_time(task) + 1 for task in solution.unassigned_tasks)
             if solution.cycle_time_limit and solution.get_max_cycle_time() > solution.cycle_time_limit:
                 return self.infeasible_evaluation(penalty)
             else:

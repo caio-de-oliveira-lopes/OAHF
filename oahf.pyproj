@@ -54,10 +54,13 @@
     <Compile Include="oahf\Base\ThreadManager.py" />
     <Compile Include="oahf\Base\__init__.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpInsertOrderMove.py" />
-    <Compile Include="oahf\ImplementedBase\AlwabpInsertOrderNS.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpSolution.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpEvaluator.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpEvaluation.py" />
+    <Compile Include="oahf\ImplementedBase\AlwabpTaskInsertOrderNS.py" />
+    <Compile Include="oahf\ImplementedBase\AlwabpWorkerInsertOrderNS.py" />
+    <Compile Include="oahf\ImplementedBase\MultipleStopCriteria.py" />
+    <Compile Include="oahf\ImplementedBase\WorkersUnassignedStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeConstraint.py" />
     <Compile Include="oahf\ImplementedBase\SimulatedAnnealing.py" />
     <Compile Include="oahf\ImplementedBase\ListPool.py" />
@@ -66,10 +69,10 @@
     <Compile Include="oahf\ImplementedBase\ListSelection.py" />
     <Compile Include="oahf\ImplementedBase\ProbabilityListSelection.py" />
     <Compile Include="oahf\ImplementedBase\RandomListSelection.py" />
+    <Compile Include="oahf\ImplementedBase\CompleteAssignmentStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\StopTimeIterationCriteria.py" />
     <Compile Include="oahf\ImplementedBase\StopNoImprovement.py" />
     <Compile Include="oahf\ImplementedBase\ThresholdAcceptance.py" />
-    <Compile Include="oahf\ImplementedBase\BetterUnknownAcceptance.py" />
     <Compile Include="oahf\ImplementedBase\BetterOrSameAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\BetterAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\__init__.py" />

@@ -1,4 +1,5 @@
 from typing import List, Optional
+from oahf.Base import Neighborhood
 
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
@@ -25,7 +26,8 @@ class GRC(MetaHeuristic):
         stop_criteria: StopCriteria,
         evaluator: Evaluator,
         criteria: AcceptanceCriteria,        
-        ns: Optional[NeighborhoodSelection],
+        ns: NeighborhoodSelection,
+        multiple_neighborhoods = False
     ) -> None:
         """Initialize the GRC meta-heuristic.
 
@@ -38,12 +40,10 @@ class GRC(MetaHeuristic):
             criteria (AcceptanceCriteria): The acceptance criteria for solutions.
         """
         
-        if not ns:
-            raise ValueError("GRC must have a neighborhood selection method.")
-        
         super().__init__(thread_id, stop_criteria, evaluator, criteria, ns)
         self.greediness = greediness
         self.original_greediness = greediness
+        self.multiple_neighborhoods = multiple_neighborhoods
 
     def copy(self, thread: int) -> "GRC":
         """Creates a copy of the GRC instance.
@@ -60,31 +60,29 @@ class GRC(MetaHeuristic):
             self.stop_criteria.copy(),
             self.evaluator,
             self.acceptance_criteria.copy(),            
-            self.neighborhood_selection.copy() if self.neighborhood_selection else None,
+            self.neighborhood_selection.copy(),
+            self.multiple_neighborhoods
         )
 
-    def run(self, sol: Solution) -> Optional[Solution]:
+    def run(self, sol: Solution) -> Solution:
         """Executes the GRC meta-heuristic.
 
         Args:
-            sol (Optional[Solution]): The initial solution, which can be None.
+            sol (Solution): The initial solution, which can be None.
 
         Returns:
-            Optional[Solution]: The best solution found during execution.
+            Solution: The best solution found during execution.
         """
         curr_sol = sol.copy() if sol is not None else sol
         best_eval = self.evaluator.evaluate(sol)
-
-        if not self.neighborhood_selection:
-            raise ValueError("GRC must have a neighborhood selection method.")
         
-        ns = self.neighborhood_selection.get_next(self.thread_id)
+        ns: Optional[Neighborhood] = self.neighborhood_selection.get_next(self.thread_id)
         improved = False
 
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
 
-        while not self.stop_on_evaluations([best_eval]):
+        while ns:
             try:
                 build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
                 improved = False
@@ -96,7 +94,11 @@ class GRC(MetaHeuristic):
                         move = ns.get_move_operation()
 
                     if not all_moves:
-                        break  # no moves available
+                        if self.multiple_neighborhoods:
+                            ns = self.change_ns(ns)
+                            continue
+                        else:
+                            break  # no moves and no ns available
 
                     num_chosen = max(1, int(len(all_moves) *  (1 - self.greediness)))
                     ordered_moves = sorted(all_moves, key=lambda x: x.get_cost())[
@@ -131,17 +133,29 @@ class GRC(MetaHeuristic):
                                 break
                             else:
                                 move.unapply_operation(curr_eval)
-
-                    if self.greediness > 0.99999 and not improved:
-                        break  # No improvement found even with greediness set to 1
-                    elif not improved:
-                        self.original_greediness = self.greediness
-                        self.greediness = 1
+                                
+                    if self.stop_on_evaluations([best_eval]):
+                        if self.multiple_neighborhoods:
+                            ns = self.change_ns(ns)
+                            continue
+                        else:
+                            break
                 else:
-                    break  # fail on building NS
+                    if self.multiple_neighborhoods:
+                        ns = self.change_ns(ns)
+                        continue
+                    else:
+                        break  # fail on building NS
 
             except Exception as ex:
                 LogManager.something_went_wrong(str(ns), ex)
                 raise
 
         return curr_sol
+
+    def change_ns(self, ns: Optional[Neighborhood]) -> Optional[Neighborhood]:
+        if ns:
+            self.neighborhood_selection.remove(ns)
+        ns = self.neighborhood_selection.get_next(self.thread_id)
+        self.stop_criteria.reset()
+        return ns

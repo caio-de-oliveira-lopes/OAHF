@@ -26,12 +26,18 @@ class AlwabpInsertOrderMove(Movement):
         if self.task and self.station:
             return self.solution.add_task_to_station(self.task, self.station)
             
+        if self.worker and self.station:
+            return self.solution.add_worker_to_station(self.worker, self.station)
+        
         return True
 
     def unapply(self) -> bool:
         # Implement logic to revert the movement in the ALWABP solution
         if self.task and self.station:
             return self.solution.remove_task_from_station(self.task, self.station)
+
+        if self.worker and self.station:
+            return self.solution.remove_worker_from_station(self.worker, self.station)
         
         return True
 

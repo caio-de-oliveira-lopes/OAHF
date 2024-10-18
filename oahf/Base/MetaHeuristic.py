@@ -42,12 +42,12 @@ class MetaHeuristic(Entity, ABC):
         stop_criteria: "StopCriteria",
         evaluator: "Evaluator",
         acceptance_criteria: "AcceptanceCriteria",        
-        neighborhood_selection: Optional["NeighborhoodSelection"] = None,
+        neighborhood_selection: "NeighborhoodSelection",
         meta_heuristics_used: List["MetaHeuristic"] = [],
     ):
 
         super().__init__()
-        self.neighborhood_selection: Optional["NeighborhoodSelection"] = neighborhood_selection
+        self.neighborhood_selection: "NeighborhoodSelection" = neighborhood_selection
         self.evaluator: "Evaluator" = evaluator
         self.thread_id: int = thread_id
         self.stop_criteria: "StopCriteria" = stop_criteria

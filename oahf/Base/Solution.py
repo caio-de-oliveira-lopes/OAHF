@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from oahf.Base.Entity import Entity
 
@@ -66,3 +66,18 @@ class Solution(Entity, ABC):
             str: A string that represents the solution.
         """
         pass
+    
+    def __eq__(self, obj: "Solution") -> bool:
+        """
+        Overrides the equality comparison method to compare solutions based on their solution hash.
+        Supports comparison between instances of the same class or its subclasses.
+
+        Args:
+            obj (Solution): The other solution to compare against.
+
+        Returns:
+            bool: True if both objects have the same type (including subclasses) and same solution hash, False otherwise.
+        """
+        if isinstance(obj, self.__class__):
+            return self.solution_hash() == obj.solution_hash()
+        return False

@@ -18,7 +18,7 @@ class BetterAcceptanceCriteria(AcceptanceCriteria):
         """
         return next_eval.better_than(curr_eval)
 
-    def copy(self) -> Type[AcceptanceCriteria]:
+    def copy(self) -> "BetterAcceptanceCriteria":
         """
         Returns a new instance of BetterAcceptanceCriteria.
         :return: A new BetterAcceptanceCriteria instance.

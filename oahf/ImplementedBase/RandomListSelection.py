@@ -42,11 +42,11 @@ class RandomListSelection(NeighborhoodSelection):
         """
         if not self.randomized:
             self.reset(thread_id)
-        worked = self.enumerator.move_next()
+        worked = next(self.enumerator)
         if not worked and self.circular:
             self.reset(thread_id)
-            worked = self.enumerator.move_next()
-        return self.enumerator.current
+            worked = next(self.enumerator)
+        return worked
 
     def reset(self, thread_id: int) -> None:
         """

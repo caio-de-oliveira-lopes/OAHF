@@ -43,8 +43,8 @@ class AlwabpSolution(Solution):
         # Dictionary where key = worker, value = list of tasks assigned to that worker
         self.station_tasks_assignment: Dict[int, List[int]] = {station: [] for station in self.stations}
         
-        self.__unassigned_workers: List[int] = list(self.workers)
-        self.__unassigned_tasks: List[int] = list(self.tasks)
+        self._unassigned_workers: List[int] = list(self.workers)
+        self._unassigned_tasks: List[int] = list(self.tasks)
         
         # Dictionary where key = GraphOrientation (Forward or Backward), than key = task, value = list of tasks that must precede (be allocated before) the key task
         self.immediate_task_precedences: Dict[GraphOrientation, Dict[int, List[int]]] = {graph_orientation: {task: [] for task in self.tasks} # type: ignore
@@ -75,8 +75,8 @@ class AlwabpSolution(Solution):
         new_copy.station_worker_assignment = copy.deepcopy(self.station_worker_assignment) 
         new_copy.worker_station_assignment = copy.deepcopy(self.worker_station_assignment) 
         new_copy.station_tasks_assignment = copy.deepcopy(self.station_tasks_assignment) 
-        new_copy.__unassigned_workers = copy.deepcopy(self.__unassigned_workers)
-        new_copy.__unassigned_tasks = copy.deepcopy(self.__unassigned_tasks)
+        new_copy._unassigned_workers = copy.deepcopy(self._unassigned_workers)
+        new_copy._unassigned_tasks = copy.deepcopy(self._unassigned_tasks)
         new_copy.immediate_task_precedences = copy.deepcopy(self.immediate_task_precedences)
         new_copy.tasks_executed_by_worker = copy.deepcopy(self.tasks_executed_by_worker)
         new_copy.all_task_precedences = copy.deepcopy(self.all_task_precedences)
@@ -97,7 +97,7 @@ class AlwabpSolution(Solution):
     
     @property
     def unassigned_workers(self):
-        return self.__unassigned_workers
+        return self._unassigned_workers
     
     @property
     def cycle_time_limit(self) -> Optional[float]:
@@ -120,7 +120,7 @@ class AlwabpSolution(Solution):
     
     @property
     def unassigned_tasks(self):
-        return self.__unassigned_tasks
+        return self._unassigned_tasks
         
     def set_task_execution_times(self, task_number: int, execution_times: List[float]) -> None:
         """
@@ -168,16 +168,13 @@ class AlwabpSolution(Solution):
 
     def solution_hash(self) -> int:
         """
-        Generates a hash for the solution based on tasks, workers, stations, and assignments.
+        Generates a hash for the solution based on assignments.
 
         Returns:
             int: The hash value of the solution.
         """
         return hash((
-            tuple(self.tasks), 
-            tuple(self.workers), 
-            tuple(self.stations),
-            frozenset((task, tuple(times)) for task, times in self._task_execution_times.items()),
+            frozenset((station, tuple(tasks)) for station, tasks in self.station_tasks_assignment.items()),
             frozenset((station, worker) for station, worker in self.station_worker_assignment.items())
         ))
 
@@ -264,7 +261,7 @@ class AlwabpSolution(Solution):
 
         return idle_time_self - idle_time_other
 
-    def __update_unassigned_workers(self) -> None:
+    def _update_unassigned_workers(self) -> None:
         """
         Retrieves a list of workers that have not been assigned any tasks.
 
@@ -276,9 +273,9 @@ class AlwabpSolution(Solution):
             if not self.station_worker_assignment.values():
                 unassigned_workers.append(worker)
                 
-        self.__unassigned_workers = unassigned_workers
+        self._unassigned_workers = unassigned_workers
 
-    def __update_unassigned_tasks(self) -> None:
+    def _update_unassigned_tasks(self) -> None:
         """
         Retrieves a list of tasks that have not been assigned to any worker.
 
@@ -290,7 +287,7 @@ class AlwabpSolution(Solution):
             for task in station_tasks
         )
         
-        self.__unassigned_tasks = [task for task in self.tasks if task not in assigned_tasks]
+        self._unassigned_tasks = [task for task in self.tasks if task not in assigned_tasks]
         
     def add_precedence(self, task_u: int, task_v: int, graph_orientation: Optional[GraphOrientation] = None) -> bool:
         """
@@ -339,7 +336,7 @@ class AlwabpSolution(Solution):
         return success
         
         
-    def __calculate_all_precedences(self, task: int, graph_orientation: GraphOrientation = GraphOrientation.FORWARD) -> List[int]:
+    def _calculate_all_precedences(self, task: int, graph_orientation: GraphOrientation = GraphOrientation.FORWARD) -> List[int]:
         """
         Calculates all precedences for the given task, including both immediate and transitive precedences.
     
@@ -379,7 +376,7 @@ class AlwabpSolution(Solution):
             if isinstance(graph_orientation, GraphOrientation):
                 for task in self.tasks:
                     # Calculate all precedences for the current task and graph orientation
-                    all_precedences = self.__calculate_all_precedences(task, graph_orientation)
+                    all_precedences = self._calculate_all_precedences(task, graph_orientation)
                     # Fill the dictionary with the result
                     self.all_task_precedences[graph_orientation][task] = all_precedences
 
@@ -424,6 +421,7 @@ class AlwabpSolution(Solution):
             if self.station_worker_assignment.get(station) != worker:
                 self.station_worker_assignment[station] = worker
                 self.worker_station_assignment[worker] = station
+                self.unassigned_workers.remove(worker)
                 return True
             else:
                 LogManager.invalid_action("add worker to station, it was already assigned to it", self.name)
@@ -446,7 +444,8 @@ class AlwabpSolution(Solution):
         try:
             if self.station_worker_assignment.get(station) == worker:
                 self.station_worker_assignment[station] = None
-                self.worker_station_assignment[worker] = None
+                self.worker_station_assignment[worker] = None                
+                self.unassigned_workers.append(worker)
                 return True
             else:
                 LogManager.invalid_action("remove worker from station, it wasn't assigned to it", self.name)
@@ -469,7 +468,7 @@ class AlwabpSolution(Solution):
         try:
             if task not in self.station_tasks_assignment.get(station, []):
                 self.station_tasks_assignment[station].append(task)
-                self.__unassigned_tasks.remove(task)
+                self._unassigned_tasks.remove(task)
                 return True
             else:
                 LogManager.invalid_action("add task to station, it was already assigned to it", self.name)
@@ -492,7 +491,7 @@ class AlwabpSolution(Solution):
         try:
             if task in self.station_tasks_assignment.get(station, []):
                 self.station_tasks_assignment[station].remove(task)  # Remove the task from the station's list
-                self.__unassigned_tasks.append(task)
+                self._unassigned_tasks.append(task)
                 return True
             else:
                 LogManager.invalid_action("remove task from station, it wasn't assigned to it", self.name)
@@ -591,8 +590,8 @@ class AlwabpSolution(Solution):
         """
         available_tasks_to_assign: List[int] = []
 
-        for unassigned_task in self.__unassigned_tasks:
-            if any(preceding_task in self.__unassigned_tasks for preceding_task in self.immediate_task_precedences[graph_orientation][unassigned_task]):
+        for unassigned_task in self._unassigned_tasks:
+            if any(preceding_task in self._unassigned_tasks for preceding_task in self.immediate_task_precedences[graph_orientation][unassigned_task]):
                 continue
             available_tasks_to_assign.append(unassigned_task)
     
@@ -609,48 +608,67 @@ class AlwabpSolution(Solution):
     
     def get_task_execution_time(self, task: int, worker: Optional[int] = None) -> float:
         if worker and task in self.get_tasks_executed_by_worker(worker):
-            return self._task_execution_times[task][worker]
+            return self._task_execution_times[task][worker - 1]
         else:
             return max(self._bounded_task_execution_times[task])
 
-    def max_task_execution_time(self, task: int) -> float:
+    def max_task_execution_time(self, task: int, workers: Optional[List[int]] = None) -> float:
         """
-        Calculates the maximum execution time for task.
+        Calculates the maximum execution time for a task, considering only the workers specified.
 
         Args:
             task (int): The task ID for which to calculate the maximum task execution time.
+            workers (Optional[List[int]]): A list of worker indices to consider. If None, consider all workers.
 
         Returns:
-            float: The maximum task execution time.
+            float: The maximum task execution time among the specified workers.
         """
-        return max(self._bounded_task_execution_times[task])
+        task_times = self._bounded_task_execution_times[task]
     
-    def min_task_execution_time(self, task: int) -> float:
+        if workers:
+            # Consider only task times for the specified workers' indices
+            task_times = [task_times[worker - 1] for worker in sorted(workers)]
+    
+        return max(task_times)
+
+    def min_task_execution_time(self, task: int, workers: Optional[List[int]] = None) -> float:
         """
-        Calculates the minimum execution time for task.
+        Calculates the minimum execution time for a task, considering only the workers specified.
 
         Args:
             task (int): The task ID for which to calculate the minimum task execution time.
+            workers (Optional[List[int]]): A list of worker indices to consider. If None, consider all workers.
 
         Returns:
-            float: The minimum task execution time.
+            float: The minimum task execution time among the specified workers.
         """
-        
-        return min(self._bounded_task_execution_times[task])
+        task_times = self._bounded_task_execution_times[task]
     
-    def average_task_execution_time(self, task: int) -> float:
+        if workers:
+            # Consider only task times for the specified workers' indices
+            task_times = [task_times[worker - 1] for worker in sorted(workers)]
+    
+        return min(task_times)
+
+    def average_task_execution_time(self, task: int, workers: Optional[List[int]] = None) -> float:
         """
-        Calculates the average execution time for task.
+        Calculates the average execution time for a task, considering only the workers specified.
 
         Args:
             task (int): The task ID for which to calculate the average task execution time.
+            workers (Optional[List[int]]): A list of worker indices to consider. If None, consider all workers.
 
         Returns:
-            float: The average task execution time.
+            float: The average task execution time among the specified workers.
         """
-        applied_upper_bound = self._bounded_task_execution_times[task]
-        number_of_workers = max(1, len(applied_upper_bound))
-        return sum(applied_upper_bound)/number_of_workers
+        task_times = self._bounded_task_execution_times[task]
+    
+        if workers:
+            # Consider only task times for the specified workers' indices
+            task_times = [task_times[worker - 1] for worker in sorted(workers)]
+    
+        number_of_workers = max(1, len(task_times))
+        return sum(task_times) / number_of_workers
     
     def __get_func_for_max_positional_weight(self, positional_weight_type: MaxPositionalWeightType) -> Callable[[int], float]:
         """
@@ -727,4 +745,56 @@ class AlwabpSolution(Solution):
         # If the weight is not set, it is assumed to be -1 (indicating an error or absence of value).
         return list(self.max_positional_weight[variation])
 
-            
+    def get_min_restricted_lower_bound(self) -> List[int]:
+        """
+        Orders the list of unassigned workers based on their minimum restricted lower bound (RLB).
+        This function returns a new list and does not modify the original unassigned_workers list.
+
+        Returns:
+            List[int]: A new list of unassigned worker IDs sorted by their minimum RLB.
+        """
+        return sorted(self.unassigned_workers, key=lambda worker: self.get_worker_min_rlb(worker))
+
+    def get_worker_min_rlb(self, worker: int) -> int:
+        """
+        Calculates the minimum restricted lower bound (RLB) for a worker. This RLB is the total minimum 
+        execution time of all tasks that the worker could be assigned, divided among other unassigned workers.
+
+        Args:
+            worker (int): The worker ID for whom to calculate the minimum RLB.
+
+        Returns:
+            int: The minimum restricted lower bound for the worker.
+        """
+        # If there's only one unassigned worker, return 0 as there's no other worker to assign tasks to
+        if len(self.unassigned_workers) == 1:
+            return 0
+
+        # Get the tasks that the worker can still be assigned (i.e., tasks that are unassigned)
+        pending_assignable_tasks = [task for task in self.tasks_executed_by_worker[worker] if task in self.unassigned_tasks]
+    
+        # Copy the unassigned workers list and remove the current worker from it
+        other_unassigned_workers = self.unassigned_workers.copy()
+        other_unassigned_workers.remove(worker)
+    
+        amount_of_time: int = 0
+    
+        # For each task that can be assigned to the worker, add the minimum task execution time
+        # for that task considering the other unassigned workers
+        for task in pending_assignable_tasks:
+            amount_of_time += int(self.min_task_execution_time(task, other_unassigned_workers))
+    
+        # Return the total amount of time divided by the number of remaining unassigned workers
+        return amount_of_time // len(other_unassigned_workers)
+    
+    def get_first_unassigned_station(self) -> Optional[int]:
+        """
+        Returns the first station key where the worker assignment is None.
+
+        Returns:
+            Optional[int]: The station key where the worker is not assigned (None) or None if all are assigned.
+        """
+        for station, worker in self.station_worker_assignment.items():
+            if worker is None:
+                return station
+        return None  # Return None if no unassigned station is found
