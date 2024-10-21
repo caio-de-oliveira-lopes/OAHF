@@ -59,7 +59,7 @@ class Solution(Entity, ABC):
         pass
 
     @abstractmethod
-    def solution_string_representation(self) -> str:
+    def __str__(self) -> str:
         """Gets a string representation of the solution.
 
         Returns:

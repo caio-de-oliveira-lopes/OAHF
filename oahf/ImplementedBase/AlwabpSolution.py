@@ -178,7 +178,7 @@ class AlwabpSolution(Solution):
             frozenset((station, worker) for station, worker in self.station_worker_assignment.items())
         ))
 
-    def solution_string_representation(self) -> str:
+    def __str__(self) -> str:
         """
         Gets a string representation of the solution, focusing on the task allocations per station and its assigned worker.
 
@@ -199,6 +199,7 @@ class AlwabpSolution(Solution):
                 tasks_str = ", ".join(map(str, self.station_tasks_assignment[station]))
                 result.append(f"    Worker {worker}: Tasks -> [{tasks_str}]")
 
+        result.append(f"Unassigned Tasks: {", ".join(map(str, self.unassigned_tasks))}")
         return "\n".join(result)
 
     def calculate_cycle_time(self, station: int) -> float:
@@ -743,7 +744,7 @@ class AlwabpSolution(Solution):
         """
         # Attempt to retrieve the positional weight from the max_positional_weight dictionary.
         # If the weight is not set, it is assumed to be -1 (indicating an error or absence of value).
-        return list(self.max_positional_weight[variation])
+        return list(self.max_positional_weight[variation].values())
 
     def get_min_restricted_lower_bound(self) -> List[int]:
         """
@@ -798,3 +799,43 @@ class AlwabpSolution(Solution):
             if worker is None:
                 return station
         return None  # Return None if no unassigned station is found
+    
+    def station_would_be_feasible(self, station: int, worker: int) -> bool:
+        """
+        Checks if a worker can feasibly execute all tasks assigned to a given station.
+    
+        The function first verifies if the worker can execute all the tasks assigned to the specified station. 
+        If a cycle time limit is set, it also checks if the total execution time of the tasks 
+        falls within the cycle time limit.
+
+        Parameters:
+        station (int): The index of the station being checked.
+        worker (int): The index of the worker being evaluated.
+
+        Returns:
+        bool: True if the worker can execute all tasks and the total execution time is within the cycle time limit (if set), 
+              False otherwise.
+        """
+        tasks = self.station_tasks_assignment[station]
+        executable_tasks = self.get_tasks_executed_by_worker(worker)
+
+        for task in tasks:
+            if task not in executable_tasks:
+                return False
+    
+        if self.cycle_time_limit is not None:
+            total_execution_time = sum(self.get_task_execution_time(task, worker) for task in tasks)
+            if total_execution_time > self.cycle_time_limit:
+                return False
+    
+        return True
+    
+    def get_open_stations(self) -> List[int]:
+        """
+        Returns a list of stations where no worker is currently assigned.
+
+        Returns:
+        list: A list of station identifiers where the assigned worker is None.
+        """
+        return [station for station, worker in self.station_worker_assignment.items() if worker is None]
+

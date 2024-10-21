@@ -58,4 +58,4 @@ class AlwabpWorkerInsertOrderNS(Neighborhood, ABC):
             LogManager.invalid_action("generate movements", type(self).__name__)
 
     def copy(self) -> 'AlwabpWorkerInsertOrderNS':
-        return AlwabpWorkerInsertOrderNS(self.station, self.greediness, self.stop_criteria.copy() if self.stop_criteria else None)
+        return AlwabpWorkerInsertOrderNS(self.station, self.change_station, self.greediness, self.stop_criteria.copy() if self.stop_criteria else None)

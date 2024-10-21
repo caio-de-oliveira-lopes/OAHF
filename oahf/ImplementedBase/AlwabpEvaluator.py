@@ -5,7 +5,7 @@ from oahf.Base.Evaluation import Evaluation
 
 
 class AlwabpEvaluator(Evaluator):
-    def __init__(self, stop_on_first: bool, *constraints: "Constraint"):
+    def __init__(self, stop_on_first: bool = True, *constraints: "Constraint"):
         """
         Initializes an AlwabpEvaluator with the option to stop on the first infeasibility.
         :param stop_on_first: Boolean indicating whether to stop on first infeasibility.

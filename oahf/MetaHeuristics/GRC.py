@@ -27,7 +27,7 @@ class GRC(MetaHeuristic):
         evaluator: Evaluator,
         criteria: AcceptanceCriteria,        
         ns: NeighborhoodSelection,
-        multiple_neighborhoods = False
+        order_moves = False
     ) -> None:
         """Initialize the GRC meta-heuristic.
 
@@ -43,7 +43,7 @@ class GRC(MetaHeuristic):
         super().__init__(thread_id, stop_criteria, evaluator, criteria, ns)
         self.greediness = greediness
         self.original_greediness = greediness
-        self.multiple_neighborhoods = multiple_neighborhoods
+        self.order_moves = order_moves
 
     def copy(self, thread: int) -> "GRC":
         """Creates a copy of the GRC instance.
@@ -61,7 +61,7 @@ class GRC(MetaHeuristic):
             self.evaluator,
             self.acceptance_criteria.copy(),            
             self.neighborhood_selection.copy(),
-            self.multiple_neighborhoods
+            self.order_moves
         )
 
     def run(self, sol: Solution) -> Solution:
@@ -82,7 +82,7 @@ class GRC(MetaHeuristic):
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
 
-        while ns:
+        while ns and not self.stop_on_evaluations([best_eval]):
             try:
                 build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
                 improved = False
@@ -94,24 +94,21 @@ class GRC(MetaHeuristic):
                         move = ns.get_move_operation()
 
                     if not all_moves:
-                        if self.multiple_neighborhoods:
-                            ns = self.change_ns(ns)
-                            continue
-                        else:
-                            break  # no moves and no ns available
+                        break  # no moves and no ns available
 
                     num_chosen = max(1, int(len(all_moves) *  (1 - self.greediness)))
                     ordered_moves = sorted(all_moves, key=lambda x: x.get_cost())[
                         :num_chosen
                     ]
-                    ordered_moves.sort(
-                        key=lambda x: (
-                            x.get_cost()
-                            if self.greediness > 0.9999
-                            else ThreadManager.get_next_double(self.thread_id)
-                        ),
-                        reverse=True,
-                    )
+                    if self.order_moves:
+                        ordered_moves.sort(
+                            key=lambda x: (
+                                x.get_cost()
+                                if self.greediness > 0.9999
+                                else ThreadManager.get_next_double(self.thread_id)
+                            ),
+                            reverse=True,
+                        )
 
                     while ordered_moves and not self.stop_on_evaluations([best_eval]):
                         self.stop_criteria.increment_counter()
@@ -133,19 +130,8 @@ class GRC(MetaHeuristic):
                                 break
                             else:
                                 move.unapply_operation(curr_eval)
-                                
-                    if self.stop_on_evaluations([best_eval]):
-                        if self.multiple_neighborhoods:
-                            ns = self.change_ns(ns)
-                            continue
-                        else:
-                            break
                 else:
-                    if self.multiple_neighborhoods:
-                        ns = self.change_ns(ns)
-                        continue
-                    else:
-                        break  # fail on building NS
+                    break  # fail on building NS
 
             except Exception as ex:
                 LogManager.something_went_wrong(str(ns), ex)

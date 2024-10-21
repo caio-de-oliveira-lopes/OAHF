@@ -4,11 +4,13 @@ from .AlwabpInsertOrderMove import AlwabpInsertOrderMove
 from .AlwabpSolution import AlwabpSolution
 from .AlwabpTaskInsertOrderNS import AlwabpTaskInsertOrderNS
 from .AlwabpWorkerInsertOrderNS import AlwabpWorkerInsertOrderNS
+from .AlwaysAcceptAcceptanceCriteria import AlwaysAcceptAcceptanceCriteria
 from .BetterAcceptanceCriteria import BetterAcceptanceCriteria
 from .BetterOrSameAcceptanceCriteria import BetterOrSameAcceptanceCriteria
 from .CompleteAssignmentStopCriteria import CompleteAssignmentStopCriteria
 from .EliteDiversePool import EliteDiversePool
 from .ElitePool import ElitePool
+from .ExecutedByAvailableWorkersAcceptanceCriteria import ExecutedByAvailableWorkersAcceptanceCriteria
 from .ListPool import ListPool
 from .ListSelection import ListSelection
 from .MaxCycleTimeConstraint import MaxCycleTimeConstraint
@@ -28,11 +30,13 @@ __all__ = [
     "AlwabpSolution",
     "AlwabpTaskInsertOrderNS",
     "AlwabpWorkerInsertOrderNS",
+    "AlwaysAcceptAcceptanceCriteria",
     "BetterAcceptanceCriteria",
     "BetterOrSameAcceptanceCriteria",
     "CompleteAssignmentStopCriteria",
     "EliteDiversePool",
     "ElitePool",
+    "ExecutedByAvailableWorkersAcceptanceCriteria",
     "ListPool",
     "ListSelection",
     "MaxCycleTimeConstraint",

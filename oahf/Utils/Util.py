@@ -92,7 +92,7 @@ class Util:
             pass
 
     @classmethod
-    def read_ALWABP_input(cls, input_file: Path) -> Optional["ALWABP"]:
+    def read_ALWABP_input(cls, input_file: Path) -> Optional["AlwabpSolution"]:
         """
         Reads ALWABP input file and returns an ALWABP instance.
         """

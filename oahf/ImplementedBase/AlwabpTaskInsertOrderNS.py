@@ -9,17 +9,19 @@ from typing import Iterator, Optional
 from oahf.Logger.LogManager import LogManager
 from oahf.ImplementedBase.AlwabpInsertOrderMove import AlwabpInsertOrderMove
 from oahf.ImplementedBase.AlwabpSolution import MaxPositionalWeightType
+from oahf.ImplementedBase.AlwabpSolution import GraphOrientation
 
 class AlwabpTaskInsertOrderNS(Neighborhood, ABC):
-    def __init__(self, max_positional_weight_type: MaxPositionalWeightType, station: int, change_station: bool = True, greediness: float = 0, stop_criteria: Optional[StopCriteria] = None):
+    def __init__(self, max_positional_weight_type: MaxPositionalWeightType, graph_orientation: GraphOrientation, station: int, change_station: bool = True, greediness: float = 0, stop_criteria: Optional[StopCriteria] = None):
         super().__init__(stop_criteria, False)
         self.enumerator: Optional[Iterator[Movement]] = None
-        self.solution: Optional[AlwabpSolution] = None
-        self.station: int = station
-        self.change_station: bool = change_station
-        self.max_positional_weight_type = max_positional_weight_type
+        self.solution: Optional[AlwabpSolution] = None        
         self.thread_id: int = 0
         self.cost_function = None
+        self.max_positional_weight_type = max_positional_weight_type
+        self.graph_orientation = graph_orientation
+        self.station: int = station
+        self.change_station: bool = change_station
         self.greediness: float = greediness
 
     def build_neighborhood(self, thread_id: int, solution: AlwabpSolution) -> bool:
@@ -50,9 +52,8 @@ class AlwabpTaskInsertOrderNS(Neighborhood, ABC):
             c_max = max(max_positional_weight_list)
             threshold_value = c_min + ((1 - self.greediness)*(c_max - c_min))
             
-            lcr = [task for task in self.solution.unassigned_tasks 
-                   if self.solution.get_max_positional_weight_value(task, self.max_positional_weight_type) 
-                   <= threshold_value]
+            available_tasks = self.solution.get_available_tasks_to_assign_to_station(self.station, self.graph_orientation)
+            lcr = [task for task in available_tasks if max_positional_weight_list[task] <= threshold_value]
             
             for task in lcr:
                 move = AlwabpInsertOrderMove(task, None, self.station, self.solution, self.report)
@@ -66,4 +67,4 @@ class AlwabpTaskInsertOrderNS(Neighborhood, ABC):
             LogManager.invalid_action("generate movements", type(self).__name__)
 
     def copy(self) -> 'AlwabpTaskInsertOrderNS':
-        return AlwabpTaskInsertOrderNS(self.max_positional_weight_type, self.station, self.greediness, self.stop_criteria.copy() if self.stop_criteria else None)
+        return AlwabpTaskInsertOrderNS(self.max_positional_weight_type, self.graph_orientation, self.station, self.change_station, self.greediness, self.stop_criteria.copy() if self.stop_criteria else None)
