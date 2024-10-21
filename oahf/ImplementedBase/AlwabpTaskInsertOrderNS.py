@@ -53,7 +53,7 @@ class AlwabpTaskInsertOrderNS(Neighborhood, ABC):
             threshold_value = c_min + ((1 - self.greediness)*(c_max - c_min))
             
             available_tasks = self.solution.get_available_tasks_to_assign_to_station(self.station, self.graph_orientation)
-            lcr = [task for task in available_tasks if max_positional_weight_list[task] <= threshold_value]
+            lcr = [task for task in available_tasks if max_positional_weight_list[task - 1] <= threshold_value]
             
             for task in lcr:
                 move = AlwabpInsertOrderMove(task, None, self.station, self.solution, self.report)

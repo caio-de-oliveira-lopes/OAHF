@@ -36,8 +36,8 @@ def main():
     
     solution = original_solution.copy()
     random_seed = 1
-    thread = 1
-    ThreadManager.initialize(thread, random_seed)     
+    thread = 0
+    ThreadManager.initialize(1, random_seed)     
     positional_weight_types = list(EnumUtil.get_values(MaxPositionalWeightType))
     task_greediness = 0
     worker_greediness = 0
@@ -54,6 +54,7 @@ def main():
     cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(cycle_time_path, file_name)
     solution.cycle_time_limit = cycle_time_limit
         
+    # Must add UB calculation and use it as stop criteria too (to avoid infinite loop)
     while not len(solution.unassigned_workers) == 0:
         for station in solution.get_open_stations():
             task_stop_criteria = StopNoImprovement(len(solution.unassigned_tasks))
@@ -62,10 +63,10 @@ def main():
             worker_ns = ListSelection(False, AlwabpWorkerInsertOrderNS(station, True, task_greediness, None))
             worker_assignment_solution: Optional[Solution] = None
             
-            grc_task = GRC(thread, task_greediness, task_stop_criteria, evaluator, task_acceptance_criteria, task_ns)
+            grc_task = GRC(thread, task_greediness, task_stop_criteria, evaluator, task_acceptance_criteria, task_ns, order_moves=True)
             task_assignment_solution = grc_task.run(solution)
             
-            if task_assignment_solution == solution:# or (isinstance(task_assignment_solution, AlwabpSolution) and station == len(task_assignment_solution.stations) and len(task_assignment_solution.unassigned_tasks) > 0):
+            if task_assignment_solution == solution or (isinstance(task_assignment_solution, AlwabpSolution) and station == len(task_assignment_solution.stations) and len(task_assignment_solution.unassigned_tasks) > 0):
                 cycle_time_limit += 1
                 original_solution.cycle_time_limit = cycle_time_limit
                 solution = original_solution
@@ -73,7 +74,7 @@ def main():
                 break
             
             while not worker_assignment_solution:
-                grc_worker = GRC(thread, worker_greediness, worker_stop_criteria, evaluator, worker_acceptance_criteria, worker_ns)
+                grc_worker = GRC(thread, worker_greediness, worker_stop_criteria, evaluator, worker_acceptance_criteria, worker_ns, order_moves=False)
                 worker_assignment_solution = grc_worker.run(task_assignment_solution)
                 
             if task_assignment_solution == worker_assignment_solution:  

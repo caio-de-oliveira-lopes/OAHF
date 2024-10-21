@@ -11,6 +11,7 @@ from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.ThreadManager import ThreadManager
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
+import traceback
 
 
 class GRC(MetaHeuristic):
@@ -27,7 +28,7 @@ class GRC(MetaHeuristic):
         evaluator: Evaluator,
         criteria: AcceptanceCriteria,        
         ns: NeighborhoodSelection,
-        order_moves = False
+        order_moves: bool = False
     ) -> None:
         """Initialize the GRC meta-heuristic.
 
@@ -103,11 +104,10 @@ class GRC(MetaHeuristic):
                     if self.order_moves:
                         ordered_moves.sort(
                             key=lambda x: (
-                                x.get_cost()
+                                -x.get_cost()
                                 if self.greediness > 0.9999
                                 else ThreadManager.get_next_double(self.thread_id)
-                            ),
-                            reverse=True,
+                            )
                         )
 
                     while ordered_moves and not self.stop_on_evaluations([best_eval]):
@@ -135,13 +135,7 @@ class GRC(MetaHeuristic):
 
             except Exception as ex:
                 LogManager.something_went_wrong(str(ns), ex)
+                traceback.print_exc()
                 raise
 
         return curr_sol
-
-    def change_ns(self, ns: Optional[Neighborhood]) -> Optional[Neighborhood]:
-        if ns:
-            self.neighborhood_selection.remove(ns)
-        ns = self.neighborhood_selection.get_next(self.thread_id)
-        self.stop_criteria.reset()
-        return ns

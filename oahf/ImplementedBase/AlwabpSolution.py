@@ -199,7 +199,7 @@ class AlwabpSolution(Solution):
                 tasks_str = ", ".join(map(str, self.station_tasks_assignment[station]))
                 result.append(f"    Worker {worker}: Tasks -> [{tasks_str}]")
 
-        result.append(f"Unassigned Tasks: {", ".join(map(str, self.unassigned_tasks))}")
+        result.append(f"Unassigned Tasks: {", ".join(map(str, self.unassigned_tasks)) if len(self.unassigned_tasks) > 0 else '[]'}")
         return "\n".join(result)
 
     def calculate_cycle_time(self, station: int) -> float:
