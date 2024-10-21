@@ -56,8 +56,11 @@ def main():
         
     # Must add UB calculation and use it as stop criteria too (to avoid infinite loop)
     while not len(solution.unassigned_workers) == 0:
+        # Second approach:
+        # solution = original_solution.copy()
+        # Also, increase the StopNoImprovement iterations, (use **2)
         for station in solution.get_open_stations():
-            task_stop_criteria = StopNoImprovement(len(solution.unassigned_tasks))
+            task_stop_criteria = StopNoImprovement(len(solution.unassigned_tasks))#**2)
             worker_stop_criteria = WorkersUnassignedStopCriteria(len(solution.unassigned_workers))
             task_ns = ListSelection(False, AlwabpTaskInsertOrderNS(pw, graph_orientation, station, True, task_greediness, None))
             worker_ns = ListSelection(False, AlwabpWorkerInsertOrderNS(station, True, task_greediness, None))

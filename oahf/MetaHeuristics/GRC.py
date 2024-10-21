@@ -76,6 +76,7 @@ class GRC(MetaHeuristic):
         """
         curr_sol = sol.copy() if sol is not None else sol
         best_eval = self.evaluator.evaluate(sol)
+        accepted_any_move_previous_loop = True
         
         ns: Optional[Neighborhood] = self.neighborhood_selection.get_next(self.thread_id)
         improved = False
@@ -130,6 +131,11 @@ class GRC(MetaHeuristic):
                                 break
                             else:
                                 move.unapply_operation(curr_eval)
+                    
+                    if not improved and accepted_any_move_previous_loop:
+                        accepted_any_move_previous_loop = improved
+                    elif not improved and not accepted_any_move_previous_loop:
+                        break
                 else:
                     break  # fail on building NS
 

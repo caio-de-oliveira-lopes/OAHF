@@ -67,7 +67,7 @@ class GRASP(MetaHeuristic):
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
 
-        while not self.stop_on_evaluations(best_eval):
+        while not self.stop_on_evaluations(*best_eval):
             self.stop_criteria.increment_counter()
             curr_sol = construction.run_operation(
                 sol.copy() if sol is not None else None, self

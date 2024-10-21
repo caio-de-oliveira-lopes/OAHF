@@ -157,11 +157,14 @@ class MetaHeuristic(Entity, ABC):
     #def stop_on_evaluations(self, ev: "Evaluation") -> bool:
     #    return self.stop_on_evaluations([ev])
 
-    def stop_on_evaluations(self, evs: Iterable["Evaluation"]) -> bool:
-        return self.stop_criteria.stop_on_evaluations(evs) or (
-            self.parent_metaheuristic is not None
-            and self.parent_metaheuristic.stop_on_evaluations(evs)
-        )
+    def stop_on_evaluations(self, evs: Optional[Iterable["Evaluation"]]) -> bool:
+        if evs:
+            return self.stop_criteria.stop_on_evaluations(evs) or (
+                self.parent_metaheuristic is not None
+                and self.parent_metaheuristic.stop_on_evaluations(evs)
+            )
+        else:
+            return False    
 
     @abstractmethod
     def copy(self, thread: int) -> "MetaHeuristic":
