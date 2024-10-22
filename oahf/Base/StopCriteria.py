@@ -61,7 +61,7 @@ class StopCriteria(ABC):
         Returns:
             str: A string representing the current status.
         """
-        return f"Time: {ThreadManager.elapsed_milliseconds};"
+        return f"Time: {ThreadManager.elapsed_milliseconds()};"
 
     @abstractmethod
     def copy(self) -> "StopCriteria":

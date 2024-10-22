@@ -1,21 +1,23 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 from oahf.Base.Entity import Entity
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Solution import Solution
+from oahf.Base.Pool import Pool
 
 
 class AcceptanceCriteria(Entity, ABC):
 
     @abstractmethod
     def accept(
-        self, curr_eval: "Evaluation", next_eval: "Evaluation", next_sol: "Solution"
+        self, curr_eval: "Evaluation", next_eval: "Evaluation", next_sol: Union["Solution", Pool]
     ) -> bool:
         """
         Abstract method to evaluate acceptance criteria.
         :param curr_eval: Current evaluation.
         :param next_eval: Next evaluation.
-        :param next_sol: Next solution.
+        :param next_sol: Next solution or pool of solutions.
         :return: Boolean value indicating acceptance.
         """
         pass

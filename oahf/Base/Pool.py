@@ -30,39 +30,43 @@ class PoolReport:
 
 
 class Pool(Entity, ABC):
-    def __init__(self):
+    def __init__(self, solutions: List[Solution] = []):
         super().__init__()
         self.report = PoolReport()
+        self.solutions: List[Solution] = solutions.copy()
 
     @abstractmethod
     def get_solution_at(self, index: int) -> Solution:
         """Get a solution at the specified index."""
-        pass
+        return self.solutions[index]
 
     @abstractmethod
     def __iter__(self) -> Iterator[Solution]:
         """Return an iterator for the pool."""
-        pass
+        return iter(self.solutions)
 
     @abstractmethod
     def count(self) -> int:
         """Get the number of solutions in the pool."""
-        pass
+        return len(self.solutions)
 
     @abstractmethod
     def any(self) -> bool:
         """Check if there are any solutions in the pool."""
-        pass
+        return bool(self.solutions)
 
     @abstractmethod
     def clear(self) -> bool:
         """Clear all solutions from the pool."""
-        pass
+        self.solutions.clear()
+        return True
 
     @abstractmethod
     def copy(self) -> "Pool":
         """Create a copy of the pool."""
-        pass
+        new_pool = self.__class__()
+        new_pool.solutions = self.solutions.copy()
+        return new_pool
 
     def add(self, solution: Solution, evaluator: Evaluator) -> bool:
         """Add a solution to the pool and evaluate it."""
@@ -71,7 +75,7 @@ class Pool(Entity, ABC):
         diversity = 0.0  # Assuming diversity calculation logic will be added
         self.report.events.append(
             (
-                ThreadManager.watch.elapsed_milliseconds,
+                ThreadManager.elapsed_milliseconds(),
                 PoolEventReport(
                     accepted,
                     eval.get_objective_function(),
@@ -90,22 +94,25 @@ class Pool(Entity, ABC):
     @abstractmethod
     def add_solution(self, solution: Solution) -> bool:
         """Add a solution to the pool (to be implemented by subclasses)."""
-        pass
+        if solution not in self.solutions:
+            self.solutions.append(solution)
+            return True
+        return False
 
     @abstractmethod
     def get_list(self) -> List[Solution]:
         """Get a list of solutions in the pool."""
-        pass
+        return self.solutions
 
     def get_best(self, evaluator: Evaluator) -> Optional[Solution]:
         """Get the best solution from the pool based on evaluation."""
         if self.any():
             best = self.get_solution_at(0)
             best_eval = evaluator.evaluate(best)
-            for x in self:
-                new_eval = evaluator.evaluate(x)
+            for solution in self:
+                new_eval = evaluator.evaluate(solution)
                 if new_eval.better_than(best_eval):
-                    best = x
+                    best = solution
                     best_eval = new_eval
             return best
         return None

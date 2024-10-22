@@ -56,9 +56,6 @@ def main():
         
     # Must add UB calculation and use it as stop criteria too (to avoid infinite loop)
     while not len(solution.unassigned_workers) == 0:
-        # Second approach:
-        # solution = original_solution.copy()
-        # Also, increase the StopNoImprovement iterations, (use **2)
         for station in solution.get_open_stations():
             task_stop_criteria = StopNoImprovement(len(solution.unassigned_tasks))#**2)
             worker_stop_criteria = WorkersUnassignedStopCriteria(len(solution.unassigned_workers))
@@ -72,7 +69,7 @@ def main():
             if task_assignment_solution == solution or (isinstance(task_assignment_solution, AlwabpSolution) and station == len(task_assignment_solution.stations) and len(task_assignment_solution.unassigned_tasks) > 0):
                 cycle_time_limit += 1
                 original_solution.cycle_time_limit = cycle_time_limit
-                solution = original_solution
+                solution = original_solution.copy()
                 print(f'Increase cycle time to {str(cycle_time_limit)}')
                 break
             
@@ -83,7 +80,7 @@ def main():
             if task_assignment_solution == worker_assignment_solution:  
                 cycle_time_limit += 1
                 original_solution.cycle_time_limit = cycle_time_limit
-                solution = original_solution
+                solution = original_solution.copy()
                 print(f'Increase cycle time to {str(cycle_time_limit)}')
                 break
             

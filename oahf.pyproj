@@ -85,6 +85,7 @@
     <Compile Include="oahf\Logger\Logger.py" />
     <Compile Include="oahf\Logger\__init__.py" />
     <Compile Include="oahf\MetaHeuristics\GeneticAlgorithm.py" />
+    <Compile Include="oahf\MetaHeuristics\AlwabpConstruction.py" />
     <Compile Include="oahf\MetaHeuristics\ParallelILS.py" />
     <Compile Include="oahf\MetaHeuristics\Pertubation.py" />
     <Compile Include="oahf\MetaHeuristics\ILS.py" />

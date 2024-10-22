@@ -21,7 +21,7 @@ class Evaluator(Entity, ABC):
         self.stop_criteria: Optional["StopCriteria"] = None
 
     @abstractmethod
-    def evaluate(self, sol: "Solution") -> "Evaluation":
+    def evaluate(self, sol: Optional["Solution"]) -> "Evaluation":
         """
         Abstract method to evaluate a Solution.
         :param sol: A Solution object to evaluate.

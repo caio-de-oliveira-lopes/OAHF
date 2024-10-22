@@ -21,7 +21,7 @@ class ThreadManager:
             else:
                 cls._random_keys[i] = random.Random(seed + i)
 
-    @property
+    @classmethod
     def elapsed_milliseconds(cls) -> int:
         return int((cls._watch - time.time()) * 1000)
     

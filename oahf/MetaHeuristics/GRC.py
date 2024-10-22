@@ -61,7 +61,7 @@ class GRC(MetaHeuristic):
             self.stop_criteria.copy(),
             self.evaluator,
             self.acceptance_criteria.copy(),            
-            self.neighborhood_selection.copy(),
+            self.neighborhood_selection.copy(), # type: ignore
             self.order_moves
         )
 
@@ -78,7 +78,7 @@ class GRC(MetaHeuristic):
         best_eval = self.evaluator.evaluate(sol)
         accepted_any_move_previous_loop = True
         
-        ns: Optional[Neighborhood] = self.neighborhood_selection.get_next(self.thread_id)
+        ns: Optional[Neighborhood] = self.neighborhood_selection.get_next(self.thread_id) #type: ignore
         improved = False
 
         self.stop_criteria.reset()

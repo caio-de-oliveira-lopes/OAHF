@@ -12,6 +12,7 @@ from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.ImplementedBase import ListPool
 from oahf.Logger.LogManager import LogManager
 
 
@@ -42,12 +43,12 @@ class MetaHeuristic(Entity, ABC):
         stop_criteria: "StopCriteria",
         evaluator: "Evaluator",
         acceptance_criteria: "AcceptanceCriteria",        
-        neighborhood_selection: "NeighborhoodSelection",
+        neighborhood_selection: Optional["NeighborhoodSelection"] = None,
         meta_heuristics_used: List["MetaHeuristic"] = [],
     ):
 
         super().__init__()
-        self.neighborhood_selection: "NeighborhoodSelection" = neighborhood_selection
+        self.neighborhood_selection: Optional["NeighborhoodSelection"] = neighborhood_selection
         self.evaluator: "Evaluator" = evaluator
         self.thread_id: int = thread_id
         self.stop_criteria: "StopCriteria" = stop_criteria
@@ -99,14 +100,12 @@ class MetaHeuristic(Entity, ABC):
                     print(f"{r[0]} {r[1]}")
 
     @abstractmethod
-    def run(
-        self, sol: Union[Solution, Pool]
-    ) -> Optional[Union[Solution, Pool]]:
+    def run(self, sol: Solution) -> Solution:
         """Run the heuristic on a given solution."""
         pass
 
     def run_operation(
-        self, sol: "Pool", parent: Optional["MetaHeuristic"] = None
+        self, pool: "Pool", parent: Optional["MetaHeuristic"] = None
     ) -> "Pool":
         try:
             self.parent_metaheuristic = parent
@@ -114,13 +113,15 @@ class MetaHeuristic(Entity, ABC):
             if self.neighborhood_selection:
                 self.neighborhood_selection.reset(self.thread_id)
 
+            result = ListPool()
             self.start_time = self._current_milliseconds()
-            result = self.run(sol)
+            
+            for sol in pool.get_list():
+                result.add_solution(self.run(sol))
+                
             self.end_time = self._current_milliseconds()
-            if result is Pool:
-                return result
-            else:
-                raise TypeError("Wrong solution type returned by 'run' method.")
+            
+            return result
         except Exception as ex:
             LogManager.something_went_wrong(self.__class__.__name__, ex)
             raise
