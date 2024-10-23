@@ -151,27 +151,9 @@ class AlwabpSolution(Solution):
         self._task_execution_times[task_number] = execution_times
 
     def decompose_solution(self, k: int) -> Optional[List["AlwabpSolution"]]:
-        """
-        Decomposes the solution into smaller parts (not implemented).
-
-        Args:
-            k (int): The number of parts to decompose into.
-
-        Raises:
-            NotImplementedError: This function is not implemented.
-        """
         raise NotImplementedError("Decomposition is not supported for this problem.")
 
     def merge_solutions(self, solutions: List["AlwabpSolution"]) -> "AlwabpSolution":
-        """
-        Merges multiple solutions into one (not implemented).
-
-        Args:
-            solutions (List[ALWABP]): A list of solutions to merge.
-
-        Raises:
-            NotImplementedError: This function is not implemented.
-        """
         raise NotImplementedError("Merging is not supported for this problem.")
 
     def solution_hash(self) -> int:
@@ -197,7 +179,8 @@ class AlwabpSolution(Solution):
         result.append(f"ALWABP Solution:")
         result.append(f"Number of Tasks: {len(self.tasks)}")
         result.append(f"Number of Workers: {len(self.workers)}")
-        result.append(f"Number of Stations: {len(self.stations)}")
+        result.append(f"Number of Stations: {len(self.stations)}")        
+        result.append(f"Max Cycle Time: {str(int(self.get_max_cycle_time()))}")
         result.append("Task Allocations (per station):")
     
         for station in self.stations:
@@ -389,7 +372,6 @@ class AlwabpSolution(Solution):
                     # Fill the dictionary with the result
                     self.all_task_precedences[graph_orientation][task] = all_precedences
 
-
     def get_tasks_executed_by_worker(self, worker: int) -> List[int]:
         """
         Gets the list of tasks that a specific worker can execute, based on execution times.
@@ -504,50 +486,6 @@ class AlwabpSolution(Solution):
                 return True
             else:
                 LogManager.invalid_action("remove task from station, it wasn't assigned to it", self.name)
-                return False
-        except Exception as e:
-            LogManager.invalid_action("remove task from worker", self.name, e)
-            return False
-        
-    def add_task_to_worker(self, task: int, worker: int) -> bool:
-        """
-        Add a task to a specific worker, if not already assigned to it.
-
-        Args:
-            task (int): The task to be added.
-            worker (int): The worker from which the task will be added.
-
-        Returns:
-            bool: True if the task was successfully added, False otherwise.
-        """
-        try:
-            station = self.worker_station_assignment[worker]
-            if station:
-                return self.add_task_to_station(task, station)
-            else:
-                LogManager.invalid_action("add task to worker, worker was not assigned to a station", self.name)
-                return False
-        except Exception as e:
-            LogManager.invalid_action("add task to worker", self.name, e)
-            return False
-        
-    def remove_task_from_worker(self, task: int, worker: int) -> bool:
-        """
-        Removes a task from a specific worker by removing the task from their assignment.
-
-        Args:
-            task (int): The task to be removed.
-            worker (int): The worker from which the task will be removed.
-
-        Returns:
-            bool: True if the task was successfully removed, False otherwise.
-        """
-        try:
-            station = self.worker_station_assignment[worker]
-            if station:
-                return self.remove_task_from_station(task, station)
-            else:
-                LogManager.invalid_action("remove task from worker, worker was not assigned to a station", self.name)
                 return False
         except Exception as e:
             LogManager.invalid_action("remove task from worker", self.name, e)

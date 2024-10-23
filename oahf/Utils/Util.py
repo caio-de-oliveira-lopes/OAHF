@@ -98,69 +98,55 @@ class Util:
         """
         from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
         from oahf.Logger.LogManager import LogManager
-        
-        line: Optional[str] = None
-        number_of_workers: int = 0
-        number_of_stations: int = 0
-        number_of_tasks: int = 0
-        alwabp_instance: Optional[AlwabpSolution] = None
-
+    
         try:
             with open(input_file, "r") as sr:
-                # Read first line (number of tasks)
-                line = sr.readline().strip()
-                if not line:
+                # Read all lines once to reduce I/O time
+                lines = sr.readlines()
+
+                # Check the first line (number of tasks)
+                if not lines or not lines[0].strip():
                     return None
 
-                number_of_tasks = int(line)
+                number_of_tasks = int(lines[0].strip())
 
-                # Read second line (task-worker relationship matrix)
-                line = sr.readline().strip()
-                if not line:
-                    return None
-
-                splited_lines = line.split()
-                number_of_workers = len(splited_lines)
+                # Second line is the task-worker relationship matrix
+                worker_lines = lines[1].split()
+                number_of_workers = len(worker_lines)
                 number_of_stations = number_of_workers
-                
+            
                 alwabp_instance = AlwabpSolution(number_of_tasks, number_of_workers, number_of_stations)
 
-                task = 1
-                while task <= number_of_tasks:
-                    values = [float(i) for i in splited_lines]
-                    alwabp_instance.set_task_execution_times(task, values)
+                # Reading task execution times in one go
+                for task in range(1, number_of_tasks + 1):
+                    task_values = list(map(float, worker_lines))
+                    alwabp_instance.set_task_execution_times(task, task_values)
+                    # Move to the next line for the next task
+                    worker_lines = lines[task + 1].split()
 
-                    line = sr.readline().strip()
-                    if not line:
-                        return None
+                # Read precedence graph (task pairs) directly
+                for line in lines[number_of_tasks + 1:]:
                     splited_lines = line.split()
-                    task += 1
+                    u_task, v_task = int(splited_lines[0]), int(splited_lines[-1])
 
-                # Read precedence graph (task pairs)
-                while True:
-                    u_task = int(splited_lines[0])
-                    v_task = int(splited_lines[-1])
-
-                    if u_task != -1 and v_task != -1:
-                        alwabp_instance.add_precedence(u_task, v_task)
-
-                        line = sr.readline().strip()
-                        if not line:
-                            break
-                        splited_lines = line.split()
-                    else:
+                    if u_task == -1 or v_task == -1:
                         break
+
+                    alwabp_instance.add_precedence(u_task, v_task)
+
         except Exception as e:
             LogManager.something_went_wrong(cls.__name__, e)
-        finally:
-            print("Input Reading Finished!")
+            return None
+
+        print(f'Input "{input_file}" successfully read!')
 
         if alwabp_instance:
             alwabp_instance.process_graph_data()
             return alwabp_instance
         else:
-            LogManager.something_went_wrong(cls.__name__, "Not a Valid Input!")
+            LogManager.something_went_wrong(cls.__name__, f'File "{input_file}" is not a valid input!')
             return None
+
 
     @classmethod
     def get_recommeded_maximum_mean_cycle_time(cls, file_path: Path, input_name: str) -> int:

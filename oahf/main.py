@@ -50,6 +50,7 @@ def main():
     cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(cycle_time_path, file_name)
     solution.cycle_time_limit = cycle_time_limit
         
+    print(f'Starting instance {file_name} with cycle time = {str(cycle_time_limit)}')
     # Must add UB calculation and use it as stop criteria too (to avoid infinite loop)
     # 500 is defined in the article as "obtained through an increase of the best results obtained in the literature"
     while not len(solution.unassigned_workers) == 0 or cycle_time_limit >= 500:
@@ -64,7 +65,7 @@ def main():
                 cycle_time_limit += 1
                 original_solution.cycle_time_limit = cycle_time_limit
                 solution = original_solution.copy()
-                print(f'Increase cycle time to {str(cycle_time_limit)}')
+                #print(f'Increase cycle time to {str(cycle_time_limit)}')
             else:
                 solution = new_solution
             
@@ -97,13 +98,13 @@ def create_init_files(root_dir):
                 all_list = ",\n".join([f'    "{module}"' for module in module_names])
                 init_file.write(all_list + "\n]\n")
 
-            print(f"Created and updated: {init_path}")
+            #print(f"Created and updated: {init_path}")
         else:
             # Create __init__.py if no Python files exist
             init_path = os.path.join(dirpath, "__init__.py")
             if not os.path.exists(init_path):
                 open(init_path, "w").close()
-                print(f"Created: {init_path}")
+                #print(f"Created: {init_path}")
 
 
 if __name__ == "__main__":

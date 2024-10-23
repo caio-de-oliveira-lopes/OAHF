@@ -46,6 +46,8 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         """
         Generates all possible movements based on ALWABP context, filtering tasks according to a greediness threshold.
         It considers available tasks and workers, attempting to minimize cycle time violations.
+        In case multiple movements have the same cost, the movement with fewer tasks will be preferred as a tiebreaker.
+        After sorting, cost is reapplied based on the position in the sorted list.
         """
         if self.solution and self.station:
             worker_moves: Dict[int, MultipleMovement] = {}
@@ -79,7 +81,6 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             if not all_moves:
                 return iter([])  # Return an empty iterator if no moves are generated
 
-            # TODO: Improve cost function system to consider tiebreaker conditions (based on the referenced article)
             for unassigned_worker in self.solution.unassigned_workers:
                 feasible_movements = self.solution.simulate_worker_tasks_allocation(unassigned_worker, all_moves)
                 if feasible_movements:
@@ -92,16 +93,22 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                     move = MultipleMovement(self.solution, self.report, feasible_movements)
 
                     worker_moves[unassigned_worker] = move
-                    
+
                     # Calculate cost for the movement
                     if self.cost_function:
                         cost = self.cost_function(unassigned_worker, unassigned_tasks)
                         move.override_cost = move.override_cost + float(cost) if move.override_cost else float(cost)
 
-            for worker, movement in worker_moves.items():
+            # Apply tiebreaker by preferring movements with more tasks when costs are equal
+            sorted_moves = sorted(worker_moves.values(), key=lambda mv: (mv.override_cost, -len(mv.movements)))
+
+            # Reapply cost based on sorted order (list position + 1)
+            for idx, movement in enumerate(sorted_moves, start=1):
+                movement.override_cost = idx  # Change cost to consider the tiebreakers applied
                 yield movement
         else:
             LogManager.invalid_action("generate movements", type(self).__name__)
+
 
     def copy(self) -> 'AlwabpWorkerOrientedInsertNS':
         """Creates a copy of the current neighborhood search with the same settings."""
