@@ -2,15 +2,13 @@ import os
 
 from oahf.Base import Solution
 from oahf.Base.ThreadManager import ThreadManager
-from oahf.ImplementedBase.AlwabpWorkerInsertOrderNS import AlwabpWorkerInsertOrderNS
+from oahf.ImplementedBase.AlwabpWorkerOrientedInsertNS import AlwabpWorkerOrientedInsertNS
 from oahf.ImplementedBase.CompleteAssignmentStopCriteria import CompleteAssignmentStopCriteria
 from oahf.ImplementedBase.MaxCycleTimeConstraint import MaxCycleTimeConstraint
 from oahf.ImplementedBase.AlwabpEvaluator import AlwabpEvaluator
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution, GraphOrientation, MaxPositionalWeightType
-from oahf.ImplementedBase.AlwabpTaskInsertOrderNS import AlwabpTaskInsertOrderNS
 from oahf.ImplementedBase.BetterOrSameAcceptanceCriteria import BetterOrSameAcceptanceCriteria
 from oahf.ImplementedBase.ListSelection import ListSelection
-from oahf.ImplementedBase.MultipleStopCriteria import MultipleStopCriteria
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
 from oahf.ImplementedBase.StopNoImprovement import StopNoImprovement
 from oahf.ImplementedBase.WorkersUnassignedStopCriteria import WorkersUnassignedStopCriteria
@@ -39,53 +37,36 @@ def main():
     thread = 0
     ThreadManager.initialize(1, random_seed)     
     positional_weight_types = list(EnumUtil.get_values(MaxPositionalWeightType))
-    task_greediness = 0
-    worker_greediness = 0
-    graph_orientation = GraphOrientation.FORWARD
-    
+    ns_greediness = 0
+    grc_greedness = 1
+    graph_orientation = GraphOrientation.FORWARD    
     
     pw = positional_weight_types[thread - 1]
     if not isinstance(pw, MaxPositionalWeightType): return None
         
     evaluator = AlwabpEvaluator(True, MaxCycleTimeConstraint())
-    task_acceptance_criteria = ExecutedByAvailableWorkersAcceptanceCriteria()
-    worker_acceptance_criteria = BetterOrSameAcceptanceCriteria()
+    acceptance_criteria = BetterOrSameAcceptanceCriteria()
         
     cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(cycle_time_path, file_name)
     solution.cycle_time_limit = cycle_time_limit
         
     # Must add UB calculation and use it as stop criteria too (to avoid infinite loop)
-    while not len(solution.unassigned_workers) == 0:
-        for station in solution.get_open_stations():
-            task_stop_criteria = StopNoImprovement(len(solution.unassigned_tasks))#**2)
-            worker_stop_criteria = WorkersUnassignedStopCriteria(len(solution.unassigned_workers))
-            task_ns = ListSelection(False, AlwabpTaskInsertOrderNS(pw, graph_orientation, station, True, task_greediness, None))
-            worker_ns = ListSelection(False, AlwabpWorkerInsertOrderNS(station, True, task_greediness, None))
-            worker_assignment_solution: Optional[Solution] = None
+    # 500 is defined in the article as "obtained through an increase of the best results obtained in the literature"
+    while not len(solution.unassigned_workers) == 0 or cycle_time_limit >= 500:
+        stop_criteria = WorkersUnassignedStopCriteria(1)
+        ns = ListSelection(False, AlwabpWorkerOrientedInsertNS(pw, graph_orientation, ns_greediness, None))
             
-            grc_task = GRC(thread, task_greediness, task_stop_criteria, evaluator, task_acceptance_criteria, task_ns, order_moves=True)
-            task_assignment_solution = grc_task.run(solution)
-            
-            if task_assignment_solution == solution or (isinstance(task_assignment_solution, AlwabpSolution) and station == len(task_assignment_solution.stations) and len(task_assignment_solution.unassigned_tasks) > 0):
+        grc = GRC(thread, grc_greedness, stop_criteria, evaluator, acceptance_criteria, ns, order_moves=False)
+        new_solution = grc.run(solution)
+        
+        if isinstance(new_solution, AlwabpSolution):
+            if new_solution == solution or len(new_solution.unassigned_tasks) > 0:
                 cycle_time_limit += 1
                 original_solution.cycle_time_limit = cycle_time_limit
                 solution = original_solution.copy()
                 print(f'Increase cycle time to {str(cycle_time_limit)}')
-                break
-            
-            while not worker_assignment_solution:
-                grc_worker = GRC(thread, worker_greediness, worker_stop_criteria, evaluator, worker_acceptance_criteria, worker_ns, order_moves=False)
-                worker_assignment_solution = grc_worker.run(task_assignment_solution)
-                
-            if task_assignment_solution == worker_assignment_solution:  
-                cycle_time_limit += 1
-                original_solution.cycle_time_limit = cycle_time_limit
-                solution = original_solution.copy()
-                print(f'Increase cycle time to {str(cycle_time_limit)}')
-                break
-            
-            if isinstance(worker_assignment_solution, AlwabpSolution):
-                solution = worker_assignment_solution
+            else:
+                solution = new_solution
             
     print(solution)
 

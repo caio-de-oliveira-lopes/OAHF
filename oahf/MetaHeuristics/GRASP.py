@@ -103,7 +103,7 @@ class GRASP(MetaHeuristic):
                 best_eval, curr_eval, curr_pool
             ):
                 best_eval = curr_eval
-                 = curr_pool
+                best_sol = curr_pool
                 # Optionally log the best evaluation
                 # print(best_eval)
 

@@ -76,10 +76,8 @@ class GRC(MetaHeuristic):
         """
         curr_sol = sol.copy() if sol is not None else sol
         best_eval = self.evaluator.evaluate(sol)
-        accepted_any_move_previous_loop = True
         
         ns: Optional[Neighborhood] = self.neighborhood_selection.get_next(self.thread_id) #type: ignore
-        improved = False
 
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
@@ -87,7 +85,6 @@ class GRC(MetaHeuristic):
         while ns and not self.stop_on_evaluations([best_eval]):
             try:
                 build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
-                improved = False
                 if build:
                     all_moves: List[Movement] = []
                     move = ns.get_move_operation()
@@ -103,13 +100,7 @@ class GRC(MetaHeuristic):
                         :num_chosen
                     ]
                     if self.order_moves:
-                        ordered_moves.sort(
-                            key=lambda x: (
-                                -x.get_cost()
-                                if self.greediness > 0.9999
-                                else ThreadManager.get_next_double(self.thread_id)
-                            )
-                        )
+                        ordered_moves.sort(key=lambda x: (x.get_cost() if self.greediness > 0.9999 else ThreadManager.get_next_double(self.thread_id)))
 
                     while ordered_moves and not self.stop_on_evaluations([best_eval]):
                         self.stop_criteria.increment_counter()
@@ -121,21 +112,13 @@ class GRC(MetaHeuristic):
                             if self.acceptance_criteria.accept(
                                 best_eval, curr_eval, curr_sol
                             ):
-                                if self.original_greediness > 0:
-                                    self.greediness = self.original_greediness
-                                    self.original_greediness = 0
                                 move.report_apply_improvement(curr_eval, best_eval)
-                                improved = True
                                 best_eval = curr_eval
                                 ns.accept_movement()
                                 break
                             else:
                                 move.unapply_operation(curr_eval)
-                    
-                    if not improved and accepted_any_move_previous_loop:
-                        accepted_any_move_previous_loop = improved
-                    elif not improved and not accepted_any_move_previous_loop:
-                        break
+                   
                 else:
                     break  # fail on building NS
 

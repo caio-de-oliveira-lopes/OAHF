@@ -44,6 +44,7 @@
     <Compile Include="oahf\Base\MetaHeuristic.py" />
     <Compile Include="oahf\Base\Movement.py" />
     <Compile Include="oahf\Base\MultipleMovement.py" />
+    <Compile Include="oahf\Base\MultipleStopCriteria.py" />
     <Compile Include="oahf\Base\Neighborhood.py" />
     <Compile Include="oahf\Base\NeighborhoodSelection.py" />
     <Compile Include="oahf\Base\Pool.py" />
@@ -57,11 +58,9 @@
     <Compile Include="oahf\ImplementedBase\AlwabpSolution.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpEvaluator.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpEvaluation.py" />
-    <Compile Include="oahf\ImplementedBase\AlwabpTaskInsertOrderNS.py" />
-    <Compile Include="oahf\ImplementedBase\AlwabpWorkerInsertOrderNS.py" />
+    <Compile Include="oahf\ImplementedBase\AlwabpWorkerOrientedInsertNS.py" />
     <Compile Include="oahf\ImplementedBase\AlwaysAcceptAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\ExecutedByAvailableWorkersAcceptanceCriteria.py" />
-    <Compile Include="oahf\ImplementedBase\MultipleStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\WorkersUnassignedStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeConstraint.py" />
     <Compile Include="oahf\ImplementedBase\SimulatedAnnealing.py" />
@@ -85,7 +84,6 @@
     <Compile Include="oahf\Logger\Logger.py" />
     <Compile Include="oahf\Logger\__init__.py" />
     <Compile Include="oahf\MetaHeuristics\GeneticAlgorithm.py" />
-    <Compile Include="oahf\MetaHeuristics\AlwabpConstruction.py" />
     <Compile Include="oahf\MetaHeuristics\ParallelILS.py" />
     <Compile Include="oahf\MetaHeuristics\Pertubation.py" />
     <Compile Include="oahf\MetaHeuristics\ILS.py" />
@@ -94,6 +92,7 @@
     <Compile Include="oahf\MetaHeuristics\GenericMultipleMetaheuristic.py" />
     <Compile Include="oahf\MetaHeuristics\FirstImprovement.py" />
     <Compile Include="oahf\MetaHeuristics\BestImprovement.py" />
+    <Compile Include="oahf\MetaHeuristics\__init__.py" />
     <Compile Include="oahf\Utils\EnumUtil.py" />
     <Compile Include="oahf\Utils\Util.py" />
     <Compile Include="oahf\Utils\__init__.py" />

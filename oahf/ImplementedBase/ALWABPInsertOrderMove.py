@@ -1,14 +1,15 @@
 from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
-from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 from oahf.Utils.Util import Util
 from typing import Optional
 
 
 class AlwabpInsertOrderMove(Movement):
-    def __init__(self, task: Optional[int], worker: Optional[int], station: Optional[int], solution: AlwabpSolution, report: EfficiencyReport):
+    def __init__(self, task: Optional[int], worker: Optional[int], station: Optional[int], solution: "AlwabpSolution", report: EfficiencyReport):
         super().__init__(solution, report)
+        
+        from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
         self.solution: AlwabpSolution = solution
         self.task: Optional[int] = task
         self.worker: Optional[int] = worker

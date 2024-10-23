@@ -9,6 +9,7 @@ from .Evaluator import Evaluator
 from .MetaHeuristic import MetaHeuristic
 from .Movement import Movement
 from .MultipleMovement import MultipleMovement
+from .MultipleStopCriteria import MultipleStopCriteria
 from .Neighborhood import Neighborhood
 from .NeighborhoodSelection import NeighborhoodSelection
 from .Pool import Pool
@@ -30,6 +31,7 @@ __all__ = [
     "MetaHeuristic",
     "Movement",
     "MultipleMovement",
+    "MultipleStopCriteria",
     "Neighborhood",
     "NeighborhoodSelection",
     "Pool",

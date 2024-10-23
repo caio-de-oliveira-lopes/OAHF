@@ -1,5 +1,6 @@
 from typing import List, Optional, Dict, Callable
 from oahf.Base.Solution import Solution
+from oahf.ImplementedBase.AlwabpInsertOrderMove import AlwabpInsertOrderMove
 from oahf.Logger.LogManager import LogManager
 from enum import Enum, auto
 from oahf.Utils import EnumUtil
@@ -87,6 +88,13 @@ class AlwabpSolution(Solution):
         
         return new_copy
     
+    def reset(self) -> None:
+        self.station_worker_assignment: Dict[int, Optional[int]] = {station: None for station in self.stations}
+        self.worker_station_assignment: Dict[int, Optional[int]] = {worker: None for worker in self.workers}
+        self.station_tasks_assignment: Dict[int, List[int]] = {station: [] for station in self.stations}        
+        self._unassigned_workers: List[int] = list(self.workers)
+        self._unassigned_tasks: List[int] = list(self.tasks)
+        
     def process_graph_data(self) -> None:
         self._update_tasks_executed_by_worker()
         self._fill_all_task_precedences()
@@ -579,20 +587,23 @@ class AlwabpSolution(Solution):
         station = self.find_station_for_worker(worker)
         return self.get_available_tasks_to_assign_to_station(station) if station else []
     
-    def get_available_tasks_to_assign_to_station(self, station: int, graph_orientation: GraphOrientation = GraphOrientation.FORWARD) -> List[int]:
+    def get_available_tasks_to_assign_to_station(self, station: int, graph_orientation: GraphOrientation = GraphOrientation.FORWARD, override_unassigned_tasks: List[int] = []) -> List[int]:
         """
         Finds the available tasks that can be assigned to the given station, considering task precedences.
 
         Args:
             station (int): The upper station ID to which precence tasks are could have been assigned.
+            graph_orientation (GraphOrientation): represent the state of the precedence graph (FORWARD or BACKWARD)
+            override_unassigned_tasks (List[int]): list of unassigned tasks to be used for simulations.
 
         Returns:
             List[int]: A list of available tasks that can be assigned to the specified station.
         """
         available_tasks_to_assign: List[int] = []
-
-        for unassigned_task in self._unassigned_tasks:
-            if any(preceding_task in self._unassigned_tasks for preceding_task in self.immediate_task_precedences[graph_orientation][unassigned_task]):
+        unassigned_tasks = override_unassigned_tasks.copy() if override_unassigned_tasks else self._unassigned_tasks
+        
+        for unassigned_task in unassigned_tasks:
+            if any(preceding_task in unassigned_tasks for preceding_task in self.immediate_task_precedences[graph_orientation][unassigned_task]):
                 continue
             available_tasks_to_assign.append(unassigned_task)
     
@@ -756,23 +767,26 @@ class AlwabpSolution(Solution):
         """
         return sorted(self.unassigned_workers, key=lambda worker: self.get_worker_min_rlb(worker))
 
-    def get_worker_min_rlb(self, worker: int) -> int:
+    def get_worker_min_rlb(self, worker: int, override_unassigned_tasks: List[int] = []) -> int:
         """
         Calculates the minimum restricted lower bound (RLB) for a worker. This RLB is the total minimum 
         execution time of all tasks that the worker could be assigned, divided among other unassigned workers.
 
         Args:
             worker (int): The worker ID for whom to calculate the minimum RLB.
+            override_unassigned_tasks (List[int]): list of unassigned tasks to be used for simulations.
 
         Returns:
             int: The minimum restricted lower bound for the worker.
         """
+        
+        unassigned_tasks = override_unassigned_tasks.copy() if override_unassigned_tasks else self._unassigned_tasks
         # If there's only one unassigned worker, return 0 as there's no other worker to assign tasks to
         if len(self.unassigned_workers) == 1:
             return 0
 
         # Get the tasks that the worker can still be assigned (i.e., tasks that are unassigned)
-        pending_assignable_tasks = [task for task in self.tasks_executed_by_worker[worker] if task in self.unassigned_tasks]
+        pending_assignable_tasks = [task for task in self.tasks_executed_by_worker[worker] if task in unassigned_tasks]
     
         # Copy the unassigned workers list and remove the current worker from it
         other_unassigned_workers = self.unassigned_workers.copy()
@@ -838,4 +852,46 @@ class AlwabpSolution(Solution):
         list: A list of station identifiers where the assigned worker is None.
         """
         return [station for station, worker in self.station_worker_assignment.items() if worker is None]
+    
+    def simulate_worker_tasks_allocation(self, worker: int, movements: List[AlwabpInsertOrderMove]) -> List[AlwabpInsertOrderMove]:
+        """
+        Simulates the allocation of tasks to a given worker based on possible movements. It filters the list of movements 
+        to determine which tasks can be executed by the worker and further checks the cumulative task execution time 
+        against the cycle time limit.
+
+        The method does not modify the solution itself but returns a list of possible movements that can be performed 
+        by the worker without exceeding the cycle time limit.
+
+        Parameters:
+        - worker (int): The worker identifier to simulate task allocation for.
+        - movements (List[AlwabpInsertOrderMove]): A list of possible movements (task allocations) to simulate.
+
+        Returns:
+        - List[AlwabpInsertOrderMove]: A list of movements (tasks) that the worker can execute within the cycle time limit.
+        """
+        # Filter moves by tasks executable by the worker
+        available_moves = [move for move in movements if move.task in self.get_tasks_executed_by_worker(worker)]
+    
+        if self.cycle_time_limit:
+            selected_moves = []
+            total_time = 0.0
+        
+            # Check available moves and ensure cumulative task time stays within the cycle time limit
+            for move in available_moves:
+                if move.task:
+                    task_time = self.get_task_execution_time(move.task, worker)
+            
+                    # Add task if it does not exceed the cycle time limit
+                    if total_time + task_time <= self.cycle_time_limit:
+                        selected_moves.append(move)
+                        total_time += task_time
+            
+                    # Stop if the total time reaches exactly the cycle time limit
+                    if total_time == self.cycle_time_limit:
+                        break
+        
+            return selected_moves
+        else:
+            # If no cycle time limit is set, return all available moves
+            return available_moves
 

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Sequence, Optional
 
 from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Movement import Movement
@@ -10,11 +10,11 @@ class MultipleMovement(Movement):
         self,
         solution: "Solution",
         report: "EfficiencyReport",
-        movements: List[Movement],
+        movements: Sequence[Movement],
         override_cost: Optional[float] = None,
     ):
         super().__init__(solution, report)
-        self.movements: List[Movement] = movements
+        self.movements: Sequence[Movement] = movements
         self.override_cost: Optional[float] = override_cost
 
     def get_cost(self) -> float:
@@ -38,5 +38,5 @@ class MultipleMovement(Movement):
         return worked
 
     def set_unapply_inconsistent(self):
-        """Override this method as it is not implemented in this class."""
-        pass
+        """Override this method as it is not implemented in this class."""        
+        raise NotImplementedError("Subclasses must implement this method.")
