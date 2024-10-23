@@ -1,10 +1,10 @@
 import hashlib
-import multiprocessing
-from typing import ClassVar, List, Optional, Type, Tuple
-from oahf.Base.Solution import Solution
-from pathlib import Path
 import json
+import multiprocessing
+from pathlib import Path
+from typing import ClassVar, List, Optional, Tuple, Type
 
+from oahf.Base.Solution import Solution
 from oahf.Logger.Logger import Logger
 
 
@@ -79,13 +79,14 @@ class Util:
         return hash_object.hexdigest()
 
     #
-    #@classmethod
-    #def get_current_thread_id(cls) -> Optional[int]:
+    # @classmethod
+    # def get_current_thread_id(cls) -> Optional[int]:
     #    return threading.current_thread().ident
-    
+
     @classmethod
     def read_input(cls, input_file: Path, input_type: Type) -> Optional[Solution]:
         from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
+
         if input_type is Type[AlwabpSolution]:
             return cls.read_ALWABP_input(input_file)
         else:
@@ -98,7 +99,7 @@ class Util:
         """
         from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
         from oahf.Logger.LogManager import LogManager
-    
+
         try:
             with open(input_file, "r") as sr:
                 # Read all lines once to reduce I/O time
@@ -114,8 +115,10 @@ class Util:
                 worker_lines = lines[1].split()
                 number_of_workers = len(worker_lines)
                 number_of_stations = number_of_workers
-            
-                alwabp_instance = AlwabpSolution(number_of_tasks, number_of_workers, number_of_stations)
+
+                alwabp_instance = AlwabpSolution(
+                    number_of_tasks, number_of_workers, number_of_stations
+                )
 
                 # Reading task execution times in one go
                 for task in range(1, number_of_tasks + 1):
@@ -125,7 +128,7 @@ class Util:
                     worker_lines = lines[task + 1].split()
 
                 # Read precedence graph (task pairs) directly
-                for line in lines[number_of_tasks + 1:]:
+                for line in lines[number_of_tasks + 1 :]:
                     splited_lines = line.split()
                     u_task, v_task = int(splited_lines[0]), int(splited_lines[-1])
 
@@ -144,14 +147,17 @@ class Util:
             alwabp_instance.process_graph_data()
             return alwabp_instance
         else:
-            LogManager.something_went_wrong(cls.__name__, f'File "{input_file}" is not a valid input!')
+            LogManager.something_went_wrong(
+                cls.__name__, f'File "{input_file}" is not a valid input!'
+            )
             return None
 
-
     @classmethod
-    def get_recommeded_maximum_mean_cycle_time(cls, file_path: Path, input_name: str) -> int:
+    def get_recommeded_maximum_mean_cycle_time(
+        cls, file_path: Path, input_name: str
+    ) -> int:
         """
-        This function reads a JSON file and retrieves the integer value 
+        This function reads a JSON file and retrieves the integer value
         corresponding to a key (input_name).
 
         :param file_path: The full path of the JSON file to read from.
@@ -160,10 +166,10 @@ class Util:
         """
 
         # Load JSON data from the file
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             data = json.load(f)
 
         # Get the value from the JSON data
         value: int = int(data.get(input_name, None))
-        
+
         return value

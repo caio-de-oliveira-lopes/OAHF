@@ -10,7 +10,7 @@ class AlwaysAcceptAcceptanceCriteria(AcceptanceCriteria):
         """
         This method always accepts the new solution, regardless of the comparison
         with the current solution.
-        
+
         :param curr_eval: The current evaluation being considered
         :param next_eval: The new evaluation being considered
         :return: True, indicating the new solution is always accepted

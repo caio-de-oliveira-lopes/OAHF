@@ -1,15 +1,24 @@
+from typing import Optional
+
 from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
 from oahf.Utils.Util import Util
-from typing import Optional
 
 
 class AlwabpInsertOrderMove(Movement):
-    def __init__(self, task: Optional[int], worker: Optional[int], station: Optional[int], solution: "AlwabpSolution", report: EfficiencyReport):
+    def __init__(
+        self,
+        task: Optional[int],
+        worker: Optional[int],
+        station: Optional[int],
+        solution: "AlwabpSolution",
+        report: EfficiencyReport,
+    ):
         super().__init__(solution, report)
-        
+
         from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
+
         self.solution: AlwabpSolution = solution
         self.task: Optional[int] = task
         self.worker: Optional[int] = worker
@@ -26,10 +35,10 @@ class AlwabpInsertOrderMove(Movement):
     def apply(self) -> bool:
         if self.task and self.station:
             return self.solution.add_task_to_station(self.task, self.station)
-            
+
         if self.worker and self.station:
             return self.solution.add_worker_to_station(self.worker, self.station)
-        
+
         return True
 
     def unapply(self) -> bool:
@@ -39,9 +48,8 @@ class AlwabpInsertOrderMove(Movement):
 
         if self.worker and self.station:
             return self.solution.remove_worker_from_station(self.worker, self.station)
-        
+
         return True
 
     def __str__(self) -> str:
         return f"AlwabpInsertOrderMove(Task: {self.task}, Worker: {self.worker}, Station: {self.station})"
-

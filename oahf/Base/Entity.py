@@ -10,7 +10,9 @@ class Entity(ABC):
     _instance_counter = 0
     _lock = threading.Lock()  # Lock for thread-safe ID generation
 
-    def __init__(self, entity_id: Optional[int] = None, name: Optional[str] = None) -> None:
+    def __init__(
+        self, entity_id: Optional[int] = None, name: Optional[str] = None
+    ) -> None:
         """Initializer that sets the id and name. The id is auto-generated, and the name defaults to the class name."""
 
         # Increment the class-level counter for the ID

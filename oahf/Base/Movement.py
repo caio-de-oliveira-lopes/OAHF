@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Entity import Entity
@@ -6,7 +7,6 @@ from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Solution import Solution
 from oahf.Logger.LogManager import LogManager
 
-from typing import Optional
 
 class Movement(Entity, ABC):
     def __init__(self, solution: "Solution", report: "EfficiencyReport"):

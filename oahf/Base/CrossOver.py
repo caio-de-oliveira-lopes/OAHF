@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Entity import Entity
@@ -7,8 +8,6 @@ from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
-
-from typing import Optional
 
 
 class CrossOver(Entity, ABC):
@@ -33,7 +32,9 @@ class CrossOver(Entity, ABC):
         """Performs the crossover operation between two solutions."""
         pass
 
-    def cross_operation(self, sol1: "Solution", sol2: "Solution") -> Optional["Solution"]:
+    def cross_operation(
+        self, sol1: "Solution", sol2: "Solution"
+    ) -> Optional["Solution"]:
         """
         Executes the crossover operation if the stopping criteria are not met.
 

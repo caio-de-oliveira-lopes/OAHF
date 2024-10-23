@@ -1,5 +1,5 @@
 import time
-from typing import List, Iterable, Optional
+from typing import Iterable, List, Optional
 
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
@@ -36,7 +36,14 @@ class GenericMultipleMetaheuristic(MetaHeuristic):
         :param change_solution: Criteria to change the solution.
         :param criteria: Acceptance criteria for new solutions.
         """
-        super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, None, meta_heuristics)
+        super().__init__(
+            thread_id,
+            stop_criteria,
+            evaluator,
+            acceptance_criteria,
+            None,
+            meta_heuristics,
+        )
         self.solution_pool = pool
         self.mhs = [
             [None for _ in range(num_threads)] for _ in range(len(meta_heuristics))
@@ -66,7 +73,7 @@ class GenericMultipleMetaheuristic(MetaHeuristic):
         solutions[thread_id] = curr_sol
 
     def run(self, sol: Solution) -> Solution:
-        solutions_current: List[Optional[Solution]]= (
+        solutions_current: List[Optional[Solution]] = (
             [sol.copy() for _ in range(self.num_threads)]
             if sol
             else [None] * self.num_threads

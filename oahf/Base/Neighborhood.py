@@ -1,9 +1,9 @@
 from typing import Dict, List, Optional, Tuple, Type
 
+from oahf.Base.Constraint import Constraint
 from oahf.Base.EfficiencyReport import EfficiencyReport, Event
 from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
-from oahf.Base.Constraint import Constraint
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
@@ -11,7 +11,9 @@ from oahf.Utils.Util import Util
 
 class Neighborhood:
     def __init__(
-        self, stop_criteria: Optional["StopCriteria"] = None, is_perturbation: bool = False
+        self,
+        stop_criteria: Optional["StopCriteria"] = None,
+        is_perturbation: bool = False,
     ) -> None:
         """
         Initializes the Neighborhood object with the specified stop criteria and perturbation flag.

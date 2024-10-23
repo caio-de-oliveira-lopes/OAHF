@@ -1,6 +1,7 @@
+import traceback
 from typing import List, Optional
-from oahf.Base import Neighborhood
 
+from oahf.Base import Neighborhood
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
@@ -11,7 +12,6 @@ from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.ThreadManager import ThreadManager
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
-import traceback
 
 
 class GRC(MetaHeuristic):
@@ -26,9 +26,9 @@ class GRC(MetaHeuristic):
         greediness: float,
         stop_criteria: StopCriteria,
         evaluator: Evaluator,
-        criteria: AcceptanceCriteria,        
+        criteria: AcceptanceCriteria,
         ns: NeighborhoodSelection,
-        order_moves: bool = False
+        order_moves: bool = False,
     ) -> None:
         """Initialize the GRC meta-heuristic.
 
@@ -40,7 +40,7 @@ class GRC(MetaHeuristic):
             ns (NeighborhoodSelection): The neighborhood selection strategy.
             criteria (AcceptanceCriteria): The acceptance criteria for solutions.
         """
-        
+
         super().__init__(thread_id, stop_criteria, evaluator, criteria, ns)
         self.greediness = greediness
         self.original_greediness = greediness
@@ -60,9 +60,9 @@ class GRC(MetaHeuristic):
             self.greediness,
             self.stop_criteria.copy(),
             self.evaluator,
-            self.acceptance_criteria.copy(),            
-            self.neighborhood_selection.copy(), # type: ignore
-            self.order_moves
+            self.acceptance_criteria.copy(),
+            self.neighborhood_selection.copy(),  # type: ignore
+            self.order_moves,
         )
 
     def run(self, sol: Solution) -> Solution:
@@ -76,8 +76,8 @@ class GRC(MetaHeuristic):
         """
         curr_sol = sol.copy() if sol is not None else sol
         best_eval = self.evaluator.evaluate(sol)
-        
-        ns: Optional[Neighborhood] = self.neighborhood_selection.get_next(self.thread_id) #type: ignore
+
+        ns: Optional[Neighborhood] = self.neighborhood_selection.get_next(self.thread_id)  # type: ignore
 
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
@@ -95,12 +95,18 @@ class GRC(MetaHeuristic):
                     if not all_moves:
                         break  # no moves and no ns available
 
-                    num_chosen = max(1, int(len(all_moves) *  (1 - self.greediness)))
+                    num_chosen = max(1, int(len(all_moves) * (1 - self.greediness)))
                     ordered_moves = sorted(all_moves, key=lambda x: x.get_cost())[
                         :num_chosen
                     ]
                     if self.order_moves:
-                        ordered_moves.sort(key=lambda x: (x.get_cost() if self.greediness > 0.9999 else ThreadManager.get_next_double(self.thread_id)))
+                        ordered_moves.sort(
+                            key=lambda x: (
+                                x.get_cost()
+                                if self.greediness > 0.9999
+                                else ThreadManager.get_next_double(self.thread_id)
+                            )
+                        )
 
                     while ordered_moves and not self.stop_on_evaluations([best_eval]):
                         self.stop_criteria.increment_counter()
@@ -118,7 +124,7 @@ class GRC(MetaHeuristic):
                                 break
                             else:
                                 move.unapply_operation(curr_eval)
-                   
+
                 else:
                     break  # fail on building NS
 

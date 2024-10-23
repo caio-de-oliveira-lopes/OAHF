@@ -3,15 +3,18 @@ from typing import Union
 
 from oahf.Base.Entity import Entity
 from oahf.Base.Evaluation import Evaluation
-from oahf.Base.Solution import Solution
 from oahf.Base.Pool import Pool
+from oahf.Base.Solution import Solution
 
 
 class AcceptanceCriteria(Entity, ABC):
 
     @abstractmethod
     def accept(
-        self, curr_eval: "Evaluation", next_eval: "Evaluation", next_sol: Union["Solution", Pool]
+        self,
+        curr_eval: "Evaluation",
+        next_eval: "Evaluation",
+        next_sol: Union["Solution", Pool],
     ) -> bool:
         """
         Abstract method to evaluate acceptance criteria.

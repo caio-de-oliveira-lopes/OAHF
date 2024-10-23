@@ -9,7 +9,9 @@ from .BetterOrSameAcceptanceCriteria import BetterOrSameAcceptanceCriteria
 from .CompleteAssignmentStopCriteria import CompleteAssignmentStopCriteria
 from .EliteDiversePool import EliteDiversePool
 from .ElitePool import ElitePool
-from .ExecutedByAvailableWorkersAcceptanceCriteria import ExecutedByAvailableWorkersAcceptanceCriteria
+from .ExecutedByAvailableWorkersAcceptanceCriteria import (
+    ExecutedByAvailableWorkersAcceptanceCriteria,
+)
 from .ListPool import ListPool
 from .ListSelection import ListSelection
 from .MaxCycleTimeConstraint import MaxCycleTimeConstraint
@@ -43,5 +45,5 @@ __all__ = [
     "StopNoImprovement",
     "StopTimeIterationCriteria",
     "ThresholdAcceptance",
-    "WorkersUnassignedStopCriteria"
+    "WorkersUnassignedStopCriteria",
 ]

@@ -5,6 +5,7 @@ from oahf.Base.StopCriteria import StopCriteria
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
 from oahf.Utils.Util import Util
 
+
 class StopNoImprovement(StopTimeIterationCriteria):
     def __init__(
         self,
@@ -14,7 +15,7 @@ class StopNoImprovement(StopTimeIterationCriteria):
         perc_improv: Optional[float] = None,
     ):
         """
-        Initializes a StopNoImprovement instance.        
+        Initializes a StopNoImprovement instance.
         :param iterations_no_improv: The number of iterations without improvement before stopping.
         :param seconds: The maximum time allowed for the process.
         :param iterations: The maximum number of iterations.
@@ -32,7 +33,7 @@ class StopNoImprovement(StopTimeIterationCriteria):
 
     def copy(self) -> StopCriteria:
         """Creates a copy of the current StopNoImprovement instance."""
-        return StopNoImprovement(            
+        return StopNoImprovement(
             self.iterations_no_improv,
             self.seconds,
             self.max_iterations,

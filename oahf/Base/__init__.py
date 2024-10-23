@@ -39,5 +39,5 @@ __all__ = [
     "SharedMemory",
     "Solution",
     "StopCriteria",
-    "ThreadManager"
+    "ThreadManager",
 ]

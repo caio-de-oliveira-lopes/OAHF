@@ -12,7 +12,7 @@ class StopTimeIterationCriteria(StopCriteria):
         Initializes a StopTimeIterationCriteria instance.
         :param seconds: The maximum time allowed for the process in seconds.
         :param iterations: The maximum number of iterations.
-        """        
+        """
         super().__init__()
         self.sw_start = time.time()
         self.milliseconds = int(seconds * 1000) if seconds is not None else None

@@ -1,7 +1,7 @@
 import random
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Callable, Dict, Iterable, TypeVar, Optional
+from typing import Callable, Dict, Iterable, Optional, TypeVar
 
 TSource = TypeVar("TSource")
 
@@ -24,7 +24,7 @@ class ThreadManager:
     @classmethod
     def elapsed_milliseconds(cls) -> int:
         return int((cls._watch - time.time()) * 1000)
-    
+
     @classmethod
     def get_next_double(cls, thread_id: int) -> float:
         """Gets the next random double for the specified thread ID."""

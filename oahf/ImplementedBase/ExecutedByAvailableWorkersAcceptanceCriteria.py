@@ -20,16 +20,16 @@ class ExecutedByAvailableWorkersAcceptanceCriteria(AcceptanceCriteria):
         stations = next_sol.get_open_stations()
         num_stations = len(stations)
         feasible = 0
-            
+
         for station in stations:
             for worker in next_sol.unassigned_workers:
                 if next_sol.station_would_be_feasible(station, worker):
                     feasible += 1
                     break
-                    
-        if feasible == num_stations: 
+
+        if feasible == num_stations:
             return True
-            
+
         return False
 
     def copy(self) -> "ExecutedByAvailableWorkersAcceptanceCriteria":

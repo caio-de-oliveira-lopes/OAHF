@@ -17,5 +17,5 @@ __all__ = [
     "GRC",
     "ILS",
     "ParallelILS",
-    "Pertubation"
+    "Pertubation",
 ]

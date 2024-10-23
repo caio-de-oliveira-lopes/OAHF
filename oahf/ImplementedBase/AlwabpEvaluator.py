@@ -1,9 +1,10 @@
 from typing import Optional
+
 from oahf.Base.Constraint import Constraint
-from oahf.Base.Evaluator import Evaluator
-from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 from oahf.Base.Evaluation import Evaluation
+from oahf.Base.Evaluator import Evaluator
 from oahf.ImplementedBase.AlwabpEvaluation import AlwabpEvaluation
+from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
 
 class AlwabpEvaluator(Evaluator):
@@ -22,7 +23,11 @@ class AlwabpEvaluator(Evaluator):
         :return: An Evaluation object.
         """
         if sol:
-            return AlwabpEvaluation((constraint.evaluate(sol) for constraint in self._constraints), 
-                                    sol.get_max_cycle_time(), len(sol.unassigned_tasks), len(sol.unassigned_workers))
+            return AlwabpEvaluation(
+                (constraint.evaluate(sol) for constraint in self._constraints),
+                sol.get_max_cycle_time(),
+                len(sol.unassigned_tasks),
+                len(sol.unassigned_workers),
+            )
         else:
-            return AlwabpEvaluation((), float('inf'), int('inf'), int('inf'))
+            return AlwabpEvaluation((), float("inf"), int("inf"), int("inf"))

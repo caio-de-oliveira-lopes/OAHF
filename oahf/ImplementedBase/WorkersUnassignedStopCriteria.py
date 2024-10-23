@@ -24,8 +24,11 @@ class WorkersUnassignedStopCriteria(StopCriteria):
         Returns:
             bool: True if stopping criteria are met; otherwise, False.
         """
-        return any(evaluation.num_unassigned_workers < self.num_unassigned_workers for evaluation in list(evaluations))
-    
+        return any(
+            evaluation.num_unassigned_workers < self.num_unassigned_workers
+            for evaluation in list(evaluations)
+        )
+
     def copy(self) -> "WorkersUnassignedStopCriteria":
         """Creates a copy of the stop criteria instance."""
         return WorkersUnassignedStopCriteria(self.num_unassigned_workers)

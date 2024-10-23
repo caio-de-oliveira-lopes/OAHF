@@ -66,7 +66,7 @@ class Solution(Entity, ABC):
             str: A string that represents the solution.
         """
         pass
-    
+
     def __eq__(self, obj: "Solution") -> bool:
         """
         Overrides the equality comparison method to compare solutions based on their solution hash.

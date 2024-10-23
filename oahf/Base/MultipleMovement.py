@@ -1,4 +1,4 @@
-from typing import Sequence, Optional
+from typing import Optional, Sequence
 
 from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Movement import Movement
@@ -38,5 +38,5 @@ class MultipleMovement(Movement):
         return worked
 
     def set_unapply_inconsistent(self):
-        """Override this method as it is not implemented in this class."""        
+        """Override this method as it is not implemented in this class."""
         raise NotImplementedError("Subclasses must implement this method.")

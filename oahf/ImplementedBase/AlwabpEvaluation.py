@@ -6,7 +6,13 @@ from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
 
 class AlwabpEvaluation(Evaluation):
-    def __init__(self, constraints: Iterable["ConstraintEvaluation"], max_cycle_time: float, num_unassigned_tasks: int, num_unassigned_workers: int):
+    def __init__(
+        self,
+        constraints: Iterable["ConstraintEvaluation"],
+        max_cycle_time: float,
+        num_unassigned_tasks: int,
+        num_unassigned_workers: int,
+    ):
         """
         Initializes the Alwabp Evaluation object with constraints.
         :param constraints: Iterable of ConstraintEvaluation objects.
@@ -18,12 +24,12 @@ class AlwabpEvaluation(Evaluation):
 
     @property
     def num_unassigned_tasks(self) -> int:
-        return self._num_unassigned_tasks    
-    
+        return self._num_unassigned_tasks
+
     @property
     def num_unassigned_workers(self) -> int:
         return self._num_unassigned_workers
-    
+
     def completed_assignment(self) -> bool:
         return not (self._num_unassigned_tasks or self._num_unassigned_workers)
 

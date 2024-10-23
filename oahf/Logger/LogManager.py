@@ -3,9 +3,8 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from oahf.Logger.LogMessages import LogMessages
-
 from oahf.Base.Evaluation import Evaluation
+from oahf.Logger.LogMessages import LogMessages
 from oahf.Utils.Util import Util
 
 
@@ -108,4 +107,3 @@ class LogManager:
 
             if exception:
                 cls.something_went_wrong(structure_name, exception)
-                

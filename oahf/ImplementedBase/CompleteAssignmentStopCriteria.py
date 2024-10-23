@@ -23,8 +23,10 @@ class CompleteAssignmentStopCriteria(StopCriteria):
         Returns:
             bool: True if stopping criteria are met; otherwise, False.
         """
-        return any(evaluation.completed_assignment() for evaluation in list(evaluations))
-    
+        return any(
+            evaluation.completed_assignment() for evaluation in list(evaluations)
+        )
+
     def copy(self) -> "CompleteAssignmentStopCriteria":
         """Creates a copy of the stop criteria instance."""
         return CompleteAssignmentStopCriteria()

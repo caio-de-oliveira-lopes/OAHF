@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple, Union, Iterable
+from typing import Iterable, List, Optional, Tuple, Union
 
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.EfficiencyReport import Event
@@ -42,13 +42,15 @@ class MetaHeuristic(Entity, ABC):
         thread_id: int,
         stop_criteria: "StopCriteria",
         evaluator: "Evaluator",
-        acceptance_criteria: "AcceptanceCriteria",        
+        acceptance_criteria: "AcceptanceCriteria",
         neighborhood_selection: Optional["NeighborhoodSelection"] = None,
         meta_heuristics_used: List["MetaHeuristic"] = [],
     ):
 
         super().__init__()
-        self.neighborhood_selection: Optional["NeighborhoodSelection"] = neighborhood_selection
+        self.neighborhood_selection: Optional["NeighborhoodSelection"] = (
+            neighborhood_selection
+        )
         self.evaluator: "Evaluator" = evaluator
         self.thread_id: int = thread_id
         self.stop_criteria: "StopCriteria" = stop_criteria
@@ -115,12 +117,12 @@ class MetaHeuristic(Entity, ABC):
 
             result = ListPool()
             self.start_time = self._current_milliseconds()
-            
+
             for sol in pool.get_list():
                 result.add_solution(self.run(sol))
-                
+
             self.end_time = self._current_milliseconds()
-            
+
             return result
         except Exception as ex:
             LogManager.something_went_wrong(self.__class__.__name__, ex)
@@ -155,7 +157,7 @@ class MetaHeuristic(Entity, ABC):
     def set_log_solution(self):
         self.log_solutions = True
 
-    #def stop_on_evaluations(self, ev: "Evaluation") -> bool:
+    # def stop_on_evaluations(self, ev: "Evaluation") -> bool:
     #    return self.stop_on_evaluations([ev])
 
     def stop_on_evaluations(self, evs: Optional[Iterable["Evaluation"]]) -> bool:
@@ -165,7 +167,7 @@ class MetaHeuristic(Entity, ABC):
                 and self.parent_metaheuristic.stop_on_evaluations(evs)
             )
         else:
-            return False    
+            return False
 
     @abstractmethod
     def copy(self, thread: int) -> "MetaHeuristic":

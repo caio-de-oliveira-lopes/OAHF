@@ -1,6 +1,8 @@
 from typing import Iterator, List
-from oahf.Base.Solution import Solution
+
 from oahf.Base.Pool import Pool
+from oahf.Base.Solution import Solution
+
 
 class ListPool(Pool):
     def get_solution_at(self, index: int) -> Solution:

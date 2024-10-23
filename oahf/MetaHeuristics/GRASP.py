@@ -3,11 +3,11 @@ from typing import Optional
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
+from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.ThreadManager import ThreadManager
 from oahf.ImplementedBase import ListPool
-from oahf.Base.Pool import Pool
 
 
 class GRASP(MetaHeuristic):
@@ -32,7 +32,14 @@ class GRASP(MetaHeuristic):
             acceptance_criteria (AcceptanceCriteria): The acceptance criteria for solutions.
             acceptance_criteria (Pool): Pool Type to be used as default (solutions will not be kept)
         """
-        super().__init__(thread_id, stop, evaluator, acceptance_criteria, None, [constructions, local_search])
+        super().__init__(
+            thread_id,
+            stop,
+            evaluator,
+            acceptance_criteria,
+            None,
+            [constructions, local_search],
+        )
         self.default_pool = default_pool.copy()
         self.default_pool.clear()
 
@@ -52,7 +59,7 @@ class GRASP(MetaHeuristic):
             self.meta_heuristics_used[0].copy(thread),
             self.meta_heuristics_used[1].copy(thread),
             self.acceptance_criteria.copy(),
-            self.default_pool.copy()
+            self.default_pool.copy(),
         )
 
     def run(self, solution: Solution) -> Solution:
@@ -66,18 +73,18 @@ class GRASP(MetaHeuristic):
         """
         input_pool = self.default_pool.copy()
         output_pool = self.default_pool.copy()
-        
+
         input_pool.add_solution(solution)
-        
+
         self.run_operation(input_pool, output_pool)
         best_sol = output_pool.get_best(self.evaluator)
         return best_sol or solution
-        
+
     def run_operation(self, input_pool: "Pool", output_pool: "Pool") -> "Pool":
         """Executes the GRASP meta-heuristic.
 
         Args:
-            input_pool (Pool): The initial solution pool, which can be empty.            
+            input_pool (Pool): The initial solution pool, which can be empty.
             output_pool (Pool): The output solution pool, which can be empty and even the same pool as the input pool.
 
         Returns:

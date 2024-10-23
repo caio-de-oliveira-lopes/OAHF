@@ -3,6 +3,7 @@ from typing import Iterable, List, Union
 
 from oahf.Base.StopCriteria import StopCriteria
 
+
 class MultipleStopCriteria(StopCriteria):
     def __init__(self, stop_when_any: bool, *stop_criterias: StopCriteria) -> None:
         """
@@ -10,7 +11,7 @@ class MultipleStopCriteria(StopCriteria):
 
         Args:
             stop_criterias (List[StopCriteria]): The list of stop criteria to evaluate.
-            stop_when_any (bool): If True, will stop when any criteria are met. 
+            stop_when_any (bool): If True, will stop when any criteria are met.
                                   If False, will stop only when all criteria are met.
         """
         super().__init__()
@@ -33,13 +34,21 @@ class MultipleStopCriteria(StopCriteria):
             bool: True if stopping criteria are met; otherwise, False.
         """
         if self.stop_when_any:
-            return any(criteria.stop_on_evaluations(evaluations) for criteria in self.stop_criterias)
-        return all(criteria.stop_on_evaluations(evaluations) for criteria in self.stop_criterias)
+            return any(
+                criteria.stop_on_evaluations(evaluations)
+                for criteria in self.stop_criterias
+            )
+        return all(
+            criteria.stop_on_evaluations(evaluations)
+            for criteria in self.stop_criterias
+        )
 
     def copy(self) -> "MultipleStopCriteria":
         """Creates a copy of the MultipleStopCriteria instance."""
-        return MultipleStopCriteria(self.stop_when_any, *(criteria.copy() for criteria in self.stop_criterias))
-    
+        return MultipleStopCriteria(
+            self.stop_when_any, *(criteria.copy() for criteria in self.stop_criterias)
+        )
+
     def increment_counter(self) -> None:
         """
         Increments the internal counter for each stop criteria and prints progress report if enabled.
@@ -48,7 +57,7 @@ class MultipleStopCriteria(StopCriteria):
             criteria.increment_counter()
 
         super().increment_counter()
-        
+
     def reset(self) -> None:
         """Resets the stopping criteria."""
         for criteria in self.stop_criterias:
