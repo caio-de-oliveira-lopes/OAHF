@@ -1,7 +1,8 @@
 import os
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Dict, Optional, Union
+
+from defusedxml.ElementTree import parse
 
 from oahf.Base.Evaluation import Evaluation
 from oahf.Logger.LogMessages import LogMessages
@@ -9,7 +10,7 @@ from oahf.Utils.Util import Util
 
 
 class LogManager:
-    """Static class to manage log messages and convert .resx files to JSON format."""
+    """Static class to manage and convert .resx files to JSON format."""
 
     _log_messages: Dict[LogMessages, str] = {}
     __calls_counter: int = 0
@@ -22,7 +23,7 @@ class LogManager:
 
         # Parse the .resx file as an XML tree
         try:
-            xml_tree = ET.parse(resx_file)
+            xml_tree = parse(resx_file)
             root = xml_tree.getroot()
 
             for data_node in root.findall(".//data"):
@@ -35,21 +36,17 @@ class LogManager:
                 # Find the <value> element
                 value_element = data_node.find("./value")
                 if value_element is not None:
-                    # Extract the text content of the <value> element as the value
                     value = value_element.text
                     # Check if value is not None and not empty
                     if value is not None and value.strip():
-                        # Store the key-value pair in the 'log_messages' dictionary
                         cls._log_messages[LogMessages[key]] = str(value)
                     else:
                         # Handle the case when value is None or empty
-                        Util.logger.warning(
-                            f"No valid value found for key '{key}' in '{resx_file}'"
-                        )
+                        Util.logger.warning(f"No value found for key '{key}'")
                 else:
                     # Handle the case when <value> element is not found
                     Util.logger.warning(
-                        f"Warning: No <value> element found for key '{key}' in '{resx_file}'"
+                        f"Warning: No <value> element found for key '{key}'"
                     )
         except Exception as e:
             LogManager.something_went_wrong(type(cls).__name__, e)
@@ -72,38 +69,32 @@ class LogManager:
         return LogManager._log_messages.get(message_type, "Message not found")
 
     @classmethod
-    def something_went_wrong(cls, class_name: str, exception: Union[Exception, str]):
-        log_message: LogMessages = LogMessages.SOMETHING_WENT_WRONG
+    def something_went_wrong(cls, name: str, ex: Union[Exception, str]):
+        log_str: LogMessages = LogMessages.SOMETHING_WENT_WRONG
         logger = Util.logger()
         if logger:
-            logger.error(
-                LogManager.get_message(log_message).format(class_name, exception)
-            )
+            logger.error(LogManager.get_message(log_str).format(name, ex))
 
     @classmethod
     def unable_to_get_neighborhood(cls):
-        log_message: LogMessages = LogMessages.UNABLE_TO_GET_NEIGHBORHOOD
+        log_str: LogMessages = LogMessages.UNABLE_TO_GET_NEIGHBORHOOD
         logger = Util.logger()
         if logger:
-            logger.error(LogManager.get_message(log_message))
+            logger.error(LogManager.get_message(log_str))
 
     @classmethod
     def log_solution(cls, evaluation: Evaluation):
-        log_message: LogMessages = LogMessages.LOG_SOLUTION
+        log_str: LogMessages = LogMessages.LOG_SOLUTION
         logger = Util.logger()
         if logger:
-            logger.info(LogManager.get_message(log_message).format(evaluation))
+            logger.info(LogManager.get_message(log_str).format(evaluation))
 
     @classmethod
-    def invalid_action(
-        cls, action: str, structure_name: str, exception: Optional[Exception] = None
-    ):
-        log_message: LogMessages = LogMessages.INVALID_ACTION
+    def invalid_action(cls, action: str, name: str, ex: Optional[Exception] = None):
+        log_str: LogMessages = LogMessages.INVALID_ACTION
         logger = Util.logger()
         if logger:
-            logger.error(
-                LogManager.get_message(log_message).format(action, structure_name)
-            )
+            logger.error(LogManager.get_message(log_str).format(action, name))
 
-            if exception:
-                cls.something_went_wrong(structure_name, exception)
+            if ex:
+                cls.something_went_wrong(name, ex)

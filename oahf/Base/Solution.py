@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Type
+from typing import List, Optional
 
 from oahf.Base.Entity import Entity
 
@@ -11,7 +11,9 @@ class Solution(Entity, ABC):
     @abstractmethod
     def copy(self) -> "Solution":
         """Creates a copy of the solution."""
-        pass
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
 
     @abstractmethod
     def decompose_solution(self, k: int) -> Optional[List["Solution"]]:
@@ -23,7 +25,9 @@ class Solution(Entity, ABC):
         Returns:
             Optional[List[Solution]]: A list of decomposed solutions or None.
         """
-        return None
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
 
     @abstractmethod
     def merge_solutions(self, solutions: List["Solution"]) -> "Solution":
@@ -35,7 +39,9 @@ class Solution(Entity, ABC):
         Returns:
             Solution: The merged solution.
         """
-        return None
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
 
     @abstractmethod
     def solution_hash(self) -> int:
@@ -56,7 +62,9 @@ class Solution(Entity, ABC):
         Returns:
             float: The difference between the two solutions.
         """
-        pass
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
 
     @abstractmethod
     def __str__(self) -> str:
@@ -65,18 +73,20 @@ class Solution(Entity, ABC):
         Returns:
             str: A string that represents the solution.
         """
-        pass
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
 
     def __eq__(self, obj: "Solution") -> bool:
         """
-        Overrides the equality comparison method to compare solutions based on their solution hash.
-        Supports comparison between instances of the same class or its subclasses.
+        Overrides the equality comparison method to compare solutions.
+        Supports comparison between instances of the same class/subclasses.
 
         Args:
             obj (Solution): The other solution to compare against.
 
         Returns:
-            bool: True if both objects have the same type (including subclasses) and same solution hash, False otherwise.
+            bool: True if objects have the same type and hash.
         """
         if isinstance(obj, self.__class__):
             return self.solution_hash() == obj.solution_hash()
