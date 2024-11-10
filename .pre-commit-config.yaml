@@ -19,7 +19,7 @@ repos:
     rev: 7.1.1
     hooks:
       - id: flake8
-        args: ["--max-line-length=90"]  # Change this to your preferred length
+        args: ["--max-line-length=125"]  # Change this to your preferred length
 
   # Uncomment and configure as needed
   # - repo: https://github.com/pre-commit/mirrors-mypy

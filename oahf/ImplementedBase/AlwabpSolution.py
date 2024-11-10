@@ -26,7 +26,7 @@ class AlwabpSolution(Solution):
         self, number_of_tasks: int, number_of_workers: int, number_of_stations: int
     ) -> None:
         """
-        Initializes the ALWABP problem with the given number of tasks, workers, and stations.
+        Initializes the ALWABP problem with the number of tasks, workers, and stations.
 
         Args:
             number_of_tasks (int): The total number of tasks in the problem.
@@ -44,7 +44,9 @@ class AlwabpSolution(Solution):
             (s + 1) for s in range(number_of_stations)
         ]  # List of stations [1, 2, ..., number_of_stations]
 
-        # Dictionary where key = task, value = list of execution times for each worker (can have float('inf') values)
+        # Dictionary where:
+        # key = task, value = list of execution times for each worker
+        # (can have float('inf') values)
         self._task_execution_times: Dict[int, List[float]] = {
             task: [float("inf") for _ in range(number_of_workers)]
             for task in self.tasks
@@ -53,17 +55,20 @@ class AlwabpSolution(Solution):
             self._task_execution_times
         )
 
-        # Dictionary where key = station, value = worker assigned to that station
+        # Dictionary where:
+        # key = station, value = worker assigned to that station
         self.station_worker_assignment: Dict[int, Optional[int]] = {
             station: None for station in self.stations
         }  # Which worker is assigned to each station
 
-        # Dictionary where key = worker, value = station assigned to that station
+        # Dictionary where:
+        # key = worker, value = station assigned to that station
         self.worker_station_assignment: Dict[int, Optional[int]] = {
             worker: None for worker in self.workers
         }  # Which station is assigned to each worker
 
-        # Dictionary where key = worker, value = list of tasks assigned to that worker
+        # Dictionary where:
+        # key = worker, value = list of tasks assigned to that worker
         self.station_tasks_assignment: Dict[int, List[int]] = {
             station: [] for station in self.stations
         }
@@ -71,7 +76,9 @@ class AlwabpSolution(Solution):
         self._unassigned_workers: List[int] = list(self.workers)
         self._unassigned_tasks: List[int] = list(self.tasks)
 
-        # Dictionary where key = GraphOrientation (Forward or Backward), than key = task, value = list of tasks that must precede (be allocated before) the key task
+        # Dictionary where:
+        # key = GraphOrientation (Forward or Backward), than key = task, value = list of tasks
+        # representing that must precede the key task
         self.immediate_task_precedences: Dict[
             GraphOrientation, Dict[int, List[int]]
         ] = {
@@ -197,7 +204,8 @@ class AlwabpSolution(Solution):
             execution_times (List[int]): A list of execution times for each worker.
 
         Raises:
-            ValueError: If the task number is invalid or if the length of execution times does not match the number of workers.
+            ValueError: If the task number is invalid or
+            if the length of execution times does not match the number of workers.
         """
         if task_number not in self.tasks:
             raise ValueError(
@@ -240,13 +248,13 @@ class AlwabpSolution(Solution):
 
     def __str__(self) -> str:
         """
-        Gets a string representation of the solution, focusing on the task allocations per station and its assigned worker.
+        Gets a string representation of the solution.
 
         Returns:
             str: A structured string representing the task allocations per station.
         """
         result = []
-        result.append(f"ALWABP Solution:")
+        result.append("ALWABP Solution:")
         result.append(f"Number of Tasks: {len(self.tasks)}")
         result.append(f"Number of Workers: {len(self.workers)}")
         result.append(f"Number of Stations: {len(self.stations)}")
@@ -260,9 +268,12 @@ class AlwabpSolution(Solution):
                 tasks_str = ", ".join(map(str, self.station_tasks_assignment[station]))
                 result.append(f"    Worker {worker}: Tasks -> [{tasks_str}]")
 
-        result.append(
-            f"Unassigned Tasks: {", ".join(map(str, self.unassigned_tasks)) if len(self.unassigned_tasks) > 0 else '[]'}"
+        unassigned_tasks = (
+            ", ".join(map(str, self.unassigned_tasks))
+            if len(self.unassigned_tasks) > 0
+            else "[]"
         )
+        result.append(f"Unassigned Tasks: {unassigned_tasks}")
         return "\n".join(result)
 
     def calculate_cycle_time(self, station: int) -> float:
@@ -303,7 +314,8 @@ class AlwabpSolution(Solution):
 
     def get_idle_time(self) -> float:
         """
-        Calculates the idle time, which is the difference between the maximum and minimum cycle times across stations.
+        Calculates the idle time,
+        which is the difference between the maximum and minimum cycle times across stations.
 
         Returns:
             float: The idle time (max cycle time - min cycle time).
@@ -371,7 +383,8 @@ class AlwabpSolution(Solution):
         Args:
             task_u (int): The task that must precede.
             task_v (int): The task that must come after.
-            graph_orientation (Optional[GraphOrientation]): Optional value to set graph orientation, if not set, both ways will be set.
+            graph_orientation (Optional[GraphOrientation]):
+            Optional value to set graph orientation, if not set, both ways will be set.
             The parameters will be set as FORWARD and reversed to set BACKWARD.
 
         Returns:
@@ -522,7 +535,7 @@ class AlwabpSolution(Solution):
 
     def remove_worker_from_station(self, worker: int, station: int) -> bool:
         """
-        Removes a worker from a specific station by setting the station to None, if the worker is assigned to that station.
+        Removes a worker from a specific station by setting the station.
 
         Args:
             worker (int): The worker to be removed.
@@ -606,7 +619,8 @@ class AlwabpSolution(Solution):
             task (int): The task ID to find the station for.
 
         Returns:
-            Optional[int]: The station ID where the task is assigned, or None if the task is not assigned to any station.
+            Optional[int]: The station ID where the task is assigned,
+            or None if the task is not assigned to any station.
         """
         # Iterate through workers to find the task
         for station, tasks in self.station_tasks_assignment.items():
@@ -624,7 +638,8 @@ class AlwabpSolution(Solution):
             worker (int): The ID of the worker whose station is to be found.
 
         Returns:
-            Optional[int]: The station ID where the worker is allocated, or None if the worker is not allocated to any station.
+            Optional[int]: The station ID where the worker is allocated,
+            or None if the worker is not allocated to any station.
         """
         return self.worker_station_assignment[worker]
 
@@ -643,7 +658,7 @@ class AlwabpSolution(Solution):
 
         Args:
             station (int): The upper station ID to which precence tasks are could have been assigned.
-            graph_orientation (GraphOrientation): represent the state of the precedence graph (FORWARD or BACKWARD)
+            graph_orientation (GraphOrientation): represent the state of the precedence graph.
             override_unassigned_tasks (List[int]): list of unassigned tasks to be used for simulations.
 
         Returns:
@@ -697,7 +712,8 @@ class AlwabpSolution(Solution):
 
         Args:
             task (int): The task ID for which to calculate the maximum task execution time.
-            workers (Optional[List[int]]): A list of worker indices to consider. If None, consider all workers.
+            workers (Optional[List[int]]): A list of worker indices to consider.
+            If None, consider all workers.
 
         Returns:
             float: The maximum task execution time among the specified workers.
@@ -718,7 +734,8 @@ class AlwabpSolution(Solution):
 
         Args:
             task (int): The task ID for which to calculate the minimum task execution time.
-            workers (Optional[List[int]]): A list of worker indices to consider. If None, consider all workers.
+            workers (Optional[List[int]]): A list of worker indices to consider.
+            If None, consider all workers.
 
         Returns:
             float: The minimum task execution time among the specified workers.
@@ -739,7 +756,8 @@ class AlwabpSolution(Solution):
 
         Args:
             task (int): The task ID for which to calculate the average task execution time.
-            workers (Optional[List[int]]): A list of worker indices to consider. If None, consider all workers.
+            workers (Optional[List[int]]): A list of worker indices to consider.
+            If None, consider all workers.
 
         Returns:
             float: The average task execution time among the specified workers.
@@ -761,8 +779,8 @@ class AlwabpSolution(Solution):
         based on the specified type.
 
         Args:
-            positional_weight_type (MaxPositionalWeightType): The type of positional weight
-            to determine the appropriate function (MAX, MIN, or AVERAGE).
+            positional_weight_type (MaxPositionalWeightType):
+            The type of positional weight to determine the appropriate function.
 
         Returns:
             Callable[[int], float]: A function that takes an integer (task) as input and
@@ -902,7 +920,8 @@ class AlwabpSolution(Solution):
         Returns the first station key where the worker assignment is None.
 
         Returns:
-            Optional[int]: The station key where the worker is not assigned (None) or None if all are assigned.
+            Optional[int]: The station key where the worker is not assigned (None)
+            or None if all are assigned.
         """
         for station, worker in self.station_worker_assignment.items():
             if worker is None:
