@@ -79,7 +79,7 @@ class AlwabpSolution(Solution):
         # Dictionary where:
         # key = GraphOrientation (Forward or Backward), than key = task, value = list of tasks
         # representing that must precede the key task
-        self.immediate_task_precedences: Dict[
+        self.immediate_task_precedences: Dict[  # type: ignore
             GraphOrientation, Dict[int, List[int]]
         ] = {
             graph_orientation: {task: [] for task in self.tasks}  # type: ignore
@@ -93,13 +93,13 @@ class AlwabpSolution(Solution):
         self._cycle_time_limit: Optional[float] = None
 
         # Similar structure to self.immediate_task_precedences, needs to call 'process_graph_data' to fill it
-        self.all_task_precedences: Dict[GraphOrientation, Dict[int, List[int]]] = {
+        self.all_task_precedences: Dict[GraphOrientation, Dict[int, List[int]]] = {  # type: ignore
             graph_orientation: {task: [] for task in self.tasks}  # type: ignore
             for graph_orientation in EnumUtil.get_values(GraphOrientation)
         }
 
-        self.max_positional_weight: Dict[MaxPositionalWeightType, Dict[int, float]] = {
-            positional_weight_type: {task: -1 for task in self.tasks}  # type: ignore
+        self.max_positional_weight: Dict[MaxPositionalWeightType, Dict[int, float]] = {  # type: ignore
+            positional_weight_type: {task: -1 for task in self.tasks}
             for positional_weight_type in EnumUtil.get_values(MaxPositionalWeightType)
         }
 

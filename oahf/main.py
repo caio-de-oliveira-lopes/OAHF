@@ -1,107 +1,77 @@
 import os
-from pathlib import Path
-from typing import Optional, Type
+from datetime import datetime
+from typing import Optional
 
 from oahf.Base import Solution
 from oahf.Base.ThreadManager import ThreadManager
+from oahf.Commons.ProblemData import ProblemData
 from oahf.ImplementedBase.AlwabpEvaluator import AlwabpEvaluator
-from oahf.ImplementedBase.AlwabpSolution import (
-    AlwabpSolution,
-    GraphOrientation,
-    MaxPositionalWeightType,
-)
-from oahf.ImplementedBase.AlwabpWorkerOrientedInsertNS import (
-    AlwabpWorkerOrientedInsertNS,
-)
-from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
-    AlwaysAcceptAcceptanceCriteria,
-)
-from oahf.ImplementedBase.BetterOrSameAcceptanceCriteria import (
-    BetterOrSameAcceptanceCriteria,
-)
-from oahf.ImplementedBase.CompleteAssignmentStopCriteria import (
-    CompleteAssignmentStopCriteria,
-)
-from oahf.ImplementedBase.ExecutedByAvailableWorkersAcceptanceCriteria import (
-    ExecutedByAvailableWorkersAcceptanceCriteria,
-)
-from oahf.ImplementedBase.ListSelection import ListSelection
+from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 from oahf.ImplementedBase.MaxCycleTimeConstraint import MaxCycleTimeConstraint
-from oahf.ImplementedBase.StopNoImprovement import StopNoImprovement
-from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
-from oahf.ImplementedBase.WorkersUnassignedStopCriteria import (
-    WorkersUnassignedStopCriteria,
-)
-from oahf.MetaHeuristics.GRC import GRC
-from oahf.Utils import EnumUtil, Util
+from oahf.MetaHeuristicsParser.HeuristicParser import HeuristicParser
+from oahf.Utils import Util
 
 
 def main():
-    input_path = Path(r"C:\Projetos\OAHF\Instances\alwabp")
-    file_name = "1_hes"
-    input_file = input_path.joinpath(file_name)
-    cycle_time_path = Path(
-        rf"C:\Projetos\OAHF\Parameters\recommeded_maximum_mean_cycle_time.json"
+    problem_data = ProblemData("C:\\Projetos\\OAHF\\Parameters\\oahf_parameters.json")
+    Util.set_optimization_start_time(datetime.now())
+    Util.set_input_name(problem_data.file_name)
+
+    Util.logger().info(
+        "Welcome to the Open Algorithm and Heuristic Framework (OAHF). "
+        "Initializing the system and preparing the environment."
     )
 
-    input_type = Type[AlwabpSolution]
-    original_solution: Optional[Solution] = Util.read_input(input_file, input_type)
+    heuristic_parser = HeuristicParser()
+    evaluator = AlwabpEvaluator(True, MaxCycleTimeConstraint())
+    heuristic_parser.parse_file(problem_data.heuristic_definition_file, evaluator)
+    original_solution: Optional[Solution] = Util.read_input(problem_data.input_file, problem_data.input_type)  # type: ignore
 
     if not original_solution or not isinstance(original_solution, AlwabpSolution):
         return None
 
     solution = original_solution.copy()
-    random_seed = 1
-    thread = 0
-    ThreadManager.initialize(1, random_seed)
-    positional_weight_types = list(EnumUtil.get_values(MaxPositionalWeightType))
-    ns_greediness = 0
-    grc_greedness = 1
-    graph_orientation = GraphOrientation.FORWARD
-
-    pw = positional_weight_types[thread - 1]
-    if not isinstance(pw, MaxPositionalWeightType):
-        return None
-
-    evaluator = AlwabpEvaluator(True, MaxCycleTimeConstraint())
-    acceptance_criteria = BetterOrSameAcceptanceCriteria()
+    ThreadManager.initialize(1, problem_data.random_seed)
 
     cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(
-        cycle_time_path, file_name
+        problem_data.cycle_time_path, problem_data.file_name
     )
-    solution.cycle_time_limit = cycle_time_limit
 
-    print(f"Starting instance {file_name} with cycle time = {str(cycle_time_limit)}")
+    solution.cycle_time_limit = cycle_time_limit
+    print(
+        f"Starting instance {problem_data.file_name} with cycle time = {str(cycle_time_limit)}"
+    )
     # Must add UB calculation and use it as stop criteria too (to avoid infinite loop)
     # 500 is defined in the article as "obtained through an increase of the best results obtained in the literature"
-    while not len(solution.unassigned_workers) == 0 or cycle_time_limit >= 500:
-        stop_criteria = WorkersUnassignedStopCriteria(1)
-        ns = ListSelection(
-            False,
-            AlwabpWorkerOrientedInsertNS(pw, graph_orientation, ns_greediness, None),
-        )
-
-        grc = GRC(
-            thread,
-            grc_greedness,
-            stop_criteria,
-            evaluator,
-            acceptance_criteria,
-            ns,
-            order_moves=False,
-        )
-        new_solution = grc.run(solution)
-
-        if isinstance(new_solution, AlwabpSolution):
-            if new_solution == solution or len(new_solution.unassigned_tasks) > 0:
-                cycle_time_limit += 1
-                original_solution.cycle_time_limit = cycle_time_limit
-                solution = original_solution.copy()
-                # print(f'Increase cycle time to {str(cycle_time_limit)}')
-            else:
-                solution = new_solution
-
-    print(solution)
+    #
+    # while not len(solution.unassigned_workers) == 0 or cycle_time_limit >= 500:
+    #    stop_criteria = WorkersUnassignedStopCriteria(0)
+    #    ns = ListSelection(
+    #        False,
+    #        AlwabpWorkerOrientedInsertNS(pw, graph_orientation, ns_greediness, None),
+    #    )
+    #
+    #    grc = GRC(
+    #        0,
+    #        grc_greedness,
+    #        stop_criteria,
+    #        evaluator,
+    #        acceptance_criteria,
+    #        ns,
+    #        order_moves=False,
+    #    )
+    #    new_solution = grc.run(solution)
+    #
+    #   if isinstance(new_solution, AlwabpSolution):
+    #        if new_solution == solution or len(new_solution.unassigned_tasks) > 0:
+    #            cycle_time_limit += 1
+    #            original_solution.cycle_time_limit = cycle_time_limit
+    #            solution = original_solution.copy()
+    #            # print(f'Increase cycle time to {str(cycle_time_limit)}')
+    #        else:
+    #            solution = new_solution
+    #
+    # print(solution)
 
 
 def create_init_files(root_dir):

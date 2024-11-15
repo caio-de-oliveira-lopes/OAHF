@@ -6,8 +6,6 @@ from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
-from oahf.Base.ThreadManager import ThreadManager
-from oahf.ImplementedBase import ListPool
 
 
 class GRASP(MetaHeuristic):
@@ -19,7 +17,8 @@ class GRASP(MetaHeuristic):
         constructions: MetaHeuristic,
         local_search: MetaHeuristic,
         acceptance_criteria: AcceptanceCriteria,
-        default_pool: Pool,
+        origin_pool: Optional[Pool] = None,
+        destination_pool: Optional[Pool] = None,
     ) -> None:
         """Initialize the GRASP meta-heuristic.
 
@@ -39,9 +38,9 @@ class GRASP(MetaHeuristic):
             acceptance_criteria,
             None,
             [constructions, local_search],
+            origin_pool,
+            destination_pool,
         )
-        self.default_pool = default_pool.copy()
-        self.default_pool.clear()
 
     def copy(self, thread: int) -> "GRASP":
         """Creates a copy of the GRASP instance.
@@ -59,10 +58,11 @@ class GRASP(MetaHeuristic):
             self.meta_heuristics_used[0].copy(thread),
             self.meta_heuristics_used[1].copy(thread),
             self.acceptance_criteria.copy(),
-            self.default_pool.copy(),
+            self.origin_pool.copy() if self.origin_pool is not None else None,
+            self.destination_pool.copy() if self.destination_pool is not None else None,
         )
 
-    def run(self, solution: Solution) -> Solution:
+    def run(self, sol: Solution) -> Solution:
         """Executes the GRASP meta-heuristic.
 
         Args:
@@ -71,14 +71,7 @@ class GRASP(MetaHeuristic):
         Returns:
             Solution: The best solution found during execution.
         """
-        input_pool = self.default_pool.copy()
-        output_pool = self.default_pool.copy()
-
-        input_pool.add_solution(solution)
-
-        self.run_operation(input_pool, output_pool)
-        best_sol = output_pool.get_best(self.evaluator)
-        return best_sol or solution
+        raise NotImplementedError("Use run_operation() method for this class.")
 
     def run_operation(self, input_pool: "Pool", output_pool: "Pool") -> "Pool":
         """Executes the GRASP meta-heuristic.
@@ -100,10 +93,10 @@ class GRASP(MetaHeuristic):
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
 
-        while not self.stop_on_evaluations(*best_eval):
+        while not self.stop_on_evaluations([best_eval]):
             self.stop_criteria.increment_counter()
-            curr_pool = construction.run_operation(start_pool, self)
-            curr_pool = local_search.run_operation(curr_pool, self)
+            curr_pool = construction.run_operation(start_pool, output_pool, self)
+            curr_pool = local_search.run_operation(curr_pool, output_pool, self)
             curr_eval = self.evaluator.evaluate(curr_pool.get_best(self.evaluator))
 
             if best_eval is not None and self.acceptance_criteria.accept(
@@ -114,4 +107,4 @@ class GRASP(MetaHeuristic):
                 # Optionally log the best evaluation
                 # print(best_eval)
 
-        return best_sol
+        return output_pool

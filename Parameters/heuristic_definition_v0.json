@@ -1,0 +1,168 @@
+{
+	"neighborhoods": [
+		{
+			"id": 0,
+			"name": "alwabp_worker_oriented_insert_ns",
+			"parameters":
+			{
+				"pw": "max",
+				"graph_orientation": "forward",
+				"greediness": 0
+			}
+		},
+		{
+			"id": 1,
+			"name": "alwabp_worker_oriented_insert_ns",
+			"parameters":
+			{
+				"pw": "min",
+				"graph_orientation": "forward",
+				"greediness": 0
+			}
+		},
+		{
+			"id": 2,
+			"name": "alwabp_worker_oriented_insert_ns",
+			"parameters":
+			{
+				"pw": "average",
+				"graph_orientation": "forward",
+				"greediness": 0
+			}
+		},
+		{
+			"id": 3,
+			"name": "alwabp_worker_oriented_insert_ns",
+			"parameters":
+			{
+				"pw": "max",
+				"graph_orientation": "backward",
+				"greediness": 0
+			}
+		},
+		{
+			"id": 4,
+			"name": "alwabp_worker_oriented_insert_ns",
+			"parameters":
+			{
+				"pw": "min",
+				"graph_orientation": "backward",
+				"greediness": 0
+			}
+		},
+		{
+			"id": 5,
+			"name": "alwabp_worker_oriented_insert_ns",
+			"parameters":
+			{
+				"pw": "average",
+				"graph_orientation": "backward",
+				"greediness": 0
+			}
+		}
+	],
+	"neighborhood_selections": [
+		{
+			"id": 0,
+			"name": "list_selection",
+			"neighborhood_ids": [ 0 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 1,
+			"name": "list_selection",
+			"neighborhood_ids": [ 1 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 2,
+			"name": "list_selection",
+			"neighborhood_ids": [ 2 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 3,
+			"name": "list_selection",
+			"neighborhood_ids": [ 3 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 4,
+			"name": "list_selection",
+			"neighborhood_ids": [ 4 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 5,
+			"name": "list_selection",
+			"neighborhood_ids": [ 5 ],
+			"parameters": {
+				"circular": "false"
+			}
+		}
+	],
+	"solution_pools":
+	[
+		{
+			"id": 0,
+			"name": "list_pool",
+			"parameters": {}
+		}
+	],
+	"metaheuristics":
+	[
+		{
+			"id": 0,
+			"name": "grc",
+			"stop_criteria": {
+				"workers_unassigned": {
+					"num_unassigned_workers": 0
+				}
+			},
+			"acceptance_criteria": {
+				"better_or_same": {}
+			},
+			"parameters": {
+				"greediness": 1,
+				"order_moves": "false"
+			},
+			"neighborhood_selection": 0
+		},
+		{
+			"id": 1,
+			"name": "grasp",
+			"stop_criteria": {
+				"multiple_stop_criteria": {
+					"stop_when_any": "true",
+					"stop_criterias": {
+						"workers_unassigned": {
+							"num_unassigned_workers": 0
+						},
+						"max_cycle_time_limit": {
+							"cycle_time": 500
+						}
+					}
+				}
+			},
+			"acceptance_criteria": {
+				"better_or_same": {}
+			},
+			//"origin": { "solution_pool": 0 },
+			"metaheuristics_used": [ 1 ],
+			"parameters": {},
+			"neighborhood_selection": 0,
+			"execution_order": 0,
+			"destination": [ { "solution_pool": 0 } ]
+		}
+	]
+}

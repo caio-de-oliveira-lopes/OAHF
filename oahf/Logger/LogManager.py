@@ -71,30 +71,22 @@ class LogManager:
     @classmethod
     def something_went_wrong(cls, name: str, ex: Union[Exception, str]):
         log_str: LogMessages = LogMessages.SOMETHING_WENT_WRONG
-        logger = Util.logger()
-        if logger:
-            logger.error(LogManager.get_message(log_str).format(name, ex))
+        Util.logger().error(LogManager.get_message(log_str).format(name, ex))
 
     @classmethod
     def unable_to_get_neighborhood(cls):
         log_str: LogMessages = LogMessages.UNABLE_TO_GET_NEIGHBORHOOD
-        logger = Util.logger()
-        if logger:
-            logger.error(LogManager.get_message(log_str))
+        Util.logger().error(LogManager.get_message(log_str))
 
     @classmethod
     def log_solution(cls, evaluation: Evaluation):
         log_str: LogMessages = LogMessages.LOG_SOLUTION
-        logger = Util.logger()
-        if logger:
-            logger.info(LogManager.get_message(log_str).format(evaluation))
+        Util.logger().info(LogManager.get_message(log_str).format(evaluation))
 
     @classmethod
     def invalid_action(cls, action: str, name: str, ex: Optional[Exception] = None):
         log_str: LogMessages = LogMessages.INVALID_ACTION
-        logger = Util.logger()
-        if logger:
-            logger.error(LogManager.get_message(log_str).format(action, name))
+        Util.logger().error(LogManager.get_message(log_str).format(action, name))
 
-            if ex:
-                cls.something_went_wrong(name, ex)
+        if ex:
+            cls.something_went_wrong(name, ex)

@@ -1,13 +1,12 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Tuple
 
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.EfficiencyReport import Event
 from oahf.Base.Entity import Entity
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Evaluator import Evaluator
-from oahf.Base.Neighborhood import Neighborhood
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
@@ -45,18 +44,22 @@ class MetaHeuristic(Entity, ABC):
         acceptance_criteria: "AcceptanceCriteria",
         neighborhood_selection: Optional["NeighborhoodSelection"] = None,
         meta_heuristics_used: List["MetaHeuristic"] = [],
+        origin_pool: Optional[Pool] = None,
+        destination_pool: Optional[Pool] = None,
     ):
 
         super().__init__()
         self.neighborhood_selection: Optional["NeighborhoodSelection"] = (
             neighborhood_selection
         )
-        self.evaluator: "Evaluator" = evaluator
         self.thread_id: int = thread_id
         self.stop_criteria: "StopCriteria" = stop_criteria
-        self.parent_metaheuristic: Optional["MetaHeuristic"] = None
-        self.meta_heuristics_used: List["MetaHeuristic"] = meta_heuristics_used
+        self.evaluator: "Evaluator" = evaluator
         self.acceptance_criteria: "AcceptanceCriteria" = acceptance_criteria
+        self.meta_heuristics_used: List["MetaHeuristic"] = meta_heuristics_used
+        self.origin_pool: Optional[Pool] = origin_pool
+        self.destination_pool: Optional[Pool] = destination_pool
+        self.parent_metaheuristic: Optional["MetaHeuristic"] = None
         self.solution_reports: SolutionReport = SolutionReport()
         self.log_solutions: bool = False
         self.start_time: int = 0
@@ -104,21 +107,27 @@ class MetaHeuristic(Entity, ABC):
     @abstractmethod
     def run(self, sol: Solution) -> Solution:
         """Run the heuristic on a given solution."""
-        pass
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
 
     def run_operation(
-        self, pool: "Pool", parent: Optional["MetaHeuristic"] = None
-    ) -> "Pool":
+        self,
+        origin_pool: Pool,
+        destination_pool: Optional[Pool],
+        parent: Optional["MetaHeuristic"] = None,
+    ) -> Pool:
+        """Run the heuristic on a given pool of solutions."""
         try:
             self.parent_metaheuristic = parent
             self.stop_criteria.reset()
             if self.neighborhood_selection:
                 self.neighborhood_selection.reset(self.thread_id)
 
-            result = ListPool()
+            result = destination_pool or ListPool()
             self.start_time = self._current_milliseconds()
 
-            for sol in pool.get_list():
+            for sol in origin_pool.get_list():
                 result.add_solution(self.run(sol))
 
             self.end_time = self._current_milliseconds()
@@ -160,7 +169,7 @@ class MetaHeuristic(Entity, ABC):
     # def stop_on_evaluations(self, ev: "Evaluation") -> bool:
     #    return self.stop_on_evaluations([ev])
 
-    def stop_on_evaluations(self, evs: Optional[Iterable["Evaluation"]]) -> bool:
+    def stop_on_evaluations(self, evs: Iterable["Evaluation"]) -> bool:
         if evs:
             return self.stop_criteria.stop_on_evaluations(evs) or (
                 self.parent_metaheuristic is not None

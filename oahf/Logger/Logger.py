@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Any
 
 from oahf.Base.Entity import Entity
@@ -13,7 +14,9 @@ class Logger(Entity):
     (DEBUG, INFO, WARNING, ERROR, CRITICAL) and records them in a JSON file.
     """
 
-    def __init__(self, log_file: str, level: int = logging.DEBUG) -> None:
+    def __init__(
+        self, log_file: str = "log.json", level: int = logging.DEBUG, show_messages=True
+    ) -> None:
         """
         Initializes the logger with a log file and the specified level.
 
@@ -22,11 +25,26 @@ class Logger(Entity):
             level (int): The logging level. The default is DEBUG.
         """
         super().__init__()
+        from oahf.Utils.Util import Util
+
         self.logger: logging.Logger = logging.getLogger("JsonLogger")
         self.logger.setLevel(level)
+        self.show_messages = show_messages
+
+        self.format = ".json"
+        if self.format not in log_file:
+            log_file += self.format
+
+        full_log_file = Path(
+            Util.default_output_path(),
+            Util.input_name(),
+            Util.get_optimization_start_time(),
+            log_file,
+        )
+        full_log_file.parent.mkdir(parents=True, exist_ok=True)
 
         # Create a FileHandler to direct logs to the specified file
-        file_handler: logging.FileHandler = logging.FileHandler(log_file)
+        file_handler: logging.FileHandler = logging.FileHandler(full_log_file)
         file_handler.setLevel(level)
 
         # Set the custom format as JSON
@@ -36,6 +54,10 @@ class Logger(Entity):
         # Add the handler to the logger
         self.logger.addHandler(file_handler)
 
+    def show_message(self, message: str):
+        if self.show_messages:
+            print(message)
+
     def debug(self, message: str, *args: Any, **kwargs: Any) -> None:
         """
         Logs a debug message.
@@ -44,6 +66,7 @@ class Logger(Entity):
             message (str): The log message.
         """
         self.logger.debug(message, *args, **kwargs)
+        self.show_message(message)
 
     def info(self, message: str, *args: Any, **kwargs: Any) -> None:
         """
@@ -53,6 +76,7 @@ class Logger(Entity):
             message (str): The log message.
         """
         self.logger.info(message, *args, **kwargs)
+        self.show_message(message)
 
     def warning(self, message: str, *args: Any, **kwargs: Any) -> None:
         """
@@ -62,6 +86,7 @@ class Logger(Entity):
             message (str): The log message.
         """
         self.logger.warning(message, *args, **kwargs)
+        self.show_message(message)
 
     def error(self, message: str, *args: Any, **kwargs: Any) -> None:
         """
@@ -71,6 +96,7 @@ class Logger(Entity):
             message (str): The log message.
         """
         self.logger.error(message, *args, **kwargs)
+        self.show_message(message)
 
     def critical(self, message: str, *args: Any, **kwargs: Any) -> None:
         """
@@ -80,16 +106,4 @@ class Logger(Entity):
             message (str): The log message.
         """
         self.logger.critical(message, *args, **kwargs)
-
-
-# Example of using the custom logger class
-# if __name__ == "__main__":
-#    # Create a logger that logs to logs.json
-#    json_logger = Logger(log_file='logs.json')
-#
-#    # Example log entries
-#    json_logger.debug("Debug message")
-#    json_logger.info("Informational message")
-#    json_logger.warning("Warning")
-#    json_logger.error("Error encountered")
-#    json_logger.critical("Critical error")
+        self.show_message(message)

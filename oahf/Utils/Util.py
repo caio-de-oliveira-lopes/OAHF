@@ -1,8 +1,10 @@
 import hashlib
 import json
 import multiprocessing
+import os
+from datetime import datetime
 from pathlib import Path
-from typing import ClassVar, List, Optional, Tuple, Type
+from typing import ClassVar, List, Optional, Type
 
 from oahf.Base.Solution import Solution
 from oahf.Logger.Logger import Logger
@@ -12,6 +14,9 @@ class Util:
     _eps: ClassVar[float] = 1e-3
     _threads: ClassVar[int] = multiprocessing.cpu_count() - 1
     _logger: ClassVar[Optional[Logger]] = None
+    _optimization_start_time: ClassVar[str] = ""
+    _default_output_path: ClassVar[Path] = Path(os.getcwd(), "Outputs")
+    _input_name: ClassVar[str] = "dummy"
 
     @classmethod
     def eps(cls) -> float:
@@ -28,11 +33,13 @@ class Util:
         return cls._threads
 
     @classmethod
-    def logger(cls) -> Optional[Logger]:
+    def logger(cls) -> Logger:
         """
         Returns:
-            Optional[Logger]: logger currently associated with the class.
+            Logger: logger currently associated with the class.
         """
+        if cls._logger is None:
+            cls._logger = Logger()
         return cls._logger
 
     @classmethod
@@ -41,6 +48,22 @@ class Util:
         Sets a new logger for the Util class.
         """
         cls._logger = value
+
+    @classmethod
+    def default_output_path(cls) -> Path:
+        return cls._default_output_path
+
+    @classmethod
+    def set_default_output_path(cls, path: Path) -> None:
+        cls._default_output_path = path
+
+    @classmethod
+    def input_name(cls) -> str:
+        return cls._input_name
+
+    @classmethod
+    def set_input_name(cls, input_name: str) -> None:
+        cls._input_name = input_name
 
     @staticmethod
     def get_current_method_name() -> str:
@@ -84,7 +107,9 @@ class Util:
     #    return threading.current_thread().ident
 
     @classmethod
-    def read_input(cls, input_file: Path, input_type: Type) -> Optional[Solution]:
+    def read_input(
+        cls, input_file: Path, input_type: Type[Solution]
+    ) -> Optional[Solution]:
         from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
         if input_type is Type[AlwabpSolution]:
@@ -93,7 +118,7 @@ class Util:
             pass
 
     @classmethod
-    def read_ALWABP_input(cls, input_file: Path) -> Optional["AlwabpSolution"]:
+    def read_ALWABP_input(cls, input_file: Path) -> Optional[Solution]:
         """
         Reads ALWABP input file and returns an ALWABP instance.
         """
@@ -128,7 +153,7 @@ class Util:
                     worker_lines = lines[task + 1].split()
 
                 # Read precedence graph (task pairs) directly
-                for line in lines[number_of_tasks + 1 :]:
+                for line in lines[(number_of_tasks + 1) :]:
                     splited_lines = line.split()
                     u_task, v_task = int(splited_lines[0]), int(splited_lines[-1])
 
@@ -173,3 +198,13 @@ class Util:
         value: int = int(data.get(input_name, None))
 
         return value
+
+    @classmethod
+    def set_optimization_start_time(cls, optimization_time: datetime) -> None:
+        cls._optimization_start_time = optimization_time.strftime(
+            "output_%m-%d-%Y_%Hh-%Mm-%Ss"
+        ).replace(":", "_")
+
+    @classmethod
+    def get_optimization_start_time(cls):
+        return cls._optimization_start_time

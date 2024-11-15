@@ -24,10 +24,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="oahf\" />
+    <Folder Include="oahf\Commons\" />
     <Folder Include="oahf\ImplementedBase\" />
     <Folder Include="oahf\Logger\" />
     <Folder Include="oahf\Logger\__pycache__\" />
     <Folder Include="oahf\Base\" />
+    <Folder Include="oahf\MetaHeuristicsParser\" />
     <Folder Include="oahf\MetaHeuristics\" />
     <Folder Include="oahf\Utils\" />
     <Folder Include="oahf\Utils\__pycache__\" />
@@ -54,6 +56,7 @@
     <Compile Include="oahf\Base\StopCriteria.py" />
     <Compile Include="oahf\Base\ThreadManager.py" />
     <Compile Include="oahf\Base\__init__.py" />
+    <Compile Include="oahf\Commons\ProblemData.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpInsertOrderMove.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpSolution.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpEvaluator.py" />
@@ -83,6 +86,7 @@
     <Compile Include="oahf\Logger\JsonFormatter.py" />
     <Compile Include="oahf\Logger\Logger.py" />
     <Compile Include="oahf\Logger\__init__.py" />
+    <Compile Include="oahf\MetaHeuristicsParser\HeuristicParser.py" />
     <Compile Include="oahf\MetaHeuristics\GeneticAlgorithm.py" />
     <Compile Include="oahf\MetaHeuristics\ParallelILS.py" />
     <Compile Include="oahf\MetaHeuristics\Pertubation.py" />
