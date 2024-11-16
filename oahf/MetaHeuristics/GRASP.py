@@ -73,7 +73,7 @@ class GRASP(MetaHeuristic):
         """
         raise NotImplementedError("Use run_operation() method for this class.")
 
-    def run_operation(self, input_pool: "Pool", output_pool: "Pool") -> "Pool":
+    def run_operation(self, input_pool: Pool, output_pool: Pool) -> Pool:
         """Executes the GRASP meta-heuristic.
 
         Args:
@@ -96,7 +96,12 @@ class GRASP(MetaHeuristic):
         while not self.stop_on_evaluations([best_eval]):
             self.stop_criteria.increment_counter()
             curr_pool = construction.run_operation(start_pool, output_pool, self)
-            curr_pool = local_search.run_operation(curr_pool, output_pool, self)
+
+            best_sol = curr_pool.get_best(self.evaluator)
+            if not best_sol or not best_sol.validade_aspects():
+                continue
+
+            # curr_pool = local_search.run_operation(curr_pool, output_pool, self)
             curr_eval = self.evaluator.evaluate(curr_pool.get_best(self.evaluator))
 
             if best_eval is not None and self.acceptance_criteria.accept(

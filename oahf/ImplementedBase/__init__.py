@@ -15,6 +15,7 @@ from .ExecutedByAvailableWorkersAcceptanceCriteria import (
 from .ListPool import ListPool
 from .ListSelection import ListSelection
 from .MaxCycleTimeConstraint import MaxCycleTimeConstraint
+from .MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
 from .ProbabilityListSelection import ProbabilityListSelection
 from .RandomListSelection import RandomListSelection
 from .SimulatedAnnealing import SimulatedAnnealing
@@ -39,6 +40,7 @@ __all__ = [
     "ListPool",
     "ListSelection",
     "MaxCycleTimeConstraint",
+    "MaxCycleTimeStopCriteria",
     "ProbabilityListSelection",
     "RandomListSelection",
     "SimulatedAnnealing",

@@ -144,25 +144,28 @@
 			"stop_criteria": {
 				"multiple_stop_criteria": {
 					"stop_when_any": "true",
-					"stop_criterias": {
-						"workers_unassigned": {
-							"num_unassigned_workers": 0
+					"stop_criterias": [
+						{
+							"workers_unassigned": {
+								"num_unassigned_workers": 0
+							}
 						},
-						"max_cycle_time_limit": {
-							"cycle_time": 500
+						{
+							"max_cycle_time": {
+								"cycle_time_limit": 500
+							}
 						}
-					}
+					]
 				}
 			},
 			"acceptance_criteria": {
 				"better_or_same": {}
 			},
-			//"origin": { "solution_pool": 0 },
-			"metaheuristics_used": [ 1 ],
+			"metaheuristics_used": [ 0, 0 ],
 			"parameters": {},
 			"neighborhood_selection": 0,
 			"execution_order": 0,
-			"destination": [ { "solution_pool": 0 } ]
+			"destination_pool": 0
 		}
 	]
 }

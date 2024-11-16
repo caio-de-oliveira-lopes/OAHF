@@ -139,6 +139,14 @@ class AlwabpSolution(Solution):
 
         return new_copy
 
+    def validade_aspects(self) -> bool:
+        if self.cycle_time_limit and len(self.unassigned_tasks) > 0:
+            self.cycle_time_limit += 1
+            print(f"Increase cycle time to {str(self.cycle_time_limit)}")
+            self.reset()
+            return False
+        return super().validade_aspects()
+
     def reset(self) -> None:
         self.station_worker_assignment: Dict[int, Optional[int]] = {
             station: None for station in self.stations

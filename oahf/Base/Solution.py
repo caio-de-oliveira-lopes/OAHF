@@ -67,6 +67,14 @@ class Solution(Entity, ABC):
         )
 
     @abstractmethod
+    def validade_aspects(self) -> bool:
+        return True
+
+    @abstractmethod
+    def reset(self) -> None:
+        pass
+
+    @abstractmethod
     def __str__(self) -> str:
         """Gets a string representation of the solution.
 

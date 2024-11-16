@@ -33,45 +33,15 @@ def main():
     solution = original_solution.copy()
     ThreadManager.initialize(1, problem_data.random_seed)
 
-    cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(
+    solution.cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(
         problem_data.cycle_time_path, problem_data.file_name
     )
 
-    solution.cycle_time_limit = cycle_time_limit
     print(
-        f"Starting instance {problem_data.file_name} with cycle time = {str(cycle_time_limit)}"
+        f"Starting instance {problem_data.file_name} with cycle time = {str(solution.cycle_time_limit)}"
     )
-    # Must add UB calculation and use it as stop criteria too (to avoid infinite loop)
-    # 500 is defined in the article as "obtained through an increase of the best results obtained in the literature"
-    #
-    # while not len(solution.unassigned_workers) == 0 or cycle_time_limit >= 500:
-    #    stop_criteria = WorkersUnassignedStopCriteria(0)
-    #    ns = ListSelection(
-    #        False,
-    #        AlwabpWorkerOrientedInsertNS(pw, graph_orientation, ns_greediness, None),
-    #    )
-    #
-    #    grc = GRC(
-    #        0,
-    #        grc_greedness,
-    #        stop_criteria,
-    #        evaluator,
-    #        acceptance_criteria,
-    #        ns,
-    #        order_moves=False,
-    #    )
-    #    new_solution = grc.run(solution)
-    #
-    #   if isinstance(new_solution, AlwabpSolution):
-    #        if new_solution == solution or len(new_solution.unassigned_tasks) > 0:
-    #            cycle_time_limit += 1
-    #            original_solution.cycle_time_limit = cycle_time_limit
-    #            solution = original_solution.copy()
-    #            # print(f'Increase cycle time to {str(cycle_time_limit)}')
-    #        else:
-    #            solution = new_solution
-    #
-    # print(solution)
+
+    print(heuristic_parser.run_definition(solution, evaluator))
 
 
 def create_init_files(root_dir):

@@ -92,9 +92,9 @@ class Pool(Entity, ABC):
         return self.report
 
     @abstractmethod
-    def add_solution(self, solution: Solution) -> bool:
+    def add_solution(self, solution: Optional[Solution]) -> bool:
         """Add a solution to the pool (to be implemented by subclasses)."""
-        if solution not in self.solutions:
+        if solution and solution not in self.solutions:
             self.solutions.append(solution)
             return True
         return False

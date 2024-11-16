@@ -10,6 +10,7 @@ class AlwabpEvaluation(Evaluation):
         self,
         constraints: Iterable["ConstraintEvaluation"],
         max_cycle_time: float,
+        cycle_time_limit: float,
         num_unassigned_tasks: int,
         num_unassigned_workers: int,
     ):
@@ -19,8 +20,13 @@ class AlwabpEvaluation(Evaluation):
         """
         super().__init__(constraints)
         self._max_cycle_time = max_cycle_time
+        self._cycle_time_limit = cycle_time_limit
         self._num_unassigned_tasks = num_unassigned_tasks
         self._num_unassigned_workers = num_unassigned_workers
+
+    @property
+    def cycle_time_limit(self) -> float:
+        return self._cycle_time_limit
 
     @property
     def num_unassigned_tasks(self) -> int:

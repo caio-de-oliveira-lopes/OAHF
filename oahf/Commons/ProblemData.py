@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
-from typing import Union
+from typing import Type, Union
+
+# Must import solution types here in order for globals() to work
+from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
 
 class ProblemData:
@@ -11,6 +14,7 @@ class ProblemData:
         Args:
             json_path (str): Path to the JSON file containing problem parameters.
         """
+
         # Read and load the JSON data
         with open(json_path, "r") as file:
             data = json.load(file)
@@ -21,7 +25,7 @@ class ProblemData:
         self.input_file = self.input_path.joinpath(self.file_name)
         self.cycle_time_path = Path(data["cycle_time_path"])
         self.heuristic_definition_file = Path(data["heuristic_definition_file"])
-        self.input_type = globals().get(data["input_type"])
+        self.input_type = Type[eval(data["input_type"])]
         self.random_seed = data["random_seed"]
 
     def __str__(self):
