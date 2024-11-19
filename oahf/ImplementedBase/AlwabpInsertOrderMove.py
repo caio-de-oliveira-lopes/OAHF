@@ -2,8 +2,6 @@ from typing import Optional
 
 from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Movement import Movement
-from oahf.Base.Solution import Solution
-from oahf.Utils.Util import Util
 
 
 class AlwabpInsertOrderMove(Movement):

@@ -23,10 +23,15 @@ class MaxCycleTimeStopCriteria(StopCriteria):
         Returns:
             bool: True if stopping criteria are met; otherwise, False.
         """
-        return any(
-            evaluation.cycle_time_limit > self.cycle_time_limit
-            for evaluation in list(evaluations)
-        )
+
+        if any(evaluation.cycle_time_limit for evaluation in list(evaluations)):
+            return any(
+                evaluation.cycle_time_limit
+                and evaluation.cycle_time_limit > self.cycle_time_limit
+                for evaluation in list(evaluations)
+            )
+
+        return self.stop()
 
     def copy(self) -> "MaxCycleTimeStopCriteria":
         """Creates a copy of the stop criteria instance."""

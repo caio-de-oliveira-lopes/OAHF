@@ -23,6 +23,7 @@ class ProblemData:
         self.file_name = data["file_name"]
         self.input_path = Path(data["input_path"])
         self.input_file = self.input_path.joinpath(self.file_name)
+        self.output_path = Path(data["output_path"])
         self.cycle_time_path = Path(data["cycle_time_path"])
         self.heuristic_definition_file = Path(data["heuristic_definition_file"])
         self.input_type = Type[eval(data["input_type"])]

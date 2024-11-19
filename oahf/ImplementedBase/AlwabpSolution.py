@@ -141,8 +141,7 @@ class AlwabpSolution(Solution):
 
     def validade_aspects(self) -> bool:
         if self.cycle_time_limit and len(self.unassigned_tasks) > 0:
-            self.cycle_time_limit += 1
-            print(f"Increase cycle time to {str(self.cycle_time_limit)}")
+            self.cycle_time_limit = self.cycle_time_limit + 1
             self.reset()
             return False
         return super().validade_aspects()
@@ -180,6 +179,10 @@ class AlwabpSolution(Solution):
 
     @cycle_time_limit.setter
     def cycle_time_limit(self, value: float) -> None:
+        if self._cycle_time_limit:
+            print(f"Updated cycle time limit to {str(value)}.")
+        else:
+            print(f"Starting with cycle time limit as {str(value)}.")
         self._cycle_time_limit = value
         self._update_bounded_task_execution_times()
         self._calculate_max_positional_weights()
@@ -261,7 +264,10 @@ class AlwabpSolution(Solution):
         Returns:
             str: A structured string representing the task allocations per station.
         """
-        result = []
+
+        from oahf.Utils.Util import Util
+
+        result = [Util.line()]
         result.append("ALWABP Solution:")
         result.append(f"Number of Tasks: {len(self.tasks)}")
         result.append(f"Number of Workers: {len(self.workers)}")
@@ -282,6 +288,7 @@ class AlwabpSolution(Solution):
             else "[]"
         )
         result.append(f"Unassigned Tasks: {unassigned_tasks}")
+        result.append(Util.line())
         return "\n".join(result)
 
     def calculate_cycle_time(self, station: int) -> float:

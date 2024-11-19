@@ -86,8 +86,8 @@ class GRASP(MetaHeuristic):
         construction = self.meta_heuristics_used[0]
         local_search = self.meta_heuristics_used[1]
 
-        start_pool = input_pool.copy()
-        best_sol = start_pool.get_best(self.evaluator)
+        curr_pool = input_pool.copy()
+        best_sol = curr_pool.get_best(self.evaluator)
         best_eval = self.evaluator.evaluate(best_sol)
 
         self.stop_criteria.reset()
@@ -95,20 +95,20 @@ class GRASP(MetaHeuristic):
 
         while not self.stop_on_evaluations([best_eval]):
             self.stop_criteria.increment_counter()
-            curr_pool = construction.run_operation(start_pool, output_pool, self)
+            curr_pool = construction.run_operation(curr_pool, None, self)
 
             best_sol = curr_pool.get_best(self.evaluator)
             if not best_sol or not best_sol.validade_aspects():
                 continue
 
-            # curr_pool = local_search.run_operation(curr_pool, output_pool, self)
+            # curr_pool = local_search.run_operation(curr_pool, None, self)
             curr_eval = self.evaluator.evaluate(curr_pool.get_best(self.evaluator))
 
             if best_eval is not None and self.acceptance_criteria.accept(
                 best_eval, curr_eval, curr_pool
             ):
                 best_eval = curr_eval
-                best_sol = curr_pool
+                output_pool.add_solution(best_sol)
                 # Optionally log the best evaluation
                 # print(best_eval)
 

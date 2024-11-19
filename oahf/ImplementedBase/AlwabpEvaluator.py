@@ -26,8 +26,9 @@ class AlwabpEvaluator(Evaluator):
             return AlwabpEvaluation(
                 (constraint.evaluate(sol) for constraint in self._constraints),
                 sol.get_max_cycle_time(),
+                sol.cycle_time_limit,
                 len(sol.unassigned_tasks),
                 len(sol.unassigned_workers),
             )
         else:
-            return AlwabpEvaluation((), float("inf"), int("inf"), int("inf"))
+            return AlwabpEvaluation((), float("inf"), None, int("inf"), int("inf"))

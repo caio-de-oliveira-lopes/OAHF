@@ -103,7 +103,7 @@ class HeuristicParser:
             mh.run_operation(origin_pool, mh.destination_pool)
 
         final_pool = ListPool()
-        for pool in self.solution_pools.values():
+        for pool in list(self.solution_pools.values()):
             final_pool.add_solution(pool.get_best(evaluator))
 
         return final_pool.get_best(evaluator)

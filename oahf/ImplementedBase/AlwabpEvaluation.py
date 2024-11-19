@@ -1,8 +1,7 @@
-from typing import Iterable, List, Optional
+from typing import Iterable, Optional
 
 from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
 from oahf.Base.Evaluation import Evaluation
-from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
 
 class AlwabpEvaluation(Evaluation):
@@ -10,7 +9,7 @@ class AlwabpEvaluation(Evaluation):
         self,
         constraints: Iterable["ConstraintEvaluation"],
         max_cycle_time: float,
-        cycle_time_limit: float,
+        cycle_time_limit: Optional[float],
         num_unassigned_tasks: int,
         num_unassigned_workers: int,
     ):
@@ -25,7 +24,7 @@ class AlwabpEvaluation(Evaluation):
         self._num_unassigned_workers = num_unassigned_workers
 
     @property
-    def cycle_time_limit(self) -> float:
+    def cycle_time_limit(self) -> Optional[float]:
         return self._cycle_time_limit
 
     @property

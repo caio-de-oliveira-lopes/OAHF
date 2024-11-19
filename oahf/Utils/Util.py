@@ -17,6 +17,9 @@ class Util:
     _optimization_start_time: ClassVar[str] = ""
     _default_output_path: ClassVar[Path] = Path(os.getcwd(), "Outputs")
     _input_name: ClassVar[str] = "dummy"
+    _line: ClassVar[str] = (
+        "-------------------------------------------------------------------"
+    )
 
     @classmethod
     def eps(cls) -> float:
@@ -65,6 +68,14 @@ class Util:
     def set_input_name(cls, input_name: str) -> None:
         cls._input_name = input_name
 
+    @classmethod
+    def line(cls) -> str:
+        return cls._line
+
+    @classmethod
+    def set_line(cls, line: str) -> None:
+        cls._line = line
+
     @staticmethod
     def get_current_method_name() -> str:
         """
@@ -107,15 +118,22 @@ class Util:
     #    return threading.current_thread().ident
 
     @classmethod
-    def read_input(
-        cls, input_file: Path, input_type: Type[Solution]
-    ) -> Optional[Solution]:
+    def read_input(cls, problem_data: "ProblemData") -> Optional[Solution]:
         from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
-        if input_type is Type[AlwabpSolution]:
-            return cls.read_ALWABP_input(input_file)
-        else:
-            pass
+        solution = None
+
+        if problem_data.input_type is Type[AlwabpSolution]:
+            solution = cls.read_ALWABP_input(problem_data.input_file)
+
+            if not solution or not isinstance(solution, AlwabpSolution):
+                return None
+
+            solution.cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(
+                problem_data.cycle_time_path, problem_data.file_name
+            )
+
+        return solution
 
     @classmethod
     def read_ALWABP_input(cls, input_file: Path) -> Optional[Solution]:
@@ -166,7 +184,7 @@ class Util:
             LogManager.something_went_wrong(cls.__name__, e)
             return None
 
-        print(f'Input "{input_file}" successfully read!')
+        print(f'Input "{input_file}" successfully read!\n{Util.line()}')
 
         if alwabp_instance:
             alwabp_instance.process_graph_data()
