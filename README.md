@@ -70,7 +70,7 @@ pip freeze > requirements.txt
 ## Generating a Package
 To create a distributable package, run:
 ```bash
-./package.bat (update)
+./oahf.bat
 ```
 
 ## Contributing
