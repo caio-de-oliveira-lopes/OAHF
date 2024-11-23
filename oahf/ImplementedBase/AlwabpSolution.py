@@ -102,6 +102,11 @@ class AlwabpSolution(Solution):
             positional_weight_type: {task: -1 for task in self.tasks}
             for positional_weight_type in EnumUtil.get_values(MaxPositionalWeightType)
         }
+        
+        # Memorization structure to store the cycle time of each station
+        self.station_cycle_time_memo: Dict[int, float] = {
+            station: 0.0 for station in self.stations
+        }
 
     def copy(self) -> "AlwabpSolution":
         """
@@ -158,6 +163,9 @@ class AlwabpSolution(Solution):
         }
         self._unassigned_workers: List[int] = list(self.workers)
         self._unassigned_tasks: List[int] = list(self.tasks)
+        self.station_cycle_time_memo: Dict[int, float] = {
+            station: 0.0 for station in self.stations
+        }
 
     def process_graph_data(self) -> None:
         self._update_tasks_executed_by_worker()
@@ -291,7 +299,7 @@ class AlwabpSolution(Solution):
         result.append(Util.line())
         return "\n".join(result)
 
-    def calculate_cycle_time(self, station: int) -> float:
+    def calculate_cycle_time(self, station: int, force_calculate: bool = False) -> float:
         """
         Calculates the cycle time for a given station.
 
@@ -303,11 +311,14 @@ class AlwabpSolution(Solution):
         """
         total_time = 0
         worker = self.station_worker_assignment.get(station, None)
-        total_time += sum(
-            self.get_task_execution_time(task, worker)
-            for task in self.station_tasks_assignment[station]
-        )
-        return total_time
+        if force_calculate:
+            total_time += sum(
+                self.get_task_execution_time(task, worker)
+                for task in self.station_tasks_assignment[station]
+            )
+            self.station_cycle_time_memo[station] = total_time
+            
+        return self.station_cycle_time_memo[station]
 
     def get_max_cycle_time(self) -> float:
         """
@@ -522,7 +533,7 @@ class AlwabpSolution(Solution):
 
         return tasks_executed
 
-    def add_worker_to_station(self, worker: int, station: int) -> bool:
+    def add_worker_to_station(self, worker: int, station: int, recalculate_cycle_time: bool = True) -> bool:
         """
         Adds a worker from a specific station, if the worker is not assigned to that station.
 
@@ -538,6 +549,10 @@ class AlwabpSolution(Solution):
                 self.station_worker_assignment[station] = worker
                 self.worker_station_assignment[worker] = station
                 self.unassigned_workers.remove(worker)
+                
+                if recalculate_cycle_time:
+                    self.calculate_cycle_time(station, True)
+                    
                 return True
             else:
                 LogManager.invalid_action(
@@ -548,7 +563,7 @@ class AlwabpSolution(Solution):
             LogManager.invalid_action("add worker to station", self.name, e)
             return False
 
-    def remove_worker_from_station(self, worker: int, station: int) -> bool:
+    def remove_worker_from_station(self, worker: int, station: int, recalculate_cycle_time: bool = True) -> bool:
         """
         Removes a worker from a specific station by setting the station.
 
@@ -564,6 +579,10 @@ class AlwabpSolution(Solution):
                 self.station_worker_assignment[station] = None
                 self.worker_station_assignment[worker] = None
                 self.unassigned_workers.append(worker)
+                
+                if recalculate_cycle_time:
+                    self.calculate_cycle_time(station, True)
+                    
                 return True
             else:
                 LogManager.invalid_action(
@@ -589,6 +608,10 @@ class AlwabpSolution(Solution):
             if task not in self.station_tasks_assignment.get(station, []):
                 self.station_tasks_assignment[station].append(task)
                 self._unassigned_tasks.remove(task)
+                
+                worker = self.station_worker_assignment[station]
+                self.station_cycle_time_memo[station] += self.get_task_execution_time(task, worker)
+                
                 return True
             else:
                 LogManager.invalid_action(
@@ -616,6 +639,10 @@ class AlwabpSolution(Solution):
                     task
                 )  # Remove the task from the station's list
                 self._unassigned_tasks.append(task)
+                
+                worker = self.station_worker_assignment[station]
+                self.station_cycle_time_memo[station] -= self.get_task_execution_time(task, worker)
+                
                 return True
             else:
                 LogManager.invalid_action(
@@ -932,14 +959,14 @@ class AlwabpSolution(Solution):
 
     def get_first_unassigned_station(self) -> Optional[int]:
         """
-        Returns the first station key where the worker assignment is None.
+        Returns the first station key where no task is assigned.
 
         Returns:
-            Optional[int]: The station key where the worker is not assigned (None)
+            Optional[int]: The station key where no task is assigned (None)
             or None if all are assigned.
         """
-        for station, worker in self.station_worker_assignment.items():
-            if worker is None:
+        for station, tasks in self.station_tasks_assignment.items():
+            if len(tasks) == 0:
                 return station
         return None  # Return None if no unassigned station is found
 

@@ -21,6 +21,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         graph_orientation: GraphOrientation,
         greediness: float = 0,
         stop_criteria: Optional[StopCriteria] = None,
+        fixed_workers: bool = False
     ):
         """Initializes the neighborhood search for ALWABP, setting configuration parameters for worker-oriented task insertion."""
         super().__init__(stop_criteria, False)
@@ -32,6 +33,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.graph_orientation = graph_orientation
         self.station: Optional[int] = None
         self.greediness: float = greediness
+        self.fixed_workers: bool = fixed_workers
 
     def build_neighborhood(self, thread_id: int, solution: AlwabpSolution) -> bool:
         """Prepares the neighborhood search by initializing the solution and computing initial station assignments."""
@@ -108,7 +110,14 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             if not all_moves:
                 return iter([])  # Return an empty iterator if no moves are generated
 
-            for unassigned_worker in self.solution.unassigned_workers:
+            # If the neighborhood is build as fixed_workers it'll prioritize keeping workers at their respective stations
+            worker_assigned_to_station = self.solution.station_worker_assignment[self.station]
+            if self.fixed_workers or worker_assigned_to_station is None:
+                unassigned_workers = self.solution.unassigned_workers
+            else:
+                unassigned_workers = [worker_assigned_to_station]
+                
+            for unassigned_worker in unassigned_workers:
                 feasible_movements = self.solution.simulate_worker_tasks_allocation(
                     unassigned_worker, all_moves
                 )
@@ -120,14 +129,19 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                         if task not in chosen_tasks
                     ]
 
-                    worker_move = AlwabpInsertOrderMove(
-                        None,
-                        unassigned_worker,
-                        self.station,
-                        self.solution,
-                        self.report,
-                    )
-                    feasible_movements.append(worker_move)
+                    # If worker is already assigned to that respecive station, the "worker_move" is not needed
+                    # Important point, int this case,
+                    # unapplying the move will not unassign the worker, 
+                    # since the move is not "responsible" for it's assignment
+                    if not self.fixed_workers:
+                        worker_move = AlwabpInsertOrderMove(
+                            None,
+                            unassigned_worker,
+                            self.station,
+                            self.solution,
+                            self.report,
+                        )
+                        feasible_movements.append(worker_move)
 
                     move = MultipleMovement(
                         self.solution, self.report, feasible_movements

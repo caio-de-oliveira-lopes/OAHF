@@ -129,10 +129,10 @@ class HeuristicParser:
                             GraphOrientation, n["parameters"]["graph_orientation"]
                         )
                     )
-                    greediness = int(n["parameters"]["greediness"])
-
+                    greediness = float(n["parameters"].get("greediness", 0.0))
+                    fixed_workers = n["parameters"].get("fixed_workers", "false").lower() == "true"
                     neighborhood = AlwabpWorkerOrientedInsertNS(
-                        pw, graph_orientation, greediness
+                        pw, graph_orientation, greediness, None, fixed_workers
                     )
                 else:
                     raise ValueError(f"Unavailable neighborhood: {n['name']}")
@@ -196,7 +196,7 @@ class HeuristicParser:
             for m in self.definition["metaheuristics"]:
                 if m["name"].lower() == "grc":
                     thread_id = 0
-                    greediness = int(m["parameters"]["greediness"])
+                    greediness = float(m["parameters"].get("greediness", 0.0))
                     stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
                     acceptance_criteria = self.parse_acceptance_criteria(
                         m["acceptance_criteria"]
