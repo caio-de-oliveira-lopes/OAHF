@@ -1062,3 +1062,38 @@ class AlwabpSolution(Solution):
         else:
             # If no cycle time limit is set, return all available moves
             return available_moves
+        
+    def get_critical_workstations(self) -> List[int]:
+        """
+        Identifies and returns the list of critical workstations.
+
+        A critical workstation is one where the cycle time equals the maximum cycle time.
+
+        Returns:
+            List[int]: A list of station IDs that are critical workstations.
+        """
+        critical_stations = []
+    
+        for station in self.stations:
+            # Calculate the cycle time for the station
+            cycle_time = self.calculate_cycle_time(station)
+        
+            # Check if the station is critical
+            if cycle_time == self.get_max_cycle_time():
+                critical_stations.append(station)
+    
+        return critical_stations
+    
+    def get_number_of_critical_workstations(self) -> int:
+        """
+        Calculates the number of critical workstations.
+
+        A critical workstation is defined as a station where the cycle time equals the cycle time limit.
+        This method uses `get_critical_workstations` to identify all critical workstations and 
+        returns the total count.
+
+        Returns:
+            int: The number of critical workstations.
+        """
+        return len(self.get_critical_workstations())
+

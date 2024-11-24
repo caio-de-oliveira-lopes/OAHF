@@ -1,11 +1,12 @@
+from typing import Optional
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
+from oahf.Base.Neighborhood import Neighborhood
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Logger.LogManager import LogManager
-from oahf.Utils.Util import Util
 
 
 class FirstImprovement(MetaHeuristic):
@@ -25,8 +26,7 @@ class FirstImprovement(MetaHeuristic):
         :param ns: Neighborhood selection strategy.
         :param criteria: Acceptance criteria for new solutions.
         """
-        super().__init__(thread_id, stop, evaluator, ns, criteria)
-        self.neighborhood = None
+        super().__init__(thread_id, stop, evaluator, criteria, ns)
 
     def copy(self, thread: int) -> "MetaHeuristic":
         """Creates a copy of the current FirstImprovement instance."""
@@ -34,7 +34,7 @@ class FirstImprovement(MetaHeuristic):
             thread,
             self.stop_criteria.copy(),
             self.evaluator,
-            self.neighborhood_selection.copy(),
+            self.neighborhood_selection.copy(), # type: ignore
             self.acceptance_criteria.copy(),
         )
 
@@ -45,16 +45,16 @@ class FirstImprovement(MetaHeuristic):
         best_eval = self.evaluator.evaluate(best_sol)
 
         self.evaluator.save_evaluation_state(curr_sol)
+        
+        ns: Optional[Neighborhood] = None
 
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
 
-        while not self.stop_on_evaluations(best_eval):
-            ns = self.neighborhood
-
+        while ns and not self.stop_on_evaluations([best_eval]):
             try:
                 if ns is None:
-                    ns = self.neighborhood_selection.get_next(self.thread_id)
+                    ns = self.neighborhood_selection.get_next(self.thread_id) # type: ignore
             except Exception as ex:
                 LogManager.unable_to_get_neighborhood()
 
@@ -67,7 +67,7 @@ class FirstImprovement(MetaHeuristic):
                 if build:
                     move = ns.get_move_operation()
                     self.stop_criteria.increment_counter()
-                    while move is not None and not self.stop_on_evaluations(best_eval):
+                    while move is not None and not self.stop_on_evaluations([best_eval]):
                         worked = move.apply_operation()
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)
@@ -85,8 +85,8 @@ class FirstImprovement(MetaHeuristic):
                         move = ns.get_move_operation()
                         self.stop_criteria.increment_counter()
             except Exception as ex:
-                LogManager.something_went_wrong(ns, ex)
-                curr_sol = best_sol.copy() if best_sol else None
+                LogManager.something_went_wrong(self.__class__.__name__, ex)
+                curr_sol = best_sol.copy()
 
         self.evaluator.save_evaluation_state(best_sol)
         return best_sol
