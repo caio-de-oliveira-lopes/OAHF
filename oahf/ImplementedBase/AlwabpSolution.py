@@ -102,7 +102,7 @@ class AlwabpSolution(Solution):
             positional_weight_type: {task: -1 for task in self.tasks}
             for positional_weight_type in EnumUtil.get_values(MaxPositionalWeightType)
         }
-        
+
         # Memorization structure to store the cycle time of each station
         self.station_cycle_time_memo: Dict[int, float] = {
             station: 0.0 for station in self.stations
@@ -188,7 +188,7 @@ class AlwabpSolution(Solution):
     @cycle_time_limit.setter
     def cycle_time_limit(self, value: float) -> None:
         if self._cycle_time_limit:
-            print(f"Updated cycle time limit to {str(value)}.")
+            self.print_update(f"Updated cycle time limit to {str(value)}.")
         else:
             print(f"Starting with cycle time limit as {str(value)}.")
         self._cycle_time_limit = value
@@ -299,7 +299,9 @@ class AlwabpSolution(Solution):
         result.append(Util.line())
         return "\n".join(result)
 
-    def calculate_cycle_time(self, station: int, force_calculate: bool = False) -> float:
+    def calculate_cycle_time(
+        self, station: int, force_calculate: bool = False
+    ) -> float:
         """
         Calculates the cycle time for a given station.
 
@@ -317,7 +319,7 @@ class AlwabpSolution(Solution):
                 for task in self.station_tasks_assignment[station]
             )
             self.station_cycle_time_memo[station] = total_time
-            
+
         return self.station_cycle_time_memo[station]
 
     def get_max_cycle_time(self) -> float:
@@ -533,7 +535,9 @@ class AlwabpSolution(Solution):
 
         return tasks_executed
 
-    def add_worker_to_station(self, worker: int, station: int, recalculate_cycle_time: bool = True) -> bool:
+    def add_worker_to_station(
+        self, worker: int, station: int, recalculate_cycle_time: bool = True
+    ) -> bool:
         """
         Adds a worker from a specific station, if the worker is not assigned to that station.
 
@@ -549,10 +553,10 @@ class AlwabpSolution(Solution):
                 self.station_worker_assignment[station] = worker
                 self.worker_station_assignment[worker] = station
                 self.unassigned_workers.remove(worker)
-                
+
                 if recalculate_cycle_time:
                     self.calculate_cycle_time(station, True)
-                    
+
                 return True
             else:
                 LogManager.invalid_action(
@@ -563,7 +567,9 @@ class AlwabpSolution(Solution):
             LogManager.invalid_action("add worker to station", self.name, e)
             return False
 
-    def remove_worker_from_station(self, worker: int, station: int, recalculate_cycle_time: bool = True) -> bool:
+    def remove_worker_from_station(
+        self, worker: int, station: int, recalculate_cycle_time: bool = True
+    ) -> bool:
         """
         Removes a worker from a specific station by setting the station.
 
@@ -579,10 +585,10 @@ class AlwabpSolution(Solution):
                 self.station_worker_assignment[station] = None
                 self.worker_station_assignment[worker] = None
                 self.unassigned_workers.append(worker)
-                
+
                 if recalculate_cycle_time:
                     self.calculate_cycle_time(station, True)
-                    
+
                 return True
             else:
                 LogManager.invalid_action(
@@ -608,10 +614,12 @@ class AlwabpSolution(Solution):
             if task not in self.station_tasks_assignment.get(station, []):
                 self.station_tasks_assignment[station].append(task)
                 self._unassigned_tasks.remove(task)
-                
+
                 worker = self.station_worker_assignment[station]
-                self.station_cycle_time_memo[station] += self.get_task_execution_time(task, worker)
-                
+                self.station_cycle_time_memo[station] += self.get_task_execution_time(
+                    task, worker
+                )
+
                 return True
             else:
                 LogManager.invalid_action(
@@ -639,10 +647,12 @@ class AlwabpSolution(Solution):
                     task
                 )  # Remove the task from the station's list
                 self._unassigned_tasks.append(task)
-                
+
                 worker = self.station_worker_assignment[station]
-                self.station_cycle_time_memo[station] -= self.get_task_execution_time(task, worker)
-                
+                self.station_cycle_time_memo[station] -= self.get_task_execution_time(
+                    task, worker
+                )
+
                 return True
             else:
                 LogManager.invalid_action(
@@ -1002,19 +1012,6 @@ class AlwabpSolution(Solution):
 
         return True
 
-    def get_open_stations(self) -> List[int]:
-        """
-        Returns a list of stations where no worker is currently assigned.
-
-        Returns:
-        list: A list of station identifiers where the assigned worker is None.
-        """
-        return [
-            station
-            for station, worker in self.station_worker_assignment.items()
-            if worker is None
-        ]
-
     def simulate_worker_tasks_allocation(
         self, worker: int, movements: List[AlwabpInsertOrderMove]
     ) -> List[AlwabpInsertOrderMove]:
@@ -1062,7 +1059,7 @@ class AlwabpSolution(Solution):
         else:
             # If no cycle time limit is set, return all available moves
             return available_moves
-        
+
     def get_critical_workstations(self) -> List[int]:
         """
         Identifies and returns the list of critical workstations.
@@ -1073,27 +1070,26 @@ class AlwabpSolution(Solution):
             List[int]: A list of station IDs that are critical workstations.
         """
         critical_stations = []
-    
+
         for station in self.stations:
             # Calculate the cycle time for the station
             cycle_time = self.calculate_cycle_time(station)
-        
+
             # Check if the station is critical
             if cycle_time == self.get_max_cycle_time():
                 critical_stations.append(station)
-    
+
         return critical_stations
-    
+
     def get_number_of_critical_workstations(self) -> int:
         """
         Calculates the number of critical workstations.
 
         A critical workstation is defined as a station where the cycle time equals the cycle time limit.
-        This method uses `get_critical_workstations` to identify all critical workstations and 
+        This method uses `get_critical_workstations` to identify all critical workstations and
         returns the total count.
 
         Returns:
             int: The number of critical workstations.
         """
         return len(self.get_critical_workstations())
-

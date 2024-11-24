@@ -12,7 +12,7 @@ class GRASP(MetaHeuristic):
     def __init__(
         self,
         thread_id: int,
-        stop: StopCriteria,
+        stop_criteria: StopCriteria,
         evaluator: Evaluator,
         constructions: MetaHeuristic,
         local_search: MetaHeuristic,
@@ -33,7 +33,7 @@ class GRASP(MetaHeuristic):
         """
         super().__init__(
             thread_id,
-            stop,
+            stop_criteria,
             evaluator,
             acceptance_criteria,
             None,

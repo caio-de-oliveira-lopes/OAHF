@@ -1,4 +1,5 @@
 from typing import Optional
+
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
@@ -13,10 +14,10 @@ class FirstImprovement(MetaHeuristic):
     def __init__(
         self,
         thread_id: int,
-        stop: StopCriteria,
+        stop_criteria: StopCriteria,
         evaluator: Evaluator,
+        acceptance_criteria: AcceptanceCriteria,
         ns: NeighborhoodSelection,
-        criteria: AcceptanceCriteria,
     ):
         """
         Initializes the FirstImprovement metaheuristic.
@@ -26,7 +27,7 @@ class FirstImprovement(MetaHeuristic):
         :param ns: Neighborhood selection strategy.
         :param criteria: Acceptance criteria for new solutions.
         """
-        super().__init__(thread_id, stop, evaluator, criteria, ns)
+        super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, ns)
 
     def copy(self, thread: int) -> "MetaHeuristic":
         """Creates a copy of the current FirstImprovement instance."""
@@ -34,8 +35,8 @@ class FirstImprovement(MetaHeuristic):
             thread,
             self.stop_criteria.copy(),
             self.evaluator,
-            self.neighborhood_selection.copy(), # type: ignore
             self.acceptance_criteria.copy(),
+            self.neighborhood_selection.copy(),  # type: ignore
         )
 
     def run(self, sol: Solution) -> Solution:
@@ -45,8 +46,8 @@ class FirstImprovement(MetaHeuristic):
         best_eval = self.evaluator.evaluate(best_sol)
 
         self.evaluator.save_evaluation_state(curr_sol)
-        
-        ns: Optional[Neighborhood] = None
+
+        ns: Optional[Neighborhood] = self.neighborhood_selection.get_next(self.thread_id)  # type: ignore
 
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
@@ -54,11 +55,12 @@ class FirstImprovement(MetaHeuristic):
         while ns and not self.stop_on_evaluations([best_eval]):
             try:
                 if ns is None:
-                    ns = self.neighborhood_selection.get_next(self.thread_id) # type: ignore
+                    ns = self.neighborhood_selection.get_next(self.thread_id)  # type: ignore
             except Exception as ex:
                 LogManager.unable_to_get_neighborhood()
 
             try:
+                # Warning: circular selections with no time StopCriteria may get in an infinite loop
                 if ns is None:
                     break
 
@@ -67,7 +69,9 @@ class FirstImprovement(MetaHeuristic):
                 if build:
                     move = ns.get_move_operation()
                     self.stop_criteria.increment_counter()
-                    while move is not None and not self.stop_on_evaluations([best_eval]):
+                    while move is not None and not self.stop_on_evaluations(
+                        [best_eval]
+                    ):
                         worked = move.apply_operation()
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)

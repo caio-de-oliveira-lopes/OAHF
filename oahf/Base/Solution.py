@@ -7,6 +7,7 @@ from oahf.Base.Entity import Entity
 class Solution(Entity, ABC):
     def __init__(self) -> None:
         super().__init__()  # Call the constructor of the Entity class
+        self.print_solution_updates = False
 
     @abstractmethod
     def copy(self) -> "Solution":
@@ -99,3 +100,23 @@ class Solution(Entity, ABC):
         if isinstance(obj, self.__class__):
             return self.solution_hash() == obj.solution_hash()
         return False
+
+    def set_print_solution_updates(self, print_solution_updates: bool) -> None:
+        """
+        Configures whether solution updates should be printed.
+
+        Args:
+            print_solution_updates (bool): A flag indicating whether to enable or disable
+                                           printing solution updates.
+        """
+        self.print_solution_updates = print_solution_updates
+
+    def print_update(self, update_message: str) -> None:
+        """
+        Prints an update message if printing solution updates is enabled.
+
+        Args:
+            update_message (str): The message to be printed as an update.
+        """
+        if self.print_solution_updates:
+            print(update_message)

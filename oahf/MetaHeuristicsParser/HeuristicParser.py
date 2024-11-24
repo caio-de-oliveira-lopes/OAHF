@@ -28,6 +28,8 @@ from oahf.ImplementedBase.WorkersUnassignedStopCriteria import (
     WorkersUnassignedStopCriteria,
 )
 from oahf.Logger.LogManager import LogManager
+from oahf.MetaHeuristics.BestImprovement import BestImprovement
+from oahf.MetaHeuristics.FirstImprovement import FirstImprovement
 from oahf.MetaHeuristics.GRASP import GRASP
 from oahf.MetaHeuristics.GRC import GRC
 from oahf.Utils.EnumUtil import EnumUtil
@@ -130,7 +132,9 @@ class HeuristicParser:
                         )
                     )
                     greediness = float(n["parameters"].get("greediness", 0.0))
-                    fixed_workers = n["parameters"].get("fixed_workers", "false").lower() == "true"
+                    fixed_workers = (
+                        n["parameters"].get("fixed_workers", "false").lower() == "true"
+                    )
                     neighborhood = AlwabpWorkerOrientedInsertNS(
                         pw, graph_orientation, greediness, None, fixed_workers
                     )
@@ -241,6 +245,36 @@ class HeuristicParser:
                         acceptance_criteria,  # type: ignore
                         origin_pool,
                         destination_pool,
+                    )
+                elif m["name"].lower() == "first_improvement":
+                    thread_id = 0
+                    greediness = float(m["parameters"].get("greediness", 0.0))
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    acceptance_criteria = self.parse_acceptance_criteria(
+                        m["acceptance_criteria"]
+                    )
+                    ns = self.neighborhood_selections[m["neighborhood_selection"]]
+                    meta = FirstImprovement(
+                        thread_id,
+                        stop_criteria,  # type: ignore
+                        evaluator,
+                        acceptance_criteria,  # type: ignore
+                        ns,
+                    )
+                elif m["name"].lower() == "best_improvement":
+                    thread_id = 0
+                    greediness = float(m["parameters"].get("greediness", 0.0))
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    acceptance_criteria = self.parse_acceptance_criteria(
+                        m["acceptance_criteria"]
+                    )
+                    ns = self.neighborhood_selections[m["neighborhood_selection"]]
+                    meta = BestImprovement(
+                        thread_id,
+                        stop_criteria,  # type: ignore
+                        evaluator,
+                        acceptance_criteria,  # type: ignore
+                        ns,
                     )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")
