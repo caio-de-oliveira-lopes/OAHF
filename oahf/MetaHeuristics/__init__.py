@@ -5,6 +5,7 @@ from .GeneticAlgorithm import GeneticAlgorithm
 from .GRASP import GRASP
 from .GRC import GRC
 from .ILS import ILS
+from .MultipleBestImprovement import MultipleBestImprovement
 from .ParallelILS import ParallelILS
 from .Pertubation import Pertubation
 
@@ -16,6 +17,7 @@ __all__ = [
     "GRASP",
     "GRC",
     "ILS",
+    "MultipleBestImprovement",
     "ParallelILS",
-    "Pertubation",
+    "Pertubation"
 ]

@@ -69,6 +69,7 @@
     <Compile Include="oahf\ImplementedBase\AlwaysAcceptAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\ExecutedByAvailableWorkersAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeStopCriteria.py" />
+    <Compile Include="oahf\ImplementedBase\NoStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\WorkersUnassignedStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeConstraint.py" />
     <Compile Include="oahf\ImplementedBase\SimulatedAnnealing.py" />
@@ -92,6 +93,7 @@
     <Compile Include="oahf\Logger\Logger.py" />
     <Compile Include="oahf\Logger\__init__.py" />
     <Compile Include="oahf\MetaHeuristicsParser\HeuristicParser.py" />
+    <Compile Include="oahf\MetaHeuristics\MultipleBestImprovement.py" />
     <Compile Include="oahf\MetaHeuristics\GeneticAlgorithm.py" />
     <Compile Include="oahf\MetaHeuristics\ParallelILS.py" />
     <Compile Include="oahf\MetaHeuristics\Pertubation.py" />

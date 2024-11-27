@@ -109,6 +109,14 @@
 			"parameters": {
 				"circular": "false"
 			}
+		},
+		{
+			"id": 6,
+			"name": "list_selection",
+			"neighborhood_ids": [ ],
+			"parameters": {
+				"circular": "false"
+			}
 		}
 	],
 	"solution_pools":
@@ -119,8 +127,7 @@
 			"parameters": {}
 		}
 	],
-	"metaheuristics":
-	[
+	"metaheuristics": [
 		{
 			"id": 0,
 			"name": "grc",
@@ -140,6 +147,20 @@
 		},
 		{
 			"id": 1,
+			"name": "multiple_best_improvement",
+			"stop_criteria": {
+				"no_stop": {}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {
+				"num_selections": 4
+			},
+			"neighborhood_selection": 6
+		},
+		{
+			"id": 2,
 			"name": "grasp",
 			"stop_criteria": {
 				"multiple_stop_criteria": {
@@ -159,9 +180,9 @@
 				}
 			},
 			"acceptance_criteria": {
-				"better_or_same": {}
+				"better": {}
 			},
-			"metaheuristics_used": [ 0, 0 ],
+			"metaheuristics_used": [ 0, 1 ],
 			"parameters": {},
 			"neighborhood_selection": 0,
 			"execution_order": 0,

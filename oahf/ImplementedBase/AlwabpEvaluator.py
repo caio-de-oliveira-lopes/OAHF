@@ -29,6 +29,7 @@ class AlwabpEvaluator(Evaluator):
                 sol.cycle_time_limit,
                 len(sol.unassigned_tasks),
                 len(sol.unassigned_workers),
+                sol.get_number_of_critical_workstations()
             )
         else:
-            return AlwabpEvaluation((), float("inf"), None, int("inf"), int("inf"))
+            return AlwabpEvaluation((), float("inf"), None, int("inf"), int("inf"), int("inf"))

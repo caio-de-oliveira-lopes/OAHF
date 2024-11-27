@@ -39,3 +39,6 @@ class NeighborhoodSelection(Entity, ABC):
     def set_circular(self, circular: bool):
         """Set whether the neighborhood selection is circular."""
         self.circular = circular
+        
+    def num_neighborhoods(self) -> int:
+        return len(self.neighborhoods)

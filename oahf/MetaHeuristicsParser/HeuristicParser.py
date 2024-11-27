@@ -21,9 +21,11 @@ from oahf.ImplementedBase.AlwabpWorkerOrientedInsertNS import (
 from oahf.ImplementedBase.BetterOrSameAcceptanceCriteria import (
     BetterOrSameAcceptanceCriteria,
 )
+from oahf.ImplementedBase.BetterAcceptanceCriteria import BetterAcceptanceCriteria
 from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.ListSelection import ListSelection
 from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
+from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
 from oahf.ImplementedBase.WorkersUnassignedStopCriteria import (
     WorkersUnassignedStopCriteria,
 )
@@ -32,6 +34,7 @@ from oahf.MetaHeuristics.BestImprovement import BestImprovement
 from oahf.MetaHeuristics.FirstImprovement import FirstImprovement
 from oahf.MetaHeuristics.GRASP import GRASP
 from oahf.MetaHeuristics.GRC import GRC
+from oahf.MetaHeuristics.MultipleBestImprovement import MultipleBestImprovement
 from oahf.Utils.EnumUtil import EnumUtil
 from oahf.Utils.Util import Util
 
@@ -248,7 +251,6 @@ class HeuristicParser:
                     )
                 elif m["name"].lower() == "first_improvement":
                     thread_id = 0
-                    greediness = float(m["parameters"].get("greediness", 0.0))
                     stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
                     acceptance_criteria = self.parse_acceptance_criteria(
                         m["acceptance_criteria"]
@@ -263,7 +265,6 @@ class HeuristicParser:
                     )
                 elif m["name"].lower() == "best_improvement":
                     thread_id = 0
-                    greediness = float(m["parameters"].get("greediness", 0.0))
                     stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
                     acceptance_criteria = self.parse_acceptance_criteria(
                         m["acceptance_criteria"]
@@ -275,6 +276,22 @@ class HeuristicParser:
                         evaluator,
                         acceptance_criteria,  # type: ignore
                         ns,
+                    )
+                elif m["name"].lower() == "multiple_best_improvement":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    acceptance_criteria = self.parse_acceptance_criteria(
+                        m["acceptance_criteria"]
+                    )
+                    ns = self.neighborhood_selections[m["neighborhood_selection"]]                    
+                    num_selections = int(m["parameters"].get("num_selections")) if "num_selections" in m["parameters"] else None
+                    meta = MultipleBestImprovement(
+                        thread_id,
+                        stop_criteria,  # type: ignore
+                        evaluator,
+                        acceptance_criteria,  # type: ignore
+                        ns,
+                        num_selections
                     )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")
@@ -303,10 +320,11 @@ class HeuristicParser:
             elif "max_cycle_time" in criteria:
                 cycle_time_limit = int(criteria["max_cycle_time"]["cycle_time_limit"])
                 return MaxCycleTimeStopCriteria(cycle_time_limit)
+            elif "no_stop" in criteria:
+                return NoStopCriteria()
             elif "multiple_stop_criteria" in criteria:
                 stop_when_any = (
-                    criteria["multiple_stop_criteria"]["stop_when_any"].lower()
-                    == "true"
+                    criteria["multiple_stop_criteria"]["stop_when_any"].lower() == "true"
                 )
                 multiple_criterias = [
                     parsed
@@ -336,6 +354,8 @@ class HeuristicParser:
                 return None
             elif "better_or_same" in criteria:
                 return BetterOrSameAcceptanceCriteria()
+            elif "better" in criteria:
+                return BetterAcceptanceCriteria()
             else:
                 raise ValueError(f"Unavailable acceptance criteria: {criteria}")
         except Exception as e:

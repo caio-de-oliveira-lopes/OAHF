@@ -9,13 +9,12 @@ from .BetterOrSameAcceptanceCriteria import BetterOrSameAcceptanceCriteria
 from .CompleteAssignmentStopCriteria import CompleteAssignmentStopCriteria
 from .EliteDiversePool import EliteDiversePool
 from .ElitePool import ElitePool
-from .ExecutedByAvailableWorkersAcceptanceCriteria import (
-    ExecutedByAvailableWorkersAcceptanceCriteria,
-)
+from .ExecutedByAvailableWorkersAcceptanceCriteria import ExecutedByAvailableWorkersAcceptanceCriteria
 from .ListPool import ListPool
 from .ListSelection import ListSelection
 from .MaxCycleTimeConstraint import MaxCycleTimeConstraint
 from .MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
+from .NoStopCriteria import NoStopCriteria
 from .ProbabilityListSelection import ProbabilityListSelection
 from .RandomListSelection import RandomListSelection
 from .SimulatedAnnealing import SimulatedAnnealing
@@ -41,11 +40,12 @@ __all__ = [
     "ListSelection",
     "MaxCycleTimeConstraint",
     "MaxCycleTimeStopCriteria",
+    "NoStopCriteria",
     "ProbabilityListSelection",
     "RandomListSelection",
     "SimulatedAnnealing",
     "StopNoImprovement",
     "StopTimeIterationCriteria",
     "ThresholdAcceptance",
-    "WorkersUnassignedStopCriteria",
+    "WorkersUnassignedStopCriteria"
 ]

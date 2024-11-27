@@ -6,7 +6,6 @@ from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Logger.LogManager import LogManager
-from oahf.Utils.Util import Util
 
 
 class Neighborhood:
