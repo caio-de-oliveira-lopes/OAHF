@@ -26,6 +26,8 @@ from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.ListSelection import ListSelection
 from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
 from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
+from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
+from oahf.ImplementedBase.TaskSwapNS import TaskSwapNS
 from oahf.ImplementedBase.WorkersUnassignedStopCriteria import (
     WorkersUnassignedStopCriteria,
 )
@@ -123,7 +125,7 @@ class HeuristicParser:
             )
 
             for n in self.definition["neighborhoods"]:
-                if n["name"].lower() == "alwabp_worker_oriented_insert_ns":
+                if n["name"].lower() == "alwabp_worker_oriented_insert":
                     pw = MaxPositionalWeightType(
                         EnumUtil.get_enum_from_string(
                             MaxPositionalWeightType, n["parameters"]["pw"]
@@ -140,6 +142,15 @@ class HeuristicParser:
                     )
                     neighborhood = AlwabpWorkerOrientedInsertNS(
                         pw, graph_orientation, greediness, None, fixed_workers
+                    )
+                elif n["name"].lower() == "task_swap":
+                    graph_orientation = GraphOrientation(
+                        EnumUtil.get_enum_from_string(
+                            GraphOrientation, n["parameters"]["graph_orientation"]
+                        )
+                    )
+                    neighborhood = TaskSwapNS(
+                        graph_orientation, None
                     )
                 else:
                     raise ValueError(f"Unavailable neighborhood: {n['name']}")
@@ -283,15 +294,13 @@ class HeuristicParser:
                     acceptance_criteria = self.parse_acceptance_criteria(
                         m["acceptance_criteria"]
                     )
-                    ns = self.neighborhood_selections[m["neighborhood_selection"]]                    
-                    num_selections = int(m["parameters"].get("num_selections")) if "num_selections" in m["parameters"] else None
+                    ns = self.neighborhood_selections[m["neighborhood_selection"]]
                     meta = MultipleBestImprovement(
                         thread_id,
                         stop_criteria,  # type: ignore
                         evaluator,
                         acceptance_criteria,  # type: ignore
-                        ns,
-                        num_selections
+                        ns
                     )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")
@@ -312,6 +321,10 @@ class HeuristicParser:
         try:
             if not criteria:
                 return None
+            elif "time_iteration" in criteria:
+                seconds = float(criteria["time_iteration"].get("seconds")) if "seconds" in criteria["time_iteration"] else None
+                iterations = int(criteria["time_iteration"].get("iterations")) if "iterations" in criteria["time_iteration"] else None
+                return StopTimeIterationCriteria(seconds, iterations)
             elif "workers_unassigned" in criteria:
                 num_unassigned_workers = int(
                     criteria["workers_unassigned"]["num_unassigned_workers"]

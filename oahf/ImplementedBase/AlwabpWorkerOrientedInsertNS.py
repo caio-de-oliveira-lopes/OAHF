@@ -5,7 +5,7 @@ from oahf.Base.MultipleMovement import MultipleMovement
 from oahf.Base.Neighborhood import Neighborhood
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.ThreadManager import ThreadManager
-from oahf.ImplementedBase.AlwabpInsertOrderMove import AlwabpInsertOrderMove
+from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
 from oahf.ImplementedBase.AlwabpSolution import (
     AlwabpSolution,
     GraphOrientation,
@@ -80,7 +80,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             available_tasks = self.solution.get_available_tasks_to_assign_to_station(
                 self.station, self.graph_orientation, lcr
             )
-            all_moves: List[AlwabpInsertOrderMove] = []
+            all_moves: List[AlwabpInsertionMovement] = []
 
             # Generate movements for tasks that are still available
             while available_tasks:
@@ -94,7 +94,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                     ThreadManager.get_next(self.thread_id, 0, len(filtered_lcr) - 1)
                 ]
                 all_moves.append(
-                    AlwabpInsertOrderMove(
+                    AlwabpInsertionMovement(
                         task, None, self.station, self.solution, self.report
                     )
                 )
@@ -134,7 +134,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                     # unapplying the move will not unassign the worker, 
                     # since the move is not "responsible" for it's assignment
                     if not self.fixed_workers:
-                        worker_move = AlwabpInsertOrderMove(
+                        worker_move = AlwabpInsertionMovement(
                             None,
                             unassigned_worker,
                             self.station,

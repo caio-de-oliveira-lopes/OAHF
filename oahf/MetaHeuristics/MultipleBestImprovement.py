@@ -22,8 +22,7 @@ class MultipleBestImprovement(MetaHeuristic):
         stop_criteria: StopCriteria,
         evaluator: Evaluator,
         acceptance_criteria: AcceptanceCriteria,
-        ns: NeighborhoodSelection,
-        num_selections: Optional[int] = None
+        ns: NeighborhoodSelection
     ):
         """
         Initializes the MultipleBestImprovement metaheuristic.
@@ -34,7 +33,7 @@ class MultipleBestImprovement(MetaHeuristic):
         :param criteria: Acceptance criteria for new solutions.
         """
         super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, ns)
-        self.num_selections = num_selections if num_selections else ns.num_neighborhoods()
+        self.num_selections = ns.num_neighborhoods()
 
     def copy(self, thread: int) -> "MetaHeuristic":
         """Creates a copy of the current MultipleBestImprovement instance."""
@@ -44,7 +43,6 @@ class MultipleBestImprovement(MetaHeuristic):
             self.evaluator,
             self.acceptance_criteria.copy(),
             self.neighborhood_selection.copy(),  # type: ignore
-            self.num_selections
         )
 
     def run(self, sol: Solution) -> Solution:
@@ -52,8 +50,6 @@ class MultipleBestImprovement(MetaHeuristic):
         best_sol = sol.copy()
         curr_sol = best_sol
         best_eval = self.evaluator.evaluate(best_sol)
-
-        ns: Optional[Neighborhood] = self.neighborhood_selection.get_next(self.thread_id)  # type: ignore
 
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
@@ -64,13 +60,7 @@ class MultipleBestImprovement(MetaHeuristic):
                 self.stop_criteria.increment_counter()
                 best_pool = ListPool()
             
-                for _ in range(0, self.num_selections - 1):
-                    try:
-                        if ns is None:
-                            ns = self.neighborhood_selection.get_next(self.thread_id)
-                    except Exception as ex:
-                        LogManager.unable_to_get_neighborhood()
-
+                for _, ns in zip(range(self.num_selections), iter(lambda: self.neighborhood_selection.get_next(self.thread_id), None)): # type: ignore
                     try:
                         # Warning: circular selections with no time StopCriteria may get in an infinite loop
                         if ns is None:
@@ -98,5 +88,7 @@ class MultipleBestImprovement(MetaHeuristic):
                     best_sol = curr_sol.copy()
                     best_eval = curr_eval
                     self.neighborhood_selection.reset(self.thread_id)
+                else:
+                    break
 
         return best_sol

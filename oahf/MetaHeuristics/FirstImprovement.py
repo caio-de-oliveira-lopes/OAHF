@@ -47,18 +47,10 @@ class FirstImprovement(MetaHeuristic):
 
         self.evaluator.save_evaluation_state(curr_sol)
 
-        ns: Optional[Neighborhood] = self.neighborhood_selection.get_next(self.thread_id)  # type: ignore
-
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
 
-        while ns and not self.stop_on_evaluations([best_eval]):
-            try:
-                if ns is None:
-                    ns = self.neighborhood_selection.get_next(self.thread_id)  # type: ignore
-            except Exception as ex:
-                LogManager.unable_to_get_neighborhood()
-
+        while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]): # type: ignore
             try:
                 # Warning: circular selections with no time StopCriteria may get in an infinite loop
                 if ns is None:
@@ -68,7 +60,6 @@ class FirstImprovement(MetaHeuristic):
 
                 if build:
                     move = ns.get_move_operation()
-                    self.stop_criteria.increment_counter()
                     while move is not None and not self.stop_on_evaluations(
                         [best_eval]
                     ):
@@ -94,7 +85,3 @@ class FirstImprovement(MetaHeuristic):
 
         self.evaluator.save_evaluation_state(best_sol)
         return best_sol
-
-    def set_neighborhood(self, neighborhood):
-        """Sets the neighborhood for the FirstImprovement instance."""
-        self.neighborhood = neighborhood

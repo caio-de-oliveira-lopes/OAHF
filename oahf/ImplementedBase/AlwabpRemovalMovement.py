@@ -4,7 +4,7 @@ from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Movement import Movement
 
 
-class AlwabpInsertOrderMove(Movement):
+class AlwabpRemovalMovement(Movement):
     def __init__(
         self,
         task: Optional[int],
@@ -32,16 +32,6 @@ class AlwabpInsertOrderMove(Movement):
 
     def apply(self) -> bool:
         if self.task and self.station:
-            return self.solution.add_task_to_station(self.task, self.station)
-
-        if self.worker and self.station:
-            return self.solution.add_worker_to_station(self.worker, self.station)
-
-        return True
-
-    def unapply(self) -> bool:
-        # Implement logic to revert the movement in the ALWABP solution
-        if self.task and self.station:
             return self.solution.remove_task_from_station(self.task, self.station)
 
         if self.worker and self.station:
@@ -49,5 +39,15 @@ class AlwabpInsertOrderMove(Movement):
 
         return True
 
+    def unapply(self) -> bool:
+        # Implement logic to revert the movement in the ALWABP solution
+        if self.task and self.station:
+            return self.solution.add_task_to_station(self.task, self.station)
+
+        if self.worker and self.station:
+            return self.solution.add_worker_to_station(self.worker, self.station)
+
+        return True
+
     def __str__(self) -> str:
-        return f"AlwabpInsertOrderMove(Task: {self.task}, Worker: {self.worker}, Station: {self.station})"
+        return f"AlwabpRemovalMovement(Task: {self.task}, Worker: {self.worker}, Station: {self.station})"

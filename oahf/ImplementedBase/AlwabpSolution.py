@@ -5,7 +5,7 @@ from typing import Callable, Dict, List, Optional
 import numpy as np
 
 from oahf.Base.Solution import Solution
-from oahf.ImplementedBase.AlwabpInsertOrderMove import AlwabpInsertOrderMove
+from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils import EnumUtil
 
@@ -138,6 +138,7 @@ class AlwabpSolution(Solution):
         new_copy.tasks_executed_by_worker = copy.deepcopy(self.tasks_executed_by_worker)
         new_copy.all_task_precedences = copy.deepcopy(self.all_task_precedences)
         new_copy.max_positional_weight = copy.deepcopy(self.max_positional_weight)
+        new_copy.station_cycle_time_memo = copy.deepcopy(self.station_cycle_time_memo)
 
         # Basic types do not need deep copy
         new_copy._cycle_time_limit = self._cycle_time_limit
@@ -145,7 +146,7 @@ class AlwabpSolution(Solution):
         return new_copy
 
     def validade_aspects(self) -> bool:
-        if self.cycle_time_limit and len(self.unassigned_tasks) > 0:
+        if self.cycle_time_limit and (len(self.unassigned_tasks) > 0 or len(self._unassigned_workers) > 0):
             self.cycle_time_limit = self.cycle_time_limit + 1
             self.reset()
             return False
@@ -1013,8 +1014,8 @@ class AlwabpSolution(Solution):
         return True
 
     def simulate_worker_tasks_allocation(
-        self, worker: int, movements: List[AlwabpInsertOrderMove]
-    ) -> List[AlwabpInsertOrderMove]:
+        self, worker: int, movements: List[AlwabpInsertionMovement]
+    ) -> List[AlwabpInsertionMovement]:
         """
         Simulates the allocation of tasks to a given worker based on possible movements. It filters the list of movements
         to determine which tasks can be executed by the worker and further checks the cumulative task execution time

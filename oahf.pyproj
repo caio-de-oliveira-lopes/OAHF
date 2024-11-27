@@ -61,10 +61,12 @@
     <Compile Include="oahf\Base\ThreadManager.py" />
     <Compile Include="oahf\Base\__init__.py" />
     <Compile Include="oahf\Commons\ProblemData.py" />
-    <Compile Include="oahf\ImplementedBase\AlwabpInsertOrderMove.py" />
+    <Compile Include="oahf\ImplementedBase\AlwabpRemovalMovement.py" />
+    <Compile Include="oahf\ImplementedBase\AlwabpInsertionMovement.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpSolution.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpEvaluator.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpEvaluation.py" />
+    <Compile Include="oahf\ImplementedBase\TaskSwapNS.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpWorkerOrientedInsertNS.py" />
     <Compile Include="oahf\ImplementedBase\AlwaysAcceptAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\ExecutedByAvailableWorkersAcceptanceCriteria.py" />

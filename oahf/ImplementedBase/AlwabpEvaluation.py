@@ -74,7 +74,7 @@ class AlwabpEvaluation(Evaluation):
             return True
         return (self.get_objective_function() < ev.get_objective_function() 
                 or (self.get_objective_function() == ev.get_objective_function() 
-                and self.number_of_critical_workstations < self.number_of_critical_workstations))
+                and self.number_of_critical_workstations < ev.number_of_critical_workstations))
 
     def better_or_equal_to(self, ev: "Evaluation") -> bool:
         """
@@ -91,4 +91,4 @@ class AlwabpEvaluation(Evaluation):
             return True
         return (self.get_objective_function() < ev.get_objective_function() 
                 or (self.get_objective_function() == ev.get_objective_function() 
-                and self.number_of_critical_workstations <= self.number_of_critical_workstations))
+                and self.number_of_critical_workstations <= ev.number_of_critical_workstations))
