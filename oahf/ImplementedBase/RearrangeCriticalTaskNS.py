@@ -102,11 +102,13 @@ class RearrangeCriticalTaskNS(Neighborhood):
                 # Iterate over non-critical workstations
                 for ncw in self.non_critical_workstations:
                     # Retrieve tasks that can be rearranged while maintaining precedence constraints
-                    available_tasks_to_rearrange = (
-                        self.solution.get_available_tasks_to_assign_to_station(
-                            ncw, self.graph_orientation, tasks_on_critical_station
+                    available_tasks_to_rearrange = [
+                        task
+                        for task in tasks_on_critical_station
+                        if self.solution.can_task_be_assigned_to(
+                            task, ncw, None, self.graph_orientation
                         )
-                    )
+                    ]
 
                     for task in available_tasks_to_rearrange:
                         # Define the removal and insertion movements

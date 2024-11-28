@@ -9,6 +9,7 @@ from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Logger.LogManager import LogManager
 
+
 class BestImprovement(MetaHeuristic):
 
     def __init__(
@@ -50,7 +51,7 @@ class BestImprovement(MetaHeuristic):
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
 
-        while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]): # type: ignore
+        while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]):  # type: ignore
             try:
                 # Warning: circular selections with no time StopCriteria may get in an infinite loop
                 if ns is None:
@@ -59,31 +60,31 @@ class BestImprovement(MetaHeuristic):
                 build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
 
                 if build:
-                    while (move := ns.get_move_operation()) is not None and not self.stop_on_evaluations(
-                        [best_eval]
-                    ):
+                    while (
+                        move := ns.get_move_operation()
+                    ) is not None and not self.stop_on_evaluations([best_eval]):
                         worked = move.apply_operation()
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)
-                            
+
                             if self.log_solutions:
                                 self.log_current_solution(curr_eval)
-                                
+
                             if self.acceptance_criteria.accept(
                                 best_eval, curr_eval, curr_sol
                             ):
                                 move.report_apply_improvement(curr_eval, best_eval)
                                 best_sol = curr_sol.copy()
                                 best_eval = curr_eval
-                            else:
-                                move.unapply_operation(curr_eval)
-                                self.evaluator.update_evaluation_after_unapply(curr_sol)
+
+                            move.unapply_operation(curr_eval)
+                            self.evaluator.update_evaluation_after_unapply(curr_sol)
 
                         self.stop_criteria.increment_counter()
-                        
+
                         if self.log_solutions:
                             self.log_best_solution(best_eval)
-                            
+
             except Exception as ex:
                 LogManager.something_went_wrong(self.__class__.__name__, ex)
                 curr_sol = best_sol.copy()

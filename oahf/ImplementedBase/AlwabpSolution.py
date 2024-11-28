@@ -113,40 +113,62 @@ class AlwabpSolution(Solution):
         Creates a copy of the current solution.
 
         Returns:
-            ALWABP: A new instance of the ALWABP solution with the same data.
+            AlwabpSolution: A new instance of the AlwabpSolution with the same data.
         """
-        # Deep copy to avoid common reference
+        # Create a new instance with the same dimensions
         new_copy = AlwabpSolution(
-            len(self.tasks), len(self.workers), len(self.stations)
+            number_of_tasks=len(self.tasks),
+            number_of_workers=len(self.workers),
+            number_of_stations=len(self.stations),
         )
-        new_copy._task_execution_times = copy.deepcopy(self._task_execution_times)
-        new_copy._bounded_task_execution_times = copy.deepcopy(
-            self._bounded_task_execution_times
-        )
-        new_copy.station_worker_assignment = copy.deepcopy(
-            self.station_worker_assignment
-        )
-        new_copy.worker_station_assignment = copy.deepcopy(
-            self.worker_station_assignment
-        )
-        new_copy.station_tasks_assignment = copy.deepcopy(self.station_tasks_assignment)
-        new_copy._unassigned_workers = copy.deepcopy(self._unassigned_workers)
-        new_copy._unassigned_tasks = copy.deepcopy(self._unassigned_tasks)
-        new_copy.immediate_task_precedences = copy.deepcopy(
-            self.immediate_task_precedences
-        )
-        new_copy.tasks_executed_by_worker = copy.deepcopy(self.tasks_executed_by_worker)
-        new_copy.all_task_precedences = copy.deepcopy(self.all_task_precedences)
-        new_copy.max_positional_weight = copy.deepcopy(self.max_positional_weight)
-        new_copy.station_cycle_time_memo = copy.deepcopy(self.station_cycle_time_memo)
 
-        # Basic types do not need deep copy
+        # Use shallow copies for simpler structures
+        new_copy._task_execution_times = {
+            task: times.copy() for task, times in self._task_execution_times.items()
+        }
+        new_copy._bounded_task_execution_times = {
+            task: times.copy()
+            for task, times in self._bounded_task_execution_times.items()
+        }
+        new_copy.station_worker_assignment = self.station_worker_assignment.copy()
+        new_copy.worker_station_assignment = self.worker_station_assignment.copy()
+        new_copy.station_tasks_assignment = {
+            station: tasks.copy()
+            for station, tasks in self.station_tasks_assignment.items()
+        }
+        new_copy._unassigned_workers = self._unassigned_workers.copy()
+        new_copy._unassigned_tasks = self._unassigned_tasks.copy()
+        new_copy.immediate_task_precedences = {
+            orientation: {
+                task: precedences.copy() for task, precedences in tasks.items()
+            }
+            for orientation, tasks in self.immediate_task_precedences.items()
+        }
+        new_copy.tasks_executed_by_worker = {
+            worker: tasks.copy()
+            for worker, tasks in self.tasks_executed_by_worker.items()
+        }
+        new_copy.all_task_precedences = {
+            orientation: {
+                task: precedences.copy() for task, precedences in tasks.items()
+            }
+            for orientation, tasks in self.all_task_precedences.items()
+        }
+        new_copy.max_positional_weight = {
+            weight_type: weights.copy()
+            for weight_type, weights in self.max_positional_weight.items()
+        }
+        new_copy.station_cycle_time_memo = self.station_cycle_time_memo.copy()
+
+        # Copy immutable attributes
         new_copy._cycle_time_limit = self._cycle_time_limit
 
         return new_copy
 
     def validade_aspects(self) -> bool:
-        if self.cycle_time_limit and (len(self.unassigned_tasks) > 0 or len(self._unassigned_workers) > 0):
+        if self.cycle_time_limit and (
+            len(self.unassigned_tasks) > 0 or len(self._unassigned_workers) > 0
+        ):
             self.cycle_time_limit = self.cycle_time_limit + 1
             self.reset()
             return False
@@ -675,12 +697,12 @@ class AlwabpSolution(Solution):
             Optional[int]: The station ID where the task is assigned,
             or None if the task is not assigned to any station.
         """
-        # Iterate through workers to find the task
+        # Iterate through station to find the task
         for station, tasks in self.station_tasks_assignment.items():
             if task in tasks:
                 return station
 
-        # If the task is not found in any worker's tasks, return None
+        # If the task is not found in any station's tasks, return None
         return None
 
     def find_station_for_worker(self, worker: int) -> Optional[int]:
@@ -750,6 +772,25 @@ class AlwabpSolution(Solution):
             for task in available_tasks_to_assign
             if task not in unassigned_tasks_to_remove
         ]
+
+    def can_task_be_assigned_to(
+        self,
+        task: int,
+        station: int,
+        worker: Optional[int] = None,
+        graph_orientation: GraphOrientation = GraphOrientation.FORWARD,
+    ) -> bool:
+        worker = worker or self.station_worker_assignment[station]
+
+        if worker and task not in self.get_tasks_executed_by_worker(worker):
+            return False
+
+        for preceding_task in self.immediate_task_precedences[graph_orientation][task]:
+            another_station = self.find_station_for_task(preceding_task)
+            if not another_station or another_station > station:
+                return False
+
+        return True
 
     def get_task_execution_time(self, task: int, worker: Optional[int] = None) -> float:
         if worker and task in self.get_tasks_executed_by_worker(worker):

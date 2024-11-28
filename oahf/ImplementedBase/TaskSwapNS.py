@@ -99,48 +99,62 @@ class TaskSwapNS(Neighborhood):
                     pairs_already_created.add_pair(ws1, ws2)
                     tasks_on_ws2 = self.solution.station_tasks_assignment[ws2]
 
-                    # Identify tasks that can be swapped between ws1 and ws2.
-                    available_tasks_from_ws1_to_ws2 = (
-                        self.solution.get_available_tasks_to_assign_to_station(
-                            ws2, self.graph_orientation, tasks_on_ws1
-                        )
-                    )
-                    available_tasks_from_ws2_to_ws1 = (
-                        self.solution.get_available_tasks_to_assign_to_station(
-                            ws1, self.graph_orientation, tasks_on_ws2
-                        )
-                    )
-
                     # Generate all possible swaps between available tasks.
-                    for task_ws1 in available_tasks_from_ws1_to_ws2:
-                        for task_ws2 in available_tasks_from_ws2_to_ws1:
-                            # Define removal and insertion movements for the swap.
-                            removal_move_1 = AlwabpRemovalMovement(
-                                task_ws1, None, ws1, self.solution, self.report
-                            )
-                            removal_move_2 = AlwabpRemovalMovement(
-                                task_ws2, None, ws2, self.solution, self.report
-                            )
-                            insertion_move_1 = AlwabpInsertionMovement(
-                                task_ws1, None, ws2, self.solution, self.report
-                            )
-                            insertion_move_2 = AlwabpInsertionMovement(
-                                task_ws2, None, ws1, self.solution, self.report
-                            )
+                    for task_ws1 in tasks_on_ws1:
+                        solution_copy_1 = self.solution.copy()
+                        test_move_1 = AlwabpRemovalMovement(
+                            task_ws1, None, ws1, solution_copy_1, self.report
+                        )
+                        test_move_2 = AlwabpInsertionMovement(
+                            task_ws1, None, ws2, solution_copy_1, self.report
+                        )
+                        if test_move_1.apply() and test_move_2.apply():
+                            for task_ws2 in tasks_on_ws2:
+                                solution_copy_2 = solution_copy_1.copy()
+                                test_move_3 = AlwabpRemovalMovement(
+                                    task_ws2, None, ws2, solution_copy_2, self.report
+                                )
+                                test_move_4 = AlwabpInsertionMovement(
+                                    task_ws2, None, ws1, solution_copy_2, self.report
+                                )
+                                if (
+                                    test_move_3.apply()
+                                    and test_move_4.apply()
+                                    and solution_copy_2.can_task_be_assigned_to(
+                                        task_ws1, ws2, None, self.graph_orientation
+                                    )
+                                    and solution_copy_2.can_task_be_assigned_to(
+                                        task_ws2, ws1, None, self.graph_orientation
+                                    )
+                                ):
 
-                            # Combine the movements into a single swap operation.
-                            swap_composition = [
-                                removal_move_1,
-                                removal_move_2,
-                                insertion_move_1,
-                                insertion_move_2,
-                            ]
+                                    # Define removal and insertion movements for the swap.
+                                    removal_move_1 = AlwabpRemovalMovement(
+                                        task_ws1, None, ws1, self.solution, self.report
+                                    )
+                                    removal_move_2 = AlwabpRemovalMovement(
+                                        task_ws2, None, ws2, self.solution, self.report
+                                    )
+                                    insertion_move_1 = AlwabpInsertionMovement(
+                                        task_ws1, None, ws2, self.solution, self.report
+                                    )
+                                    insertion_move_2 = AlwabpInsertionMovement(
+                                        task_ws2, None, ws1, self.solution, self.report
+                                    )
 
-                            move = MultipleMovement(
-                                self.solution, self.report, swap_composition
-                            )
+                                    # Combine the movements into a single swap operation.
+                                    swap_composition = [
+                                        removal_move_1,
+                                        removal_move_2,
+                                        insertion_move_1,
+                                        insertion_move_2,
+                                    ]
 
-                            yield move  # Return the composed movement.
+                                    move = MultipleMovement(
+                                        self.solution, self.report, swap_composition
+                                    )
+
+                                    yield move  # Return the composed movement.
         else:
             LogManager.invalid_action("generate movements", type(self).__name__)
 
