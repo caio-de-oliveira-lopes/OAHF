@@ -24,6 +24,7 @@ from .RearrangeCriticalTaskNS import RearrangeCriticalTaskNS
 from .SimulatedAnnealing import SimulatedAnnealing
 from .StopNoImprovement import StopNoImprovement
 from .StopTimeIterationCriteria import StopTimeIterationCriteria
+from .TaskSwapNS import TaskSwapNS
 from .ThresholdAcceptance import ThresholdAcceptance
 from .WorkersUnassignedStopCriteria import WorkersUnassignedStopCriteria
 
@@ -52,6 +53,7 @@ __all__ = [
     "SimulatedAnnealing",
     "StopNoImprovement",
     "StopTimeIterationCriteria",
+    "TaskSwapNS",
     "ThresholdAcceptance",
     "WorkersUnassignedStopCriteria",
 ]

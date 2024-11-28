@@ -67,6 +67,20 @@
 			"parameters": {
 				"graph_orientation": "backward"
 			}
+		},
+		{
+			"id": 8,
+			"name": "task_swap",
+			"parameters": {
+				"graph_orientation": "forward"
+			}
+		},
+		{
+			"id": 9,
+			"name": "task_swap",
+			"parameters": {
+				"graph_orientation": "backward"
+			}
 		}
 	],
 	"neighborhood_selections": [
@@ -121,7 +135,15 @@
 		{
 			"id": 6,
 			"name": "list_selection",
-			"neighborhood_ids": [ 6 ],
+			"neighborhood_ids": [ 6, 8 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 7,
+			"name": "list_selection",
+			"neighborhood_ids": [ 7, 9 ],
 			"parameters": {
 				"circular": "false"
 			}

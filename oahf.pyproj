@@ -72,6 +72,7 @@
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\NoStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\RearrangeCriticalTaskNS.py" />
+    <Compile Include="oahf\ImplementedBase\TaskSwapNS.py" />
     <Compile Include="oahf\ImplementedBase\WorkersUnassignedStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeConstraint.py" />
     <Compile Include="oahf\ImplementedBase\SimulatedAnnealing.py" />
@@ -107,6 +108,7 @@
     <Compile Include="oahf\MetaHeuristics\BestImprovement.py" />
     <Compile Include="oahf\MetaHeuristics\__init__.py" />
     <Compile Include="oahf\Utils\EnumUtil.py" />
+    <Compile Include="oahf\Utils\PairStore.py" />
     <Compile Include="oahf\Utils\Util.py" />
     <Compile Include="oahf\Utils\__init__.py" />
     <Compile Include="oahf\__init__.py" />

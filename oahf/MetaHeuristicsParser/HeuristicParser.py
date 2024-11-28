@@ -28,6 +28,7 @@ from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriter
 from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
 from oahf.ImplementedBase.RearrangeCriticalTaskNS import RearrangeCriticalTaskNS
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
+from oahf.ImplementedBase.TaskSwapNS import TaskSwapNS
 from oahf.ImplementedBase.WorkersUnassignedStopCriteria import (
     WorkersUnassignedStopCriteria,
 )
@@ -150,6 +151,13 @@ class HeuristicParser:
                         )
                     )
                     neighborhood = RearrangeCriticalTaskNS(graph_orientation, None)
+                elif n["name"].lower() == "task_swap":
+                    graph_orientation = GraphOrientation(
+                        EnumUtil.get_enum_from_string(
+                            GraphOrientation, n["parameters"]["graph_orientation"]
+                        )
+                    )
+                    neighborhood = TaskSwapNS(graph_orientation, None)
                 else:
                     raise ValueError(f"Unavailable neighborhood: {n['name']}")
                 self.neighborhoods[n["id"]] = neighborhood
