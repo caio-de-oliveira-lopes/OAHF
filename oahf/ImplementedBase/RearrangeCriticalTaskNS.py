@@ -6,17 +6,14 @@ from oahf.Base.Neighborhood import Neighborhood
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
 from oahf.ImplementedBase.AlwabpRemovalMovement import AlwabpRemovalMovement
-from oahf.ImplementedBase.AlwabpSolution import (
-    AlwabpSolution,
-    GraphOrientation,
-)
+from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution, GraphOrientation
 from oahf.Logger.LogManager import LogManager
 
 
-class TaskSwapNS(Neighborhood):
+class RearrangeCriticalTaskNS(Neighborhood):
     """
-    Implements a neighborhood search strategy for the ALWABP problem. 
-    This class explores movements that swap tasks between stations, 
+    Implements a neighborhood search strategy for the ALWABP problem.
+    This class explores movements that rearrange tasks between stations,
     aiming to improve the solution by balancing critical and non-critical stations.
     """
 
@@ -26,7 +23,7 @@ class TaskSwapNS(Neighborhood):
         stop_criteria: Optional[StopCriteria] = None,
     ):
         """
-        Initializes the TaskSwapNS instance.
+        Initializes the RearrangeCriticalTaskNS instance.
 
         Parameters:
             graph_orientation (GraphOrientation): The direction of the task precedence graph.
@@ -43,7 +40,7 @@ class TaskSwapNS(Neighborhood):
         """
         Prepares the neighborhood for exploration.
 
-        This includes initializing the solution, identifying critical and 
+        This includes initializing the solution, identifying critical and
         non-critical workstations, and setting up an iterator for movements.
 
         Parameters:
@@ -56,7 +53,8 @@ class TaskSwapNS(Neighborhood):
         self.solution = solution
         self.critical_workstations = self.solution.get_critical_workstations()
         self.non_critical_workstations = [
-            station for station in self.solution.stations
+            station
+            for station in self.solution.stations
             if station not in self.critical_workstations
         ]
         self.thread_id = thread_id
@@ -79,24 +77,24 @@ class TaskSwapNS(Neighborhood):
 
     def all_moves(self) -> Iterator[Movement]:
         """
-        Generates all possible task swap movements in the neighborhood.
+        Generates all possible task rearrange movements in the neighborhood.
 
         This involves:
         - Identifying tasks in critical workstations.
-        - Checking if tasks can be moved to non-critical workstations while 
+        - Checking if tasks can be moved to non-critical workstations while
           respecting precedence constraints.
-        - Creating a composite movement (task removal + insertion) for each valid swap.
+        - Creating a composite movement (task removal + insertion) for each valid rearrangement.
 
         Yields:
-            Movement: A valid task swap movement.
+            Movement: A valid task rearrange movement.
         """
         if self.solution and len(self.critical_workstations) > 0:
             # First approach uses only the first critical workstation
             critical_workstations = [self.critical_workstations[0]]
-            
+
             # Second approach uses all critical workstations
-            #critical_workstations = self.critical_workstations
-            
+            # critical_workstations = self.critical_workstations
+
             for critical_workstation in critical_workstations:
                 # Iterate over non-critical workstations
                 for ncw in self.non_critical_workstations:
@@ -104,12 +102,14 @@ class TaskSwapNS(Neighborhood):
                         critical_workstation
                     ]
 
-                    # Retrieve tasks that can be swapped while maintaining precedence constraints
-                    available_tasks_to_swap = self.solution.get_available_tasks_to_assign_to_station(
-                        ncw, self.graph_orientation, tasks_on_critical_station
+                    # Retrieve tasks that can be rearranged while maintaining precedence constraints
+                    available_tasks_to_rearrange = (
+                        self.solution.get_available_tasks_to_assign_to_station(
+                            ncw, self.graph_orientation, tasks_on_critical_station
+                        )
                     )
 
-                    for task in available_tasks_to_swap:
+                    for task in available_tasks_to_rearrange:
                         # Define the removal and insertion movements
                         removal_move = AlwabpRemovalMovement(
                             task, None, critical_workstation, self.solution, self.report
@@ -118,25 +118,25 @@ class TaskSwapNS(Neighborhood):
                             task, None, ncw, self.solution, self.report
                         )
 
-                        # Combine the movements into a swap operation
-                        swap_composition = [removal_move, insertion_move]
+                        # Combine the movements into a rearrange operation
+                        rearrange_composition = [removal_move, insertion_move]
 
                         move = MultipleMovement(
-                            self.solution, self.report, swap_composition
+                            self.solution, self.report, rearrange_composition
                         )
 
                         yield move
         else:
             LogManager.invalid_action("generate movements", type(self).__name__)
 
-    def copy(self) -> "TaskSwapNS":
+    def copy(self) -> "RearrangeCriticalTaskNS":
         """
-        Creates a deep copy of the TaskSwapNS instance.
+        Creates a deep copy of the RearrangeCriticalTaskNS instance.
 
         Returns:
-            TaskSwapNS: A new instance with the same configuration as the original.
+            RearrangeCriticalTaskNS: A new instance with the same configuration as the original.
         """
-        return TaskSwapNS(
+        return RearrangeCriticalTaskNS(
             self.graph_orientation,
             self.stop_criteria.copy() if self.stop_criteria else None,
         )

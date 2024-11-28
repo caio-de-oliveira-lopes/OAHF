@@ -56,14 +56,14 @@
 		},
 		{
 			"id": 6,
-			"name": "task_swap",
+			"name": "rearrange_critical_task",
 			"parameters": {
 				"graph_orientation": "forward"
 			}
 		},
 		{
 			"id": 7,
-			"name": "task_swap",
+			"name": "rearrange_critical_task",
 			"parameters": {
 				"graph_orientation": "backward"
 			}

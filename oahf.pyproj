@@ -66,12 +66,12 @@
     <Compile Include="oahf\ImplementedBase\AlwabpSolution.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpEvaluator.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpEvaluation.py" />
-    <Compile Include="oahf\ImplementedBase\TaskSwapNS.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpWorkerOrientedInsertNS.py" />
     <Compile Include="oahf\ImplementedBase\AlwaysAcceptAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\ExecutedByAvailableWorkersAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\NoStopCriteria.py" />
+    <Compile Include="oahf\ImplementedBase\RearrangeCriticalTaskNS.py" />
     <Compile Include="oahf\ImplementedBase\WorkersUnassignedStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeConstraint.py" />
     <Compile Include="oahf\ImplementedBase\SimulatedAnnealing.py" />

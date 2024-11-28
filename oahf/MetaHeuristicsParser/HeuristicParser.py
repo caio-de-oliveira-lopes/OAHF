@@ -18,16 +18,16 @@ from oahf.ImplementedBase.AlwabpSolution import (
 from oahf.ImplementedBase.AlwabpWorkerOrientedInsertNS import (
     AlwabpWorkerOrientedInsertNS,
 )
+from oahf.ImplementedBase.BetterAcceptanceCriteria import BetterAcceptanceCriteria
 from oahf.ImplementedBase.BetterOrSameAcceptanceCriteria import (
     BetterOrSameAcceptanceCriteria,
 )
-from oahf.ImplementedBase.BetterAcceptanceCriteria import BetterAcceptanceCriteria
 from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.ListSelection import ListSelection
 from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
 from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
+from oahf.ImplementedBase.RearrangeCriticalTaskNS import RearrangeCriticalTaskNS
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
-from oahf.ImplementedBase.TaskSwapNS import TaskSwapNS
 from oahf.ImplementedBase.WorkersUnassignedStopCriteria import (
     WorkersUnassignedStopCriteria,
 )
@@ -143,15 +143,13 @@ class HeuristicParser:
                     neighborhood = AlwabpWorkerOrientedInsertNS(
                         pw, graph_orientation, greediness, None, fixed_workers
                     )
-                elif n["name"].lower() == "task_swap":
+                elif n["name"].lower() == "rearrange_critical_task":
                     graph_orientation = GraphOrientation(
                         EnumUtil.get_enum_from_string(
                             GraphOrientation, n["parameters"]["graph_orientation"]
                         )
                     )
-                    neighborhood = TaskSwapNS(
-                        graph_orientation, None
-                    )
+                    neighborhood = RearrangeCriticalTaskNS(graph_orientation, None)
                 else:
                     raise ValueError(f"Unavailable neighborhood: {n['name']}")
                 self.neighborhoods[n["id"]] = neighborhood
@@ -300,7 +298,7 @@ class HeuristicParser:
                         stop_criteria,  # type: ignore
                         evaluator,
                         acceptance_criteria,  # type: ignore
-                        ns
+                        ns,
                     )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")
@@ -322,8 +320,16 @@ class HeuristicParser:
             if not criteria:
                 return None
             elif "time_iteration" in criteria:
-                seconds = float(criteria["time_iteration"].get("seconds")) if "seconds" in criteria["time_iteration"] else None
-                iterations = int(criteria["time_iteration"].get("iterations")) if "iterations" in criteria["time_iteration"] else None
+                seconds = (
+                    float(criteria["time_iteration"].get("seconds"))
+                    if "seconds" in criteria["time_iteration"]
+                    else None
+                )
+                iterations = (
+                    int(criteria["time_iteration"].get("iterations"))
+                    if "iterations" in criteria["time_iteration"]
+                    else None
+                )
                 return StopTimeIterationCriteria(seconds, iterations)
             elif "workers_unassigned" in criteria:
                 num_unassigned_workers = int(
@@ -337,7 +343,8 @@ class HeuristicParser:
                 return NoStopCriteria()
             elif "multiple_stop_criteria" in criteria:
                 stop_when_any = (
-                    criteria["multiple_stop_criteria"]["stop_when_any"].lower() == "true"
+                    criteria["multiple_stop_criteria"]["stop_when_any"].lower()
+                    == "true"
                 )
                 multiple_criterias = [
                     parsed
