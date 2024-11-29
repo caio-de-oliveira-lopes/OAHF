@@ -15,7 +15,7 @@ from oahf.Utils import Util
 def main(args=sys.argv[1:]) -> None:
 
     if len(args) == 0:
-        print("Missing configuration file path. Ending program.")
+        Util.logger().info("Missing configuration file path. Ending program.")
         return
 
     problem_data = ProblemData(args[0])
@@ -28,9 +28,9 @@ def main(args=sys.argv[1:]) -> None:
         f"Initializing the system and preparing the environment."
     )
 
-    print(
-        f"{Util.line()}\nOptimizing instance {problem_data.file_name}.\n{Util.line()}"
-    )
+    print(Util.line())
+    Util.logger().info(f"Optimizing instance {problem_data.file_name}.")
+    print(Util.line())
 
     heuristic_parser = HeuristicParser()
     evaluator = AlwabpEvaluator(True, MaxCycleTimeConstraint())

@@ -1,4 +1,5 @@
 ﻿import json
+import time
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -28,10 +29,13 @@ from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriter
 from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
 from oahf.ImplementedBase.RearrangeCriticalTaskNS import RearrangeCriticalTaskNS
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
+from oahf.ImplementedBase.TasksUnassignedStopCriteria import TasksUnassignedStopCriteria
 from oahf.ImplementedBase.TaskSwapNS import TaskSwapNS
 from oahf.ImplementedBase.WorkersUnassignedStopCriteria import (
     WorkersUnassignedStopCriteria,
 )
+from oahf.ImplementedBase.WorkerSwapNS import WorkerSwapNS
+from oahf.ImplementedBase.WorkerSwapReconstructNS import WorkerSwapReconstructNS
 from oahf.Logger.LogManager import LogManager
 from oahf.MetaHeuristics.BestImprovement import BestImprovement
 from oahf.MetaHeuristics.FirstImprovement import FirstImprovement
@@ -74,7 +78,7 @@ class HeuristicParser:
         with open(path, "r") as file:
             self.definition = json.load(file)
 
-        self.parse_neighborhoods()
+        self.parse_neighborhoods(evaluator)
         self.parse_neighborhood_selections()
         self.parse_solution_pools(evaluator)
         self.parse_metaheuristics(evaluator)
@@ -102,6 +106,9 @@ class HeuristicParser:
     def run_definition(
         self, initial_sol: Solution, evaluator: Evaluator
     ) -> Optional[Solution]:
+        # Record the start time
+        start_time = time.time()
+
         for mh in self.ordered_metaheuristics:
             origin_pool = (
                 mh.origin_pool
@@ -110,13 +117,27 @@ class HeuristicParser:
             )
             mh.run_operation(origin_pool, mh.destination_pool)
 
+        # Record the end time
+        end_time = time.time()
+
+        # Calculate the duration
+        duration = end_time - start_time
+
+        hours, remainder = divmod(duration, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        print(Util.line())
+        Util.logger().info(
+            f"Total Execution Time: {int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+        )
+
         final_pool = ListPool()
         for pool in list(self.solution_pools.values()):
             final_pool.add_solution(pool.get_best(evaluator))
 
         return final_pool.get_best(evaluator)
 
-    def parse_neighborhoods(self):
+    def parse_neighborhoods(self, evaluator: Evaluator):
         """
         Parses neighborhood definitions from the configuration and initializes instances.
         """
@@ -138,11 +159,8 @@ class HeuristicParser:
                         )
                     )
                     greediness = float(n["parameters"].get("greediness", 0.0))
-                    fixed_workers = (
-                        n["parameters"].get("fixed_workers", "false").lower() == "true"
-                    )
                     neighborhood = AlwabpWorkerOrientedInsertNS(
-                        pw, graph_orientation, greediness, None, fixed_workers
+                        pw, graph_orientation, greediness
                     )
                 elif n["name"].lower() == "rearrange_critical_task":
                     graph_orientation = GraphOrientation(
@@ -150,14 +168,55 @@ class HeuristicParser:
                             GraphOrientation, n["parameters"]["graph_orientation"]
                         )
                     )
-                    neighborhood = RearrangeCriticalTaskNS(graph_orientation, None)
+                    neighborhood = RearrangeCriticalTaskNS(graph_orientation)
                 elif n["name"].lower() == "task_swap":
                     graph_orientation = GraphOrientation(
                         EnumUtil.get_enum_from_string(
                             GraphOrientation, n["parameters"]["graph_orientation"]
                         )
                     )
-                    neighborhood = TaskSwapNS(graph_orientation, None)
+                    neighborhood = TaskSwapNS(graph_orientation)
+                elif n["name"].lower() == "worker_swap":
+                    neighborhood = WorkerSwapNS()
+                elif n["name"].lower() == "worker_swap_reconstruct":
+                    thread_id = 0
+                    greediness = float(
+                        n["parameters"]["reconstruct"].get("greediness", 0.0)
+                    )
+                    stop_criteria = self.parse_stop_criteria(
+                        n["parameters"]["reconstruct"]["stop_criteria"]
+                    )
+
+                    if not stop_criteria:
+                        raise ValueError(
+                            f"No stop criteria for neighborhood: {n['name']}"
+                        )
+
+                    acceptance_criteria = self.parse_acceptance_criteria(
+                        n["parameters"]["reconstruct"]["acceptance_criteria"]
+                    )
+                    neighborhoods = [
+                        self.neighborhoods[id]
+                        for id in n["parameters"]["reconstruct"]["neighborhood_ids"]
+                    ]
+                    ns = ListSelection(False, *neighborhoods)
+                    order_moves = (
+                        str(n["parameters"]["reconstruct"]["order_moves"]).lower()
+                        == "true"
+                    )
+
+                    grc = GRC(
+                        thread_id,
+                        greediness,
+                        stop_criteria,  # type: ignore
+                        evaluator,
+                        acceptance_criteria,  # type: ignore
+                        ns,
+                        order_moves,
+                    )
+                    neighborhood = WorkerSwapReconstructNS(
+                        grc, evaluator, stop_criteria
+                    )
                 else:
                     raise ValueError(f"Unavailable neighborhood: {n['name']}")
                 self.neighborhoods[n["id"]] = neighborhood
@@ -344,6 +403,11 @@ class HeuristicParser:
                     criteria["workers_unassigned"]["num_unassigned_workers"]
                 )
                 return WorkersUnassignedStopCriteria(num_unassigned_workers)
+            elif "tasks_unassigned" in criteria:
+                num_unassigned_tasks = int(
+                    criteria["tasks_unassigned"]["num_unassigned_tasks"]
+                )
+                return TasksUnassignedStopCriteria(num_unassigned_tasks)
             elif "max_cycle_time" in criteria:
                 cycle_time_limit = int(criteria["max_cycle_time"]["cycle_time_limit"])
                 return MaxCycleTimeStopCriteria(cycle_time_limit)

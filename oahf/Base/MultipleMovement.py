@@ -40,3 +40,33 @@ class MultipleMovement(Movement):
     def set_unapply_inconsistent(self):
         """Override this method as it is not implemented in this class."""
         raise NotImplementedError("Subclasses must implement this method.")
+
+    def copy(self, new_solution: Optional["Solution"] = None) -> "MultipleMovement":
+        """
+        Creates a copy of the current MultipleMovement, optionally replacing the solution.
+
+        Args:
+            new_solution (Optional[Solution]): A new solution to associate with the copied movements.
+                If not provided, the current solution is used.
+
+        Returns:
+            MultipleMovement: A new instance of MultipleMovement with the same attributes,
+            but optionally associated with a new solution.
+        """
+        # Use the provided solution or retain the current one
+        solution_to_use = new_solution if new_solution else self.solution
+
+        # Copy each movement, passing the new solution if applicable
+        copied_movements = [
+            movement.copy(new_solution=solution_to_use) for movement in self.movements
+        ]
+
+        # Create a new instance of MultipleMovement with copied movements
+        copied_multiple_movement = MultipleMovement(
+            solution=solution_to_use,
+            report=self.report,
+            movements=copied_movements,
+            override_cost=self.override_cost,
+        )
+
+        return copied_multiple_movement

@@ -69,3 +69,32 @@ class Movement(Entity, ABC):
     def set_unapply_inconsistent(self):
         """Indicate that the unapply operation is inconsistent."""
         raise NotImplementedError("Subclasses must implement this method.")
+
+    @abstractmethod
+    def copy(self, new_solution: Optional["Solution"] = None) -> "Movement":
+        """
+        Creates a copy of the current Movement object, optionally replacing the solution.
+
+        Args:
+            new_solution (Optional[Solution]): A new solution to associate with the copied movement.
+                If not provided, the current solution is used.
+
+        Returns:
+            Movement: A new instance of the same Movement type, with the same attributes
+            but optionally associated with a new solution.
+        """
+        # Use the provided solution or default to the current one
+        solution_to_use = new_solution if new_solution else self.solution
+
+        # Create a new instance of the same type
+        new_instance = type(self)(solution=solution_to_use, report=self.report)
+
+        # Copy any additional attributes if needed (in case of subclass extensions)
+        for attr in vars(self):
+            if attr not in {
+                "solution",
+                "report",
+            }:  # Avoid overwriting explicitly set attributes
+                setattr(new_instance, attr, getattr(self, attr))
+
+        return new_instance

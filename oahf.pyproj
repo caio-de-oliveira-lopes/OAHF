@@ -72,6 +72,7 @@
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\NoStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\RearrangeCriticalTaskNS.py" />
+    <Compile Include="oahf\ImplementedBase\TasksUnassignedStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\TaskSwapNS.py" />
     <Compile Include="oahf\ImplementedBase\WorkersUnassignedStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeConstraint.py" />
@@ -88,6 +89,8 @@
     <Compile Include="oahf\ImplementedBase\ThresholdAcceptance.py" />
     <Compile Include="oahf\ImplementedBase\BetterOrSameAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\BetterAcceptanceCriteria.py" />
+    <Compile Include="oahf\ImplementedBase\WorkerSwapNS.py" />
+    <Compile Include="oahf\ImplementedBase\WorkerSwapReconstructNS.py" />
     <Compile Include="oahf\ImplementedBase\__init__.py" />
     <Compile Include="oahf\main.py" />
     <Compile Include="oahf\Logger\LogManager.py" />

@@ -102,17 +102,19 @@ class GRASP(MetaHeuristic):
 
             curr_pool = local_search.run_operation(curr_pool, None, self)
             curr_sol = curr_pool.get_best(self.evaluator)
-            curr_eval = self.evaluator.evaluate(curr_sol)
 
-            if best_eval is not None and self.acceptance_criteria.accept(
-                best_eval, curr_eval, curr_pool
-            ):
-                best_eval = curr_eval
-                best_sol = curr_sol
-                output_pool.add_solution(best_sol)
-                # Optionally log the best evaluation
-                # print(best_eval)
-            
+            if curr_sol:
+                curr_eval = self.evaluator.evaluate(curr_sol)
+
+                if best_eval is not None and self.acceptance_criteria.accept(
+                    best_eval, curr_eval, curr_pool
+                ):
+                    best_eval = curr_eval
+                    best_sol = curr_sol
+                    output_pool.add_solution(best_sol)
+                    # Optionally log the best evaluation
+                    # print(best_eval)
+
             self.stop_criteria.increment_counter()
 
         return output_pool

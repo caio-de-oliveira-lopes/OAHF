@@ -11,7 +11,7 @@ from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
-from oahf.ImplementedBase import ListPool
+from oahf.ImplementedBase.ListPool import ListPool
 from oahf.Logger.LogManager import LogManager
 
 

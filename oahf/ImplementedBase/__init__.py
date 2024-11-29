@@ -24,9 +24,12 @@ from .RearrangeCriticalTaskNS import RearrangeCriticalTaskNS
 from .SimulatedAnnealing import SimulatedAnnealing
 from .StopNoImprovement import StopNoImprovement
 from .StopTimeIterationCriteria import StopTimeIterationCriteria
+from .TasksUnassignedStopCriteria import TasksUnassignedStopCriteria
 from .TaskSwapNS import TaskSwapNS
 from .ThresholdAcceptance import ThresholdAcceptance
 from .WorkersUnassignedStopCriteria import WorkersUnassignedStopCriteria
+from .WorkerSwapNS import WorkerSwapNS
+from .WorkerSwapReconstructNS import WorkerSwapReconstructNS
 
 __all__ = [
     "AlwabpEvaluation",
@@ -53,7 +56,10 @@ __all__ = [
     "SimulatedAnnealing",
     "StopNoImprovement",
     "StopTimeIterationCriteria",
+    "TasksUnassignedStopCriteria",
     "TaskSwapNS",
     "ThresholdAcceptance",
     "WorkersUnassignedStopCriteria",
+    "WorkerSwapNS",
+    "WorkerSwapReconstructNS",
 ]

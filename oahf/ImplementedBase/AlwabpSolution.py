@@ -172,7 +172,12 @@ class AlwabpSolution(Solution):
             self.cycle_time_limit = self.cycle_time_limit + 1
             self.reset()
             return False
+        else:
+            self.narrow_bounds()
         return super().validade_aspects()
+
+    def narrow_bounds(self) -> None:
+        self.cycle_time_limit = self.get_max_cycle_time()
 
     def reset(self) -> None:
         self.station_worker_assignment: Dict[int, Optional[int]] = {
@@ -963,7 +968,10 @@ class AlwabpSolution(Solution):
         )
 
     def get_worker_min_rlb(
-        self, worker: int, override_unassigned_tasks: List[int] = []
+        self,
+        worker: int,
+        override_unassigned_tasks: List[int] = [],
+        override_unassigned_workers: List[int] = [],
     ) -> int:
         """
         Calculates the minimum restricted lower bound (RLB) for a worker. This RLB is the total minimum
@@ -979,7 +987,7 @@ class AlwabpSolution(Solution):
 
         unassigned_tasks = (
             override_unassigned_tasks.copy()
-            if override_unassigned_tasks
+            if len(override_unassigned_tasks) > 0
             else self._unassigned_tasks
         )
         # If there's only one unassigned worker, return 0 as there's no other worker to assign tasks to
@@ -994,8 +1002,14 @@ class AlwabpSolution(Solution):
         ]
 
         # Copy the unassigned workers list and remove the current worker from it
-        other_unassigned_workers = self.unassigned_workers.copy()
-        other_unassigned_workers.remove(worker)
+
+        unassigned_workers = (
+            override_unassigned_workers.copy()
+            if len(override_unassigned_workers) > 0
+            else self.unassigned_workers.copy()
+        )
+
+        unassigned_workers.remove(worker)
 
         amount_of_time: int = 0
 
@@ -1003,11 +1017,11 @@ class AlwabpSolution(Solution):
         # for that task considering the other unassigned workers
         for task in pending_assignable_tasks:
             amount_of_time += int(
-                self.min_task_execution_time(task, other_unassigned_workers)
+                self.min_task_execution_time(task, unassigned_workers)
             )
 
         # Return the total amount of time divided by the number of remaining unassigned workers
-        return amount_of_time // len(other_unassigned_workers)
+        return amount_of_time // (len(unassigned_workers) or 1)
 
     def get_first_unassigned_station(self) -> Optional[int]:
         """

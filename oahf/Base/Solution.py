@@ -76,6 +76,10 @@ class Solution(Entity, ABC):
         pass
 
     @abstractmethod
+    def narrow_bounds(self) -> None:
+        pass
+
+    @abstractmethod
     def __str__(self) -> str:
         """Gets a string representation of the solution.
 

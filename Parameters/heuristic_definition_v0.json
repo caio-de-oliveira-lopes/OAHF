@@ -81,6 +81,139 @@
 			"parameters": {
 				"graph_orientation": "backward"
 			}
+		},
+		{
+			"id": 10,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 0 ]
+				}
+			}
+		},
+		{
+			"id": 10,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 0 ]
+				}
+			}
+		},
+		{
+			"id": 11,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 1 ]
+				}
+			}
+		},
+		{
+			"id": 12,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 2 ]
+				}
+			}
+		},
+		{
+			"id": 13,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 3 ]
+				}
+			}
+		},
+		{
+			"id": 14,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 4 ]
+				}
+			}
+		},
+		{
+			"id": 15,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 5 ]
+				}
+			}
 		}
 	],
 	"neighborhood_selections": [
@@ -135,15 +268,7 @@
 		{
 			"id": 6,
 			"name": "list_selection",
-			"neighborhood_ids": [ 6, 8 ],
-			"parameters": {
-				"circular": "false"
-			}
-		},
-		{
-			"id": 7,
-			"name": "list_selection",
-			"neighborhood_ids": [ 7, 9 ],
+			"neighborhood_ids": [ 6, 8, 10 ],
 			"parameters": {
 				"circular": "false"
 			}
@@ -167,7 +292,7 @@
 				}
 			},
 			"acceptance_criteria": {
-				"better_or_same": {}
+				"better": {}
 			},
 			"parameters": {
 				"greediness": 1,

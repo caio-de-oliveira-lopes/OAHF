@@ -51,3 +51,34 @@ class AlwabpRemovalMovement(Movement):
 
     def __str__(self) -> str:
         return f"AlwabpRemovalMovement(Task: {self.task}, Worker: {self.worker}, Station: {self.station})"
+
+    def copy(
+        self, new_solution: Optional["AlwabpSolution"] = None
+    ) -> "AlwabpRemovalMovement":
+        """
+        Creates a copy of the current AlwabpRemovalMovement, optionally replacing the solution.
+
+        Args:
+            new_solution (Optional[AlwabpSolution]): A new solution to associate with the copied movement.
+                If not provided, the current solution is used.
+
+        Returns:
+            AlwabpRemovalMovement: A new instance of AlwabpRemovalMovement with the same attributes,
+            but optionally associated with a new solution.
+        """
+        # Use the provided solution or retain the current one
+        solution_to_use = new_solution if new_solution else self.solution
+
+        # Create a new instance of AlwabpRemovalMovement
+        copied_movement = AlwabpRemovalMovement(
+            task=self.task,
+            worker=self.worker,
+            station=self.station,
+            solution=solution_to_use,
+            report=self.report,
+        )
+
+        # Copy additional attributes if needed
+        copied_movement.override_cost = self.override_cost
+
+        return copied_movement
