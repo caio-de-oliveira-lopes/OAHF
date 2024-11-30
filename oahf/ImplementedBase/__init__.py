@@ -11,9 +11,7 @@ from .CompleteAssignmentStopCriteria import CompleteAssignmentStopCriteria
 from .ConsecutiveTaskSwapNS import ConsecutiveTaskSwapNS
 from .EliteDiversePool import EliteDiversePool
 from .ElitePool import ElitePool
-from .ExecutedByAvailableWorkersAcceptanceCriteria import (
-    ExecutedByAvailableWorkersAcceptanceCriteria,
-)
+from .ExecutedByAvailableWorkersAcceptanceCriteria import ExecutedByAvailableWorkersAcceptanceCriteria
 from .ListPool import ListPool
 from .ListSelection import ListSelection
 from .MaxCycleTimeConstraint import MaxCycleTimeConstraint
@@ -63,5 +61,5 @@ __all__ = [
     "ThresholdAcceptance",
     "WorkersUnassignedStopCriteria",
     "WorkerSwapNS",
-    "WorkerSwapReconstructNS",
+    "WorkerSwapReconstructNS"
 ]

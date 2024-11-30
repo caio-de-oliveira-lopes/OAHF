@@ -707,16 +707,6 @@ class AlwabpSolution(Solution):
         """
         try:
             if task not in self.station_tasks_assignment.get(station, []):
-                if (
-                    task == 14
-                    and station == 4
-                    and 28 in self.station_tasks_assignment[3]
-                ) or (
-                    task == 28
-                    and station == 3
-                    and 14 in self.station_tasks_assignment[4]
-                ):
-                    print("erro")
                 self.station_tasks_assignment[station].append(task)
                 self.order_tasks_according_to_precedence(station)
                 self._unassigned_tasks.remove(task)
@@ -857,6 +847,10 @@ class AlwabpSolution(Solution):
 
         if worker and task not in self.get_tasks_executed_by_worker(worker):
             return False
+        
+        if worker and self.cycle_time_limit and (
+            (self.station_cycle_time_memo[station] + self.get_task_execution_time(task, worker)) > self.cycle_time_limit):
+            return False            
 
         for preceding_task in self.all_task_precedences[graph_orientation][task]:
             another_station = self.find_station_for_task(preceding_task)
@@ -1160,6 +1154,8 @@ class AlwabpSolution(Solution):
             for move in movements
             if move.task in self.get_tasks_executed_by_worker(worker)
         ]
+
+        #available_moves = [move for move in available_moves if self.can_task_be_assigned_to(move.task, move.station, worker)] # type: ignore
 
         if self.cycle_time_limit:
             selected_moves = []

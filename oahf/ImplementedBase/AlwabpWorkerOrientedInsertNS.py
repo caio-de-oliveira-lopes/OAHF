@@ -82,8 +82,8 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             available_tasks = self.solution.get_available_tasks_to_assign_to_station(
                 self.station, self.graph_orientation, lcr
             )
-            all_moves: List[AlwabpInsertionMovement] = []
-
+            ordered_chosen_tasks = []
+            
             # Generate movements for tasks that are still available
             while available_tasks:
                 filtered_lcr = [task for task in lcr if task in available_tasks]
@@ -92,14 +92,8 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                     break
 
                 # Randomly select a task using thread-specific randomization
-                task = filtered_lcr[
-                    ThreadManager.get_next(self.thread_id, 0, len(filtered_lcr) - 1)
-                ]
-                all_moves.append(
-                    AlwabpInsertionMovement(
-                        task, None, self.station, self.solution, self.report
-                    )
-                )
+                task = filtered_lcr[ThreadManager.get_next(self.thread_id, 0, len(filtered_lcr) - 1)]
+                ordered_chosen_tasks.append(task)
 
                 # Update lists after each move
                 lcr.remove(task)
@@ -109,10 +103,10 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                     )
                 )
 
-            if not all_moves:
+            if not ordered_chosen_tasks:
                 return iter([])  # Return an empty iterator if no moves are generated
 
-            # If the neighborhood is build as fixed_workers it'll prioritize keeping workers at their respective stations
+            # Neighborhood will prioritize keeping workers at their respective stations
             worker_assigned_to_station = self.solution.station_worker_assignment[
                 self.station
             ]
@@ -122,35 +116,31 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             else:
                 unassigned_workers = [worker_assigned_to_station]
 
+            solution_copy = self.solution.copy()
             for unassigned_worker in unassigned_workers:
-                feasible_movements = self.solution.simulate_worker_tasks_allocation(
-                    unassigned_worker, all_moves
-                )
-                if feasible_movements:
-                    chosen_tasks = {move.task for move in feasible_movements}
-                    unassigned_tasks = [
-                        task
-                        for task in self.solution.unassigned_tasks
-                        if task not in chosen_tasks
-                    ]
-
-                    # If worker is already assigned to that respecive station, the "worker_move" is not needed
-                    # Important point, int this case,
-                    # unapplying the move will not unassign the worker,
-                    # since the move is not "responsible" for it's assignment
-                    if not worker_already_assigned:
-                        worker_move = AlwabpInsertionMovement(
-                            None,
-                            unassigned_worker,
-                            self.station,
-                            self.solution,
-                            self.report,
-                        )
-                        feasible_movements.append(worker_move)
-
-                    move = MultipleMovement(
-                        self.solution, self.report, feasible_movements
+                moves_executed_on_copy = []
+                
+                if not worker_already_assigned:
+                    worker_move = AlwabpInsertionMovement(
+                        None,
+                        unassigned_worker,
+                        self.station,
+                        solution_copy,
+                        self.report,
                     )
+                    if worker_move.apply():
+                        moves_executed_on_copy.append(worker_move)
+                
+                for task in ordered_chosen_tasks:
+                    if solution_copy.can_task_be_assigned_to(task, self.station, unassigned_worker):
+                        new_move = AlwabpInsertionMovement(task, unassigned_worker, self.station, solution_copy, self.report)
+                        if new_move.apply():
+                            moves_executed_on_copy.append(new_move)
+                
+                construction_composition = MultipleMovement(solution_copy, self.report, moves_executed_on_copy)
+                
+                if moves_executed_on_copy:
+                    move = construction_composition.copy(self.solution)
 
                     worker_moves[unassigned_worker] = move
 
@@ -175,7 +165,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
                         cost = self.cost_function(
                             unassigned_worker,
-                            unassigned_tasks,
+                            solution_copy.unassigned_tasks,
                             unassigned_workers_for_cost,
                         )
                         move.override_cost = (
@@ -183,6 +173,8 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                             if move.override_cost
                             else float(cost)
                         )
+                        
+                construction_composition.unapply()
 
             # Apply tiebreaker by preferring movements with more tasks when costs are equal
             sorted_moves = sorted(
