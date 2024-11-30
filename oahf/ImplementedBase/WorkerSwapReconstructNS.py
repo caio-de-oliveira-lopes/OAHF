@@ -64,8 +64,10 @@ class WorkerSwapReconstructNS(Neighborhood):
         self.enumerator = self.all_moves()
 
         # Build the neighborhood for worker swaps.
-        self.worker_swap_ns.build_neighborhood_operation(self.thread_id, self.solution)
-        return True
+        if self.worker_swap_ns.build_neighborhood_operation(
+            self.thread_id, self.solution
+        ):
+            return True
 
     def get_move(self) -> Optional[Movement]:
         """

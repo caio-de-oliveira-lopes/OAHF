@@ -8,6 +8,7 @@ from .AlwaysAcceptAcceptanceCriteria import AlwaysAcceptAcceptanceCriteria
 from .BetterAcceptanceCriteria import BetterAcceptanceCriteria
 from .BetterOrSameAcceptanceCriteria import BetterOrSameAcceptanceCriteria
 from .CompleteAssignmentStopCriteria import CompleteAssignmentStopCriteria
+from .ConsecutiveTaskSwapNS import ConsecutiveTaskSwapNS
 from .EliteDiversePool import EliteDiversePool
 from .ElitePool import ElitePool
 from .ExecutedByAvailableWorkersAcceptanceCriteria import (
@@ -42,6 +43,7 @@ __all__ = [
     "BetterAcceptanceCriteria",
     "BetterOrSameAcceptanceCriteria",
     "CompleteAssignmentStopCriteria",
+    "ConsecutiveTaskSwapNS",
     "EliteDiversePool",
     "ElitePool",
     "ExecutedByAvailableWorkersAcceptanceCriteria",

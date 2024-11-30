@@ -4,6 +4,7 @@ from typing import Callable, Dict, List, Optional
 
 import numpy as np
 
+from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
 from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
 from oahf.Logger.LogManager import LogManager
@@ -563,6 +564,72 @@ class AlwabpSolution(Solution):
 
         return tasks_executed
 
+    def order_tasks_according_to_precedence(self, station: int) -> None:
+        """
+        Orders the tasks in a specific station according to their precedence relationships.
+
+        This method ensures that tasks assigned to a station respect the precedence
+        constraints defined in the task precedence graph. If task A precedes task B
+        and both are in the same station, task A will appear before task B in the list.
+
+        Parameters:
+            station (int): The index of the station whose task list needs to be ordered.
+        """
+        # Get the tasks assigned to the station
+        tasks = self.station_tasks_assignment[station]
+
+        # Create a dictionary to store task precedence (tasks that must come before each task)
+        precedence_map = {task: set() for task in tasks}
+
+        # Build precedence relationships among tasks
+        for task in tasks:
+            # Check the precedence constraints for the current task
+            for predecessor in self.all_task_precedences[GraphOrientation.FORWARD].get(
+                task, []
+            ):
+                if predecessor in tasks:  # Only consider tasks within the same station
+                    precedence_map[task].add(predecessor)
+
+        # Perform a topological sort to order tasks based on precedence
+        ordered_tasks = self.topological_sort(precedence_map)
+
+        # Update the station's task list with the ordered tasks
+        self.station_tasks_assignment[station] = ordered_tasks
+
+    def topological_sort(self, precedence_map):
+        """
+        Topological sort implementation to order tasks respecting precedence constraints.
+
+        Parameters:
+            precedence_map (dict): A dictionary where keys are tasks and values are sets of tasks
+                                    that must come before the key task.
+
+        Returns:
+            List of tasks ordered by precedence.
+        """
+        # Start with tasks that have no precedence (no task before them)
+        no_precedence = [
+            task for task, precedents in precedence_map.items() if not precedents
+        ]
+        ordered_tasks = []
+
+        while no_precedence:
+            task = no_precedence.pop()
+            ordered_tasks.append(task)
+
+            # Remove this task from all tasks that depend on it
+            for dependent_task in precedence_map:
+                if task in precedence_map[dependent_task]:
+                    precedence_map[dependent_task].remove(task)
+                    # If this dependent task now has no more precedence, add it to the list
+                    if not precedence_map[dependent_task]:
+                        no_precedence.append(dependent_task)
+
+        if len(ordered_tasks) == len(precedence_map):
+            return ordered_tasks
+        else:
+            raise ValueError("Cycle detected in task precedence graph")
+
     def add_worker_to_station(
         self, worker: int, station: int, recalculate_cycle_time: bool = True
     ) -> bool:
@@ -640,7 +707,18 @@ class AlwabpSolution(Solution):
         """
         try:
             if task not in self.station_tasks_assignment.get(station, []):
+                if (
+                    task == 14
+                    and station == 4
+                    and 28 in self.station_tasks_assignment[3]
+                ) or (
+                    task == 28
+                    and station == 3
+                    and 14 in self.station_tasks_assignment[4]
+                ):
+                    print("erro")
                 self.station_tasks_assignment[station].append(task)
+                self.order_tasks_according_to_precedence(station)
                 self._unassigned_tasks.remove(task)
 
                 worker = self.station_worker_assignment[station]
@@ -752,31 +830,21 @@ class AlwabpSolution(Solution):
         )
 
         for unassigned_task in unassigned_tasks:
-            if any(
-                preceding_task in unassigned_tasks
-                for preceding_task in self.immediate_task_precedences[
-                    graph_orientation
-                ][unassigned_task]
-            ):
-                continue
-            available_tasks_to_assign.append(unassigned_task)
-
-        unassigned_tasks_to_remove: List[int] = []
-
-        for unassigned_task in available_tasks_to_assign:
-            for preceding_task in self.immediate_task_precedences[graph_orientation][
+            task_precendes = self.all_task_precedences[graph_orientation][
                 unassigned_task
-            ]:
+            ]
+            can_allocate = True
+            for preceding_task in task_precendes:
                 another_station = self.find_station_for_task(preceding_task)
-                if another_station and another_station > station:
-                    unassigned_tasks_to_remove.append(unassigned_task)
+                if preceding_task in unassigned_tasks or (
+                    another_station and another_station > station
+                ):
+                    can_allocate = False
                     break
+            if can_allocate:
+                available_tasks_to_assign.append(unassigned_task)
 
-        return [
-            task
-            for task in available_tasks_to_assign
-            if task not in unassigned_tasks_to_remove
-        ]
+        return available_tasks_to_assign
 
     def can_task_be_assigned_to(
         self,
@@ -790,7 +858,7 @@ class AlwabpSolution(Solution):
         if worker and task not in self.get_tasks_executed_by_worker(worker):
             return False
 
-        for preceding_task in self.immediate_task_precedences[graph_orientation][task]:
+        for preceding_task in self.all_task_precedences[graph_orientation][task]:
             another_station = self.find_station_for_task(preceding_task)
             if not another_station or another_station > station:
                 return False
@@ -1149,3 +1217,23 @@ class AlwabpSolution(Solution):
             int: The number of critical workstations.
         """
         return len(self.get_critical_workstations())
+
+    @staticmethod
+    def get_related_tasks_from_movement(movement: Movement) -> set[int]:
+        from oahf.Base.MultipleMovement import MultipleMovement
+        from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
+        from oahf.ImplementedBase.AlwabpRemovalMovement import AlwabpRemovalMovement
+
+        related_tasks: List[int] = []
+        if isinstance(movement, MultipleMovement):
+            [
+                related_tasks.extend(AlwabpSolution.get_related_tasks_from_movement(m))
+                for m in movement.movements
+            ]
+        elif (
+            isinstance(movement, AlwabpInsertionMovement)
+            or isinstance(movement, AlwabpRemovalMovement)
+        ) and movement.task:
+            related_tasks.append(movement.task)
+
+        return set(related_tasks)

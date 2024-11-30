@@ -214,6 +214,20 @@
 					"neighborhood_ids": [ 5 ]
 				}
 			}
+		},
+		{
+			"id": 16,
+			"name": "consecutive_task_swap",
+			"parameters": {
+				"graph_orientation": "forward"
+			}
+		},
+		{
+			"id": 17,
+			"name": "consecutive_task_swap",
+			"parameters": {
+				"graph_orientation": "backward"
+			}
 		}
 	],
 	"neighborhood_selections": [
@@ -268,7 +282,7 @@
 		{
 			"id": 6,
 			"name": "list_selection",
-			"neighborhood_ids": [ 6, 8, 10 ],
+			"neighborhood_ids": [ 6, 8, 10, 16 ],
 			"parameters": {
 				"circular": "false"
 			}

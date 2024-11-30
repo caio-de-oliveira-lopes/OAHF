@@ -165,10 +165,10 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                                     for s in self.solution.stations
                                     if (
                                         s >= self.station
-                                        and self.solution.station_worker_assignment[s]
+                                        and self.solution.station_worker_assignment[s]  # type: ignore
                                     )
                                 ]
-                            )  # type: ignore
+                            )
                             unassigned_workers_for_cost.extend(
                                 self.solution.unassigned_workers
                             )

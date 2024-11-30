@@ -5,5 +5,5 @@
   "cycle_time_path": "C:\\Projetos\\OAHF\\Parameters\\recommeded_maximum_mean_cycle_time.json",
   "heuristic_definition_file": "C:\\Projetos\\OAHF\\Parameters\\heuristic_definition_v0.json",
   "input_type": "AlwabpSolution",
-  "random_seed": 1
+  "random_seed": 4
 }

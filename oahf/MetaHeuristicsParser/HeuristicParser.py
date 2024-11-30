@@ -23,6 +23,7 @@ from oahf.ImplementedBase.BetterAcceptanceCriteria import BetterAcceptanceCriter
 from oahf.ImplementedBase.BetterOrSameAcceptanceCriteria import (
     BetterOrSameAcceptanceCriteria,
 )
+from oahf.ImplementedBase.ConsecutiveTaskSwapNS import ConsecutiveTaskSwapNS
 from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.ListSelection import ListSelection
 from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
@@ -176,6 +177,13 @@ class HeuristicParser:
                         )
                     )
                     neighborhood = TaskSwapNS(graph_orientation)
+                elif n["name"].lower() == "consecutive_task_swap":
+                    graph_orientation = GraphOrientation(
+                        EnumUtil.get_enum_from_string(
+                            GraphOrientation, n["parameters"]["graph_orientation"]
+                        )
+                    )
+                    neighborhood = ConsecutiveTaskSwapNS(graph_orientation)
                 elif n["name"].lower() == "worker_swap":
                     neighborhood = WorkerSwapNS()
                 elif n["name"].lower() == "worker_swap_reconstruct":
