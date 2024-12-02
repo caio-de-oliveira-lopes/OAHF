@@ -4,16 +4,10 @@ from typing import Any
 
 from oahf.Base.Entity import Entity
 from oahf.Logger.JsonFormatter import JsonFormatter
+from oahf.Logger.JsonListFileHandler import JsonListFileHandler
 
 
 class Logger(Entity):
-    """
-    Custom class to encapsulate the logging process with JSON formatting.
-
-    This class allows creating logs with different severity levels
-    (DEBUG, INFO, WARNING, ERROR, CRITICAL) and records them in a JSON file.
-    """
-
     def __init__(
         self, log_file: str = "log.json", level: int = logging.DEBUG, show_messages=True
     ) -> None:
@@ -43,15 +37,14 @@ class Logger(Entity):
         )
         full_log_file.parent.mkdir(parents=True, exist_ok=True)
 
-        # Create a FileHandler to direct logs to the specified file
-        file_handler: logging.FileHandler = logging.FileHandler(full_log_file)
+        # Use the custom JSON list handler
+        file_handler = JsonListFileHandler(full_log_file)
         file_handler.setLevel(level)
 
-        # Set the custom format as JSON
-        formatter: JsonFormatter = JsonFormatter()
+        # Set the custom JSON formatter
+        formatter = JsonFormatter()
         file_handler.setFormatter(formatter)
 
-        # Add the handler to the logger
         self.logger.addHandler(file_handler)
 
     def show_message(self, message: str):

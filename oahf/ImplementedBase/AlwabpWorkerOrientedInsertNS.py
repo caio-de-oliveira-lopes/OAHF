@@ -83,7 +83,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                 self.station, self.graph_orientation, lcr
             )
             ordered_chosen_tasks = []
-            
+
             # Generate movements for tasks that are still available
             while available_tasks:
                 filtered_lcr = [task for task in lcr if task in available_tasks]
@@ -92,7 +92,9 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                     break
 
                 # Randomly select a task using thread-specific randomization
-                task = filtered_lcr[ThreadManager.get_next(self.thread_id, 0, len(filtered_lcr) - 1)]
+                task = filtered_lcr[
+                    ThreadManager.get_next(self.thread_id, 0, len(filtered_lcr) - 1)
+                ]
                 ordered_chosen_tasks.append(task)
 
                 # Update lists after each move
@@ -119,7 +121,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             solution_copy = self.solution.copy()
             for unassigned_worker in unassigned_workers:
                 moves_executed_on_copy = []
-                
+
                 if not worker_already_assigned:
                     worker_move = AlwabpInsertionMovement(
                         None,
@@ -130,50 +132,41 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                     )
                     if worker_move.apply():
                         moves_executed_on_copy.append(worker_move)
-                
+
                 for task in ordered_chosen_tasks:
-                    if solution_copy.can_task_be_assigned_to(task, self.station, unassigned_worker):
-                        new_move = AlwabpInsertionMovement(task, unassigned_worker, self.station, solution_copy, self.report)
+                    if solution_copy.can_task_be_assigned_to(
+                        task, self.station, unassigned_worker
+                    ):
+                        new_move = AlwabpInsertionMovement(
+                            task,
+                            unassigned_worker,
+                            self.station,
+                            solution_copy,
+                            self.report,
+                        )
                         if new_move.apply():
                             moves_executed_on_copy.append(new_move)
-                
-                construction_composition = MultipleMovement(solution_copy, self.report, moves_executed_on_copy)
-                
+
+                construction_composition = MultipleMovement(
+                    solution_copy, self.report, moves_executed_on_copy
+                )
+
                 if moves_executed_on_copy:
                     move = construction_composition.copy(self.solution)
 
                     worker_moves[unassigned_worker] = move
 
                     # Calculate cost for the movement
-                    if self.cost_function:
-                        unassigned_workers_for_cost: List[int] = []
-
-                        if worker_already_assigned:
-                            unassigned_workers_for_cost.extend(
-                                [
-                                    self.solution.station_worker_assignment[s]
-                                    for s in self.solution.stations
-                                    if (
-                                        s >= self.station
-                                        and self.solution.station_worker_assignment[s]  # type: ignore
-                                    )
-                                ]
-                            )
-                            unassigned_workers_for_cost.extend(
-                                self.solution.unassigned_workers
-                            )
-
+                    if self.cost_function and not worker_already_assigned:
                         cost = self.cost_function(
-                            unassigned_worker,
-                            solution_copy.unassigned_tasks,
-                            unassigned_workers_for_cost,
+                            unassigned_worker, solution_copy.unassigned_tasks
                         )
                         move.override_cost = (
                             move.override_cost + float(cost)
                             if move.override_cost
                             else float(cost)
                         )
-                        
+
                 construction_composition.unapply()
 
             # Apply tiebreaker by preferring movements with more tasks when costs are equal

@@ -847,10 +847,19 @@ class AlwabpSolution(Solution):
 
         if worker and task not in self.get_tasks_executed_by_worker(worker):
             return False
-        
-        if worker and self.cycle_time_limit and (
-            (self.station_cycle_time_memo[station] + self.get_task_execution_time(task, worker)) > self.cycle_time_limit):
-            return False            
+
+        if (
+            worker
+            and self.cycle_time_limit
+            and (
+                (
+                    self.station_cycle_time_memo[station]
+                    + self.get_task_execution_time(task, worker)
+                )
+                > self.cycle_time_limit
+            )
+        ):
+            return False
 
         for preceding_task in self.all_task_precedences[graph_orientation][task]:
             another_station = self.find_station_for_task(preceding_task)
@@ -1030,10 +1039,7 @@ class AlwabpSolution(Solution):
         )
 
     def get_worker_min_rlb(
-        self,
-        worker: int,
-        override_unassigned_tasks: List[int] = [],
-        override_unassigned_workers: List[int] = [],
+        self, worker: int, override_unassigned_tasks: List[int] = []
     ) -> int:
         """
         Calculates the minimum restricted lower bound (RLB) for a worker. This RLB is the total minimum
@@ -1065,12 +1071,7 @@ class AlwabpSolution(Solution):
 
         # Copy the unassigned workers list and remove the current worker from it
 
-        unassigned_workers = (
-            override_unassigned_workers.copy()
-            if len(override_unassigned_workers) > 0
-            else self.unassigned_workers.copy()
-        )
-
+        unassigned_workers = self.unassigned_workers.copy()
         unassigned_workers.remove(worker)
 
         amount_of_time: int = 0
@@ -1155,7 +1156,7 @@ class AlwabpSolution(Solution):
             if move.task in self.get_tasks_executed_by_worker(worker)
         ]
 
-        #available_moves = [move for move in available_moves if self.can_task_be_assigned_to(move.task, move.station, worker)] # type: ignore
+        # available_moves = [move for move in available_moves if self.can_task_be_assigned_to(move.task, move.station, worker)] # type: ignore
 
         if self.cycle_time_limit:
             selected_moves = []

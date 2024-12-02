@@ -6,9 +6,7 @@ import traceback
 
 class JsonFormatter(logging.Formatter):
     """
-    Custom class to format logs as JSON.
-    Formats the log record with level, message, time, logger name,
-    filename, function name, and the original line number.
+    Custom class to format logs as pretty-printed JSON.
     """
 
     def format(self, record: logging.LogRecord) -> str:
@@ -46,7 +44,8 @@ class JsonFormatter(logging.Formatter):
             "lineno": caller.lineno if caller else record.lineno,
         }
 
-        return json.dumps(log_record)
+        # Return the JSON-formatted string with indentation for readability
+        return json.dumps(log_record, indent=4)
 
     def _is_logging_related(self, frame) -> bool:
         """

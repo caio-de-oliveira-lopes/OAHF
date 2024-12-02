@@ -93,6 +93,7 @@
     <Compile Include="oahf\ImplementedBase\WorkerSwapNS.py" />
     <Compile Include="oahf\ImplementedBase\WorkerSwapReconstructNS.py" />
     <Compile Include="oahf\ImplementedBase\__init__.py" />
+    <Compile Include="oahf\Logger\JsonListFileHandler.py" />
     <Compile Include="oahf\main.py" />
     <Compile Include="oahf\Logger\LogManager.py" />
     <Compile Include="oahf\Logger\LogMessages.py" />
