@@ -1,8 +1,6 @@
 from oahf.Base.Constraint import Constraint
 from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
-from oahf.Base.Entity import Entity
 from oahf.Base.Solution import Solution
-from oahf.Base.StopCriteria import StopCriteria
 
 
 class MaxCycleTimeConstraint(Constraint):

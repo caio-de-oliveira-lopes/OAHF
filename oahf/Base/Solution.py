@@ -69,15 +69,41 @@ class Solution(Entity, ABC):
 
     @abstractmethod
     def validade_aspects(self) -> bool:
+        """
+        Validates specific aspects of the solution.
+
+        Returns:
+            bool: True if all aspects are valid, False otherwise.
+        """
         return True
 
     @abstractmethod
     def reset(self) -> None:
-        pass
+        """
+        Resets the solution to its initial state.
+        """
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
 
     @abstractmethod
     def narrow_bounds(self) -> None:
-        pass
+        """
+        Narrows the bounds of the solution, if applicable.
+        """
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
+
+    @abstractmethod
+    def fix_solution(self) -> None:
+        """
+        Applies adjustments to fix inconsistencies in the solution.
+        Like a final sort method or something like it.
+        """
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
 
     @abstractmethod
     def __str__(self) -> str:

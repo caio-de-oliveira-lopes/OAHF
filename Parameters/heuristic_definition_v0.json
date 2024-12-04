@@ -102,25 +102,6 @@
 			}
 		},
 		{
-			"id": 10,
-			"name": "worker_swap_reconstruct",
-			"parameters": {
-				"reconstruct": {
-					"greediness": 1,
-					"stop_criteria": {
-						"max_cycle_time": {
-							"cycle_time_limit": 500
-						}
-					},
-					"acceptance_criteria": {
-						"better": {}
-					},
-					"order_moves": "false",
-					"neighborhood_ids": [ 0 ]
-				}
-			}
-		},
-		{
 			"id": 11,
 			"name": "worker_swap_reconstruct",
 			"parameters": {

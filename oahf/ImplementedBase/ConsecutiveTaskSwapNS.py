@@ -4,8 +4,6 @@ from oahf.Base.Movement import Movement
 from oahf.Base.MultipleMovement import MultipleMovement
 from oahf.Base.Neighborhood import Neighborhood
 from oahf.Base.StopCriteria import StopCriteria
-from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
-from oahf.ImplementedBase.AlwabpRemovalMovement import AlwabpRemovalMovement
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution, GraphOrientation
 from oahf.ImplementedBase.TaskSwapNS import TaskSwapNS
 from oahf.Logger.LogManager import LogManager
@@ -55,6 +53,9 @@ class ConsecutiveTaskSwapNS(Neighborhood):
         Returns:
             bool: Always returns True, indicating successful initialization.
         """
+
+        solution.default_graph_orientation = self.graph_orientation
+
         self.solution = solution
         self.thread_id = thread_id
         self.enumerator = self.all_moves()

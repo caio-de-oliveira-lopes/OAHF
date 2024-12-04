@@ -1,5 +1,3 @@
-from typing import Type
-
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Solution import Solution

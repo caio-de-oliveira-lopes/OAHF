@@ -35,6 +35,9 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
     def build_neighborhood(self, thread_id: int, solution: AlwabpSolution) -> bool:
         """Prepares the neighborhood search by initializing the solution and computing initial station assignments."""
+
+        solution.default_graph_orientation = self.graph_orientation
+
         self.solution = solution
         self.station = solution.get_first_unassigned_station()
 
@@ -80,7 +83,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                 if max_positional_weight_list[task - 1] <= threshold_value
             ]
             available_tasks = self.solution.get_available_tasks_to_assign_to_station(
-                self.station, self.graph_orientation, lcr
+                self.station, lcr
             )
             ordered_chosen_tasks = []
 
@@ -101,7 +104,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                 lcr.remove(task)
                 available_tasks = (
                     self.solution.get_available_tasks_to_assign_to_station(
-                        self.station, self.graph_orientation, lcr
+                        self.station, lcr
                     )
                 )
 

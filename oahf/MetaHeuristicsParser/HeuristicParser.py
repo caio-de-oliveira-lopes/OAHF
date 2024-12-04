@@ -132,11 +132,29 @@ class HeuristicParser:
             f"Total Execution Time: {int(hours):02}:{int(minutes):02}:{int(seconds):02}"
         )
 
+        self.fix_all_solutions_in_pools()
+
         final_pool = ListPool()
         for pool in list(self.solution_pools.values()):
             final_pool.add_solution(pool.get_best(evaluator))
 
         return final_pool.get_best(evaluator)
+
+    def fix_all_solutions_in_pools(self) -> None:
+        """
+        Fixes all solutions in the solution pools efficiently.
+
+        Iterates through each pool in the dictionary of solution pools,
+        retrieves the list of solutions using `get_list()`, and directly
+        applies `fix_solution()` to each solution using a generator expression.
+        """
+        # Avoid nested loops by iterating over all solutions in all pools
+        for solution in (
+            solution
+            for pool in self.solution_pools.values()
+            for solution in pool.get_list()
+        ):
+            solution.fix_solution()
 
     def parse_neighborhoods(self, evaluator: Evaluator):
         """

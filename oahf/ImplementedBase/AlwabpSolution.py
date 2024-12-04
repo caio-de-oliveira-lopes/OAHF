@@ -1,6 +1,7 @@
 import copy
+import stat
 from enum import Enum, auto
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Set
 
 import numpy as np
 
@@ -109,6 +110,9 @@ class AlwabpSolution(Solution):
             station: 0.0 for station in self.stations
         }
 
+        # Default Graph Orientation
+        self._default_graph_orientation: GraphOrientation = GraphOrientation.FORWARD
+
     def copy(self) -> "AlwabpSolution":
         """
         Creates a copy of the current solution.
@@ -163,6 +167,7 @@ class AlwabpSolution(Solution):
 
         # Copy immutable attributes
         new_copy._cycle_time_limit = self._cycle_time_limit
+        new_copy._default_graph_orientation = self._default_graph_orientation
 
         return new_copy
 
@@ -223,6 +228,47 @@ class AlwabpSolution(Solution):
         self._cycle_time_limit = value
         self._update_bounded_task_execution_times()
         self._calculate_max_positional_weights()
+
+    @property
+    def default_graph_orientation(self) -> GraphOrientation:
+        return self._default_graph_orientation
+
+    @default_graph_orientation.setter
+    def default_graph_orientation(self, graph_orientation: GraphOrientation) -> None:
+        if self._default_graph_orientation == graph_orientation:
+            return
+
+        self._default_graph_orientation = graph_orientation
+        self._reverse_solution()
+
+    def _reverse_solution(self) -> None:
+        """
+        Reverses the assignments of tasks and cycle times between stations in the solution.
+        """
+        num_stations: int = len(self.stations)
+
+        for i in range(0, int(num_stations / 2)):
+            # Swap tasks between station i and its mirror counterpart
+            (
+                self.station_tasks_assignment[i],
+                self.station_tasks_assignment[num_stations - 1 - i],
+            ) = (
+                self.station_tasks_assignment[num_stations - 1 - i],
+                self.station_tasks_assignment[i],
+            )
+
+            # Swap cycle times between station i and its mirror counterpart
+            (
+                self.station_cycle_time_memo[i],
+                self.station_cycle_time_memo[num_stations - 1 - i],
+            ) = (
+                self.station_cycle_time_memo[num_stations - 1 - i],
+                self.station_cycle_time_memo[i],
+            )
+
+    def fix_solution(self) -> None:
+        self.default_graph_orientation = GraphOrientation.FORWARD
+        self.order_solution_tasks()
 
     def _update_bounded_task_execution_times(self) -> None:
         self._bounded_task_execution_times = copy.deepcopy(self._task_execution_times)
@@ -537,6 +583,8 @@ class AlwabpSolution(Solution):
                     # Fill the dictionary with the result
                     self.all_task_precedences[graph_orientation][task] = all_precedences
 
+        self.order_solution_tasks()
+
     def get_tasks_executed_by_worker(self, worker: int) -> List[int]:
         """
         Gets the list of tasks that a specific worker can execute, based on execution times.
@@ -564,6 +612,14 @@ class AlwabpSolution(Solution):
 
         return tasks_executed
 
+    def order_solution_tasks(self) -> None:
+        """
+        Orders the tasks for each station in the solution.
+        """
+        for station in self.stations:
+            # Orders the tasks of the current station according to precedence constraints.
+            self.order_tasks_according_to_precedence(station)
+
     def order_tasks_according_to_precedence(self, station: int) -> None:
         """
         Orders the tasks in a specific station according to their precedence relationships.
@@ -579,14 +635,14 @@ class AlwabpSolution(Solution):
         tasks = self.station_tasks_assignment[station]
 
         # Create a dictionary to store task precedence (tasks that must come before each task)
-        precedence_map = {task: set() for task in tasks}
+        precedence_map: Dict[int, Set[int]] = {task: set() for task in tasks}
 
         # Build precedence relationships among tasks
         for task in tasks:
             # Check the precedence constraints for the current task
-            for predecessor in self.all_task_precedences[GraphOrientation.FORWARD].get(
-                task, []
-            ):
+            for predecessor in self.all_task_precedences[
+                self.default_graph_orientation
+            ].get(task, []):
                 if predecessor in tasks:  # Only consider tasks within the same station
                     precedence_map[task].add(predecessor)
 
@@ -708,7 +764,6 @@ class AlwabpSolution(Solution):
         try:
             if task not in self.station_tasks_assignment.get(station, []):
                 self.station_tasks_assignment[station].append(task)
-                self.order_tasks_according_to_precedence(station)
                 self._unassigned_tasks.remove(task)
 
                 worker = self.station_worker_assignment[station]
@@ -798,7 +853,6 @@ class AlwabpSolution(Solution):
     def get_available_tasks_to_assign_to_station(
         self,
         station: int,
-        graph_orientation: GraphOrientation = GraphOrientation.FORWARD,
         override_unassigned_tasks: List[int] = [],
     ) -> List[int]:
         """
@@ -820,7 +874,7 @@ class AlwabpSolution(Solution):
         )
 
         for unassigned_task in unassigned_tasks:
-            task_precendes = self.all_task_precedences[graph_orientation][
+            task_precendes = self.all_task_precedences[self.default_graph_orientation][
                 unassigned_task
             ]
             can_allocate = True
@@ -837,11 +891,7 @@ class AlwabpSolution(Solution):
         return available_tasks_to_assign
 
     def can_task_be_assigned_to(
-        self,
-        task: int,
-        station: int,
-        worker: Optional[int] = None,
-        graph_orientation: GraphOrientation = GraphOrientation.FORWARD,
+        self, task: int, station: int, worker: Optional[int] = None
     ) -> bool:
         worker = worker or self.station_worker_assignment[station]
 
@@ -861,7 +911,9 @@ class AlwabpSolution(Solution):
         ):
             return False
 
-        for preceding_task in self.all_task_precedences[graph_orientation][task]:
+        for preceding_task in self.all_task_precedences[self.default_graph_orientation][
+            task
+        ]:
             another_station = self.find_station_for_task(preceding_task)
             if not another_station or another_station > station:
                 return False

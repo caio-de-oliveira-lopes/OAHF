@@ -7,7 +7,7 @@ from oahf.Base.Neighborhood import Neighborhood
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
 from oahf.ImplementedBase.AlwabpRemovalMovement import AlwabpRemovalMovement
-from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution, GraphOrientation
+from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 from oahf.ImplementedBase.WorkerSwapNS import WorkerSwapNS
 from oahf.Logger.LogManager import LogManager
 
@@ -64,10 +64,9 @@ class WorkerSwapReconstructNS(Neighborhood):
         self.enumerator = self.all_moves()
 
         # Build the neighborhood for worker swaps.
-        if self.worker_swap_ns.build_neighborhood_operation(
+        return self.worker_swap_ns.build_neighborhood_operation(
             self.thread_id, self.solution
-        ):
-            return True
+        )
 
     def get_move(self) -> Optional[Movement]:
         """
@@ -201,7 +200,7 @@ class WorkerSwapReconstructNS(Neighborhood):
             WorkerSwapReconstructNS: A new instance with identical parameters.
         """
         return WorkerSwapReconstructNS(
-            self.graph_orientation,
             self.reconstruction_metaheuristic,
+            self.evaluator,
             self.stop_criteria.copy() if self.stop_criteria else None,
         )

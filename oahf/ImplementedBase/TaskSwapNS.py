@@ -55,6 +55,9 @@ class TaskSwapNS(Neighborhood):
         Returns:
             bool: Always returns True, indicating successful initialization.
         """
+
+        solution.default_graph_orientation = self.graph_orientation
+
         self.solution = solution
         self.thread_id = thread_id
         self.enumerator = self.all_moves()
@@ -146,10 +149,10 @@ class TaskSwapNS(Neighborhood):
                                 if (
                                     reinsertion_test_2.apply()
                                     and solution_copy.can_task_be_assigned_to(
-                                        task_ws1, ws2, None, self.graph_orientation
+                                        task_ws1, ws2
                                     )
                                     and solution_copy.can_task_be_assigned_to(
-                                        task_ws2, ws1, None, self.graph_orientation
+                                        task_ws2, ws1
                                     )
                                 ):
                                     # Movements are copied to operate on the original solution.

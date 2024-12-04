@@ -50,6 +50,9 @@ class RearrangeCriticalTaskNS(Neighborhood):
         Returns:
             bool: True if the neighborhood was successfully built.
         """
+
+        solution.default_graph_orientation = self.graph_orientation
+
         self.solution = solution
         self.critical_workstations = self.solution.get_critical_workstations()
         self.non_critical_workstations = [
@@ -105,9 +108,7 @@ class RearrangeCriticalTaskNS(Neighborhood):
                     available_tasks_to_rearrange = [
                         task
                         for task in tasks_on_critical_station
-                        if self.solution.can_task_be_assigned_to(
-                            task, ncw, None, self.graph_orientation
-                        )
+                        if self.solution.can_task_be_assigned_to(task, ncw)
                     ]
 
                     for task in available_tasks_to_rearrange:

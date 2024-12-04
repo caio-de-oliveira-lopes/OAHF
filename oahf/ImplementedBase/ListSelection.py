@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional
+from typing import Iterable, Optional
 
 from oahf.Base.Neighborhood import Neighborhood
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
