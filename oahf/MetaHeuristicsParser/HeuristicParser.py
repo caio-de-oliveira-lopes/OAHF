@@ -42,6 +42,7 @@ from oahf.MetaHeuristics.BestImprovement import BestImprovement
 from oahf.MetaHeuristics.FirstImprovement import FirstImprovement
 from oahf.MetaHeuristics.GRASP import GRASP
 from oahf.MetaHeuristics.GRC import GRC
+from oahf.MetaHeuristics.JobRotationLPSelector import JobRotationLPSelector
 from oahf.MetaHeuristics.MultipleBestImprovement import MultipleBestImprovement
 from oahf.Utils.EnumUtil import EnumUtil
 from oahf.Utils.Util import Util
@@ -392,6 +393,22 @@ class HeuristicParser:
                         evaluator,
                         acceptance_criteria,  # type: ignore
                         ns,
+                    )
+                elif m["name"].lower() == "job_rotation_lp_selector":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    acceptance_criteria = self.parse_acceptance_criteria(
+                        m["acceptance_criteria"]
+                    )
+                    number_of_periods = int(m["parameters"].get("number_of_periods", 1))
+                    solver_path = Path(m["parameters"].get("solver_path", None))
+                    meta = JobRotationLPSelector(
+                        thread_id,
+                        stop_criteria,  # type: ignore
+                        evaluator,
+                        acceptance_criteria,  # type: ignore
+                        number_of_periods,
+                        solver_path,
                     )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")

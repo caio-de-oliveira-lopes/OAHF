@@ -69,6 +69,7 @@
     <Compile Include="oahf\ImplementedBase\AlwabpWorkerOrientedInsertNS.py" />
     <Compile Include="oahf\ImplementedBase\AlwaysAcceptAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\ConsecutiveTaskSwapNS.py" />
+    <Compile Include="oahf\ImplementedBase\JobRotationAlwabpSolution.py" />
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\NoStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\RearrangeCriticalTaskNS.py" />
@@ -100,6 +101,7 @@
     <Compile Include="oahf\Logger\Logger.py" />
     <Compile Include="oahf\Logger\__init__.py" />
     <Compile Include="oahf\MetaHeuristicsParser\HeuristicParser.py" />
+    <Compile Include="oahf\MetaHeuristics\JobRotationLPSelector.py" />
     <Compile Include="oahf\MetaHeuristics\MultipleBestImprovement.py" />
     <Compile Include="oahf\MetaHeuristics\GeneticAlgorithm.py" />
     <Compile Include="oahf\MetaHeuristics\ParallelILS.py" />
