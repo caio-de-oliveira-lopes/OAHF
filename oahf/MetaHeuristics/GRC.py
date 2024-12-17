@@ -7,6 +7,7 @@ from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Movement import Movement
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
+from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.ThreadManager import ThreadManager
@@ -29,6 +30,7 @@ class GRC(MetaHeuristic):
         acceptance_criteria: AcceptanceCriteria,
         ns: NeighborhoodSelection,
         order_moves: bool = False,
+        destination_pool: Optional[Pool] = None,
     ) -> None:
         """Initialize the GRC meta-heuristic.
 
@@ -63,6 +65,9 @@ class GRC(MetaHeuristic):
             self.acceptance_criteria.copy(),
             self.neighborhood_selection.copy(),  # type: ignore
             self.order_moves,
+            destination_pool=(
+                self.destination_pool.copy() if self.destination_pool else None
+            ),
         )
 
     def run(self, sol: Solution) -> Solution:

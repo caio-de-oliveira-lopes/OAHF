@@ -30,10 +30,13 @@ class PoolReport:
 
 
 class Pool(Entity, ABC):
-    def __init__(self, solutions: List[Solution] = []):
+    def __init__(
+        self, solutions: List[Solution] = [], evaluator: Optional[Evaluator] = None
+    ):
         super().__init__()
         self.report = PoolReport()
         self.solutions: List[Solution] = solutions.copy()
+        self.evaluator = evaluator
 
     @abstractmethod
     def get_solution_at(self, index: int) -> Solution:
@@ -104,15 +107,22 @@ class Pool(Entity, ABC):
         """Get a list of solutions in the pool."""
         return self.solutions
 
-    def get_best(self, evaluator: Evaluator) -> Optional[Solution]:
-        """Get the best solution from the pool based on evaluation."""
-        if self.any():
-            best = self.get_solution_at(0)
-            best_eval = evaluator.evaluate(best)
-            for solution in self:
-                new_eval = evaluator.evaluate(solution)
-                if new_eval.better_than(best_eval):
-                    best = solution
-                    best_eval = new_eval
-            return best
+    def get_best(self, evaluator: Optional[Evaluator] = None) -> Optional[Solution]:
+        """
+        Get the best solution from the pool based on evaluation.
+        The evaluator is optional, if the pool already has it`s own evaluator, it`ll be used if None is passed.
+        """
+
+        evaluator = evaluator or self.evaluator
+
+        if evaluator:
+            if self.any():
+                best = self.get_solution_at(0)
+                best_eval = evaluator.evaluate(best)
+                for solution in self:
+                    new_eval = evaluator.evaluate(solution)
+                    if new_eval.better_than(best_eval):
+                        best = solution
+                        best_eval = new_eval
+                return best
         return None

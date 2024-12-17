@@ -73,12 +73,12 @@ class GRASP(MetaHeuristic):
         """
         raise NotImplementedError("Use run_operation() method for this class.")
 
-    def run_operation(self, input_pool: Pool, output_pool: Pool) -> Pool:
+    def run_operation(self, origin_pool: Pool, destination_pool: Pool) -> Pool:
         """Executes the GRASP meta-heuristic.
 
         Args:
-            input_pool (Pool): The initial solution pool, which can be empty.
-            output_pool (Pool): The output solution pool, which can be empty and even the same pool as the input pool.
+            origin_pool (Pool): The initial solution pool, which can be empty.
+            destination_pool (Pool): The output solution pool, which can be empty and even the same pool as the input pool.
 
         Returns:
             Pool: The output_pool of solutions found during execution.
@@ -86,7 +86,7 @@ class GRASP(MetaHeuristic):
         construction = self.meta_heuristics_used[0]
         local_search = self.meta_heuristics_used[1]
 
-        curr_pool = input_pool.copy()
+        curr_pool = origin_pool.copy()
         best_sol = curr_pool.get_best(self.evaluator)
         best_eval = self.evaluator.evaluate(best_sol)
 
@@ -94,13 +94,17 @@ class GRASP(MetaHeuristic):
         self.acceptance_criteria.reset()
 
         while not self.stop_on_evaluations([best_eval]):
-            curr_pool = construction.run_operation(curr_pool, None, self)
+            curr_pool = construction.run_operation(
+                curr_pool, construction.destination_pool, self
+            )
 
             curr_sol = curr_pool.get_best(self.evaluator)
             if not curr_sol or not curr_sol.validade_aspects():
                 continue
 
-            curr_pool = local_search.run_operation(curr_pool, None, self)
+            curr_pool = local_search.run_operation(
+                curr_pool, local_search.destination_pool, self
+            )
             curr_sol = curr_pool.get_best(self.evaluator)
 
             if curr_sol:
@@ -111,10 +115,10 @@ class GRASP(MetaHeuristic):
                 ):
                     best_eval = curr_eval
                     best_sol = curr_sol
-                    output_pool.add_solution(best_sol)
+                    destination_pool.add_solution(best_sol)
                     # Optionally log the best evaluation
                     # print(best_eval)
 
             self.stop_criteria.increment_counter()
 
-        return output_pool
+        return destination_pool

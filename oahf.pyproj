@@ -69,6 +69,8 @@
     <Compile Include="oahf\ImplementedBase\AlwabpWorkerOrientedInsertNS.py" />
     <Compile Include="oahf\ImplementedBase\AlwaysAcceptAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\ConsecutiveTaskSwapNS.py" />
+    <Compile Include="oahf\ImplementedBase\JobRotationAlwabpEvaluation.py" />
+    <Compile Include="oahf\ImplementedBase\JobRotationAlwabpEvaluator.py" />
     <Compile Include="oahf\ImplementedBase\JobRotationAlwabpSolution.py" />
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\NoStopCriteria.py" />

@@ -1,7 +1,8 @@
+import sys
 from pathlib import Path
 from typing import Optional
 
-from pulp import COIN_CMD, LpMaximize, LpProblem, LpVariable, lpSum
+from pulp import GUROBI, GUROBI_CMD, LpMaximize, LpProblem, LpVariable, lpSum
 
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
@@ -24,11 +25,20 @@ class JobRotationLPSelector(MetaHeuristic):
         evaluator: Evaluator,
         acceptance_criteria: AcceptanceCriteria,
         number_of_periods: int,
-        solver_path: Path,
+        gurobi_path: Path,
+        origin_pool: Optional[Pool] = None,
+        destination_pool: Optional[Pool] = None,
     ):
-        super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria)
+        super().__init__(
+            thread_id,
+            stop_criteria,
+            evaluator,
+            acceptance_criteria,
+            origin_pool=origin_pool,
+            destination_pool=destination_pool,
+        )
         self.number_of_periods = number_of_periods
-        self.solver_path = solver_path
+        self.gurobi_path = gurobi_path
 
     def copy(self, thread: int) -> "JobRotationLPSelector":
         """Creates a copy of the current BestImprovement instance."""
@@ -38,13 +48,19 @@ class JobRotationLPSelector(MetaHeuristic):
             self.evaluator,
             self.acceptance_criteria.copy(),
             self.number_of_periods,
-            self.solver_path,  # type: ignore
+            self.gurobi_path,  # type: ignore
+            origin_pool=self.origin_pool.copy() if self.origin_pool else None,
+            destination_pool=(
+                self.destination_pool.copy() if self.destination_pool else None
+            ),
         )
 
     def run(self, sol: Solution) -> Solution:
         raise NotImplementedError(
             "Abstract Method: must be implemented by child classes."
         )
+
+    from pulp import GUROBI, LpMaximize, LpProblem, LpVariable, lpSum
 
     def run_operation(
         self,
@@ -83,9 +99,17 @@ class JobRotationLPSelector(MetaHeuristic):
                 z = LpVariable.dicts(
                     "z", ((w, t) for w in workers for t in tasks), cat="Binary"
                 )
+                cycle_time_sum = LpVariable(
+                    "cycle_time_sum", lowBound=0, cat="Continuous"
+                )
 
-                # Objective function: Maximize unique tasks performed by workers across periods
-                model += lpSum(z[w, t] for w in workers for t in tasks)
+                # Objective function: Maximize unique tasks and minimize cycle time sum
+                epsilon = 1e-1  # Small scaling factor for secondary objective
+                model += (
+                    lpSum(z[w, t] for w in workers for t in tasks)
+                    - epsilon * cycle_time_sum,
+                    "ObjectiveFunction",
+                )
 
                 # Constraints
 
@@ -104,7 +128,10 @@ class JobRotationLPSelector(MetaHeuristic):
                             <= lpSum(
                                 solution[i, j]
                                 * int(
-                                    t in alwabp_solutions[j].tasks_executed_by_worker[w]
+                                    t
+                                    in alwabp_solutions[j].station_tasks_assignment[
+                                        alwabp_solutions[j].find_station_for_worker(w)  # type: ignore
+                                    ]
                                 )
                                 for i in range(self.number_of_periods)
                                 for j in range(number_of_solutions)
@@ -112,10 +139,22 @@ class JobRotationLPSelector(MetaHeuristic):
                             f"TaskExecution_{w}_{t}",
                         )
 
+                # Calculate the total cycle time of selected solutions
+                model += (
+                    cycle_time_sum
+                    == lpSum(
+                        solution[i, j] * alwabp_solutions[j].get_max_cycle_time()
+                        for i in range(self.number_of_periods)
+                        for j in range(number_of_solutions)
+                    ),
+                    "CycleTimeSum",
+                )
+
+                if self.gurobi_path not in sys.path:
+                    sys.path.insert(0, str(self.gurobi_path))
+
                 # Build solver
-                solver = COIN_CMD(
-                    mip=False, msg=True, path=self.solver_path
-                )  # Can also set "threads" and "gapRel"
+                solver = GUROBI(mip=True, msg=True)
 
                 # Solve the problem
                 model.solve(solver)

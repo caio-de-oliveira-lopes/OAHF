@@ -1,12 +1,15 @@
 from typing import Iterator, List, Optional
 
+from oahf.Base.Evaluator import Evaluator
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 
 
 class ListPool(Pool):
-    def __init__(self, solutions: List[Solution] = []):
-        super().__init__(solutions)
+    def __init__(
+        self, solutions: List[Solution] = [], evaluator: Optional[Evaluator] = None
+    ):
+        super().__init__(solutions, evaluator)
 
     def get_solution_at(self, index: int) -> Solution:
         """Get the solution at the specified index."""
@@ -33,6 +36,7 @@ class ListPool(Pool):
         """Create a copy of the pool."""
         new_pool = ListPool()
         new_pool.solutions = [sol.copy() for sol in self.solutions]
+        new_pool.evaluator = self.evaluator
         return new_pool
 
     def add_solution(self, solution: Optional[Solution]) -> bool:

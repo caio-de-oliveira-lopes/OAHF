@@ -351,6 +351,7 @@ class AlwabpSolution(Solution):
 
         result = [Util.line()]
         result.append("ALWABP Solution:")
+        result.append(f"ID: {self.id}")
         result.append(f"Number of Tasks: {len(self.tasks)}")
         result.append(f"Number of Workers: {len(self.workers)}")
         result.append(f"Number of Stations: {len(self.stations)}")

@@ -274,7 +274,28 @@
 		{
 			"id": 0,
 			"name": "list_pool",
-			"parameters": {}
+			"parameters": {
+				"evaluator": {
+					"alwabp_evaluator": {
+						"stop_on_first": "true",
+						"constraints": {
+							"max_cycle_time": {}
+						}
+					}
+				}
+			}
+		},
+		{
+			"id": 1,
+			"name": "list_pool",
+			"parameters": {
+				"evaluator": {
+					"job_rotation_alwabp_evaluator": {
+						"stop_on_first": "true",
+						"constraints": {}
+					}
+				}
+			}
 		}
 	],
 	"metaheuristics": [
@@ -293,7 +314,8 @@
 				"greediness": 1,
 				"order_moves": "false"
 			},
-			"neighborhood_selection": 0
+			"neighborhood_selection": 0,
+			"destination_pool": 0
 		},
 		{
 			"id": 1,
@@ -305,7 +327,8 @@
 				"better": {}
 			},
 			"parameters": {},
-			"neighborhood_selection": 6
+			"neighborhood_selection": 6,
+			"destination_pool": 0
 		},
 		{
 			"id": 2,
@@ -335,6 +358,26 @@
 			"neighborhood_selection": 0,
 			"execution_order": 0,
 			"destination_pool": 0
+		},
+		{
+
+			"id": 3,
+			"name": "job_rotation_lp_selector",
+			"stop_criteria": {
+				"time_iteration": {
+					"iterations": 1
+				}
+			},
+			"acceptance_criteria": {
+				"always": {}
+			},
+			"parameters": {
+				"number_of_periods": 5,
+				"gurobi_path": "C:\\gurobi1200\\win64\\bin\\gurobi.bat"
+			},
+			"execution_order": 1,
+			"origin_pool": 0,
+			"destination_pool": 1
 		}
 	]
 }

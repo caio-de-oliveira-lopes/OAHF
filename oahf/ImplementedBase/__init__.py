@@ -11,6 +11,9 @@ from .CompleteAssignmentStopCriteria import CompleteAssignmentStopCriteria
 from .ConsecutiveTaskSwapNS import ConsecutiveTaskSwapNS
 from .EliteDiversePool import EliteDiversePool
 from .ElitePool import ElitePool
+from .JobRotationAlwabpEvaluation import JobRotationAlwabpEvaluation
+from .JobRotationAlwabpEvaluator import JobRotationAlwabpEvaluator
+from .JobRotationAlwabpSolution import JobRotationAlwabpSolution
 from .ListPool import ListPool
 from .ListSelection import ListSelection
 from .MaxCycleTimeConstraint import MaxCycleTimeConstraint
@@ -43,6 +46,9 @@ __all__ = [
     "ConsecutiveTaskSwapNS",
     "EliteDiversePool",
     "ElitePool",
+    "JobRotationAlwabpEvaluation",
+    "JobRotationAlwabpEvaluator",
+    "JobRotationAlwabpSolution",
     "ListPool",
     "ListSelection",
     "MaxCycleTimeConstraint",

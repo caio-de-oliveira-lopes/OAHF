@@ -124,7 +124,10 @@ class MetaHeuristic(Entity, ABC):
             if self.neighborhood_selection:
                 self.neighborhood_selection.reset(self.thread_id)
 
-            result = destination_pool or ListPool()
+            result = destination_pool
+            if result is None:
+                result = ListPool()
+
             self.start_time = self._current_milliseconds()
 
             for sol in origin_pool.get_list():

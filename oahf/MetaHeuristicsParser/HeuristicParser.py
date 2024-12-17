@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 from oahf.Base import AcceptanceCriteria
+from oahf.Base.Constraint import Constraint
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.MultipleStopCriteria import MultipleStopCriteria
@@ -12,6 +13,7 @@ from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.ImplementedBase.AlwabpEvaluator import AlwabpEvaluator
 from oahf.ImplementedBase.AlwabpSolution import (
     GraphOrientation,
     MaxPositionalWeightType,
@@ -19,13 +21,18 @@ from oahf.ImplementedBase.AlwabpSolution import (
 from oahf.ImplementedBase.AlwabpWorkerOrientedInsertNS import (
     AlwabpWorkerOrientedInsertNS,
 )
+from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
+    AlwaysAcceptAcceptanceCriteria,
+)
 from oahf.ImplementedBase.BetterAcceptanceCriteria import BetterAcceptanceCriteria
 from oahf.ImplementedBase.BetterOrSameAcceptanceCriteria import (
     BetterOrSameAcceptanceCriteria,
 )
 from oahf.ImplementedBase.ConsecutiveTaskSwapNS import ConsecutiveTaskSwapNS
+from oahf.ImplementedBase.JobRotationAlwabpEvaluator import JobRotationAlwabpEvaluator
 from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.ListSelection import ListSelection
+from oahf.ImplementedBase.MaxCycleTimeConstraint import MaxCycleTimeConstraint
 from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
 from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
 from oahf.ImplementedBase.RearrangeCriticalTaskNS import RearrangeCriticalTaskNS
@@ -115,7 +122,7 @@ class HeuristicParser:
             origin_pool = (
                 mh.origin_pool
                 if mh.origin_pool is not None
-                else ListPool([initial_sol])
+                else ListPool([initial_sol], evaluator)
             )
             mh.run_operation(origin_pool, mh.destination_pool)
 
@@ -135,11 +142,14 @@ class HeuristicParser:
 
         self.fix_all_solutions_in_pools()
 
-        final_pool = ListPool()
-        for pool in list(self.solution_pools.values()):
-            final_pool.add_solution(pool.get_best(evaluator))
+        final_pool = self.ordered_metaheuristics[-1].destination_pool or ListPool(
+            evaluator=evaluator
+        )
+        if final_pool.count() == 0:
+            for pool in list(self.solution_pools.values()):
+                final_pool.add_solution(pool.get_best())
 
-        return final_pool.get_best(evaluator)
+        return final_pool.get_best()
 
     def fix_all_solutions_in_pools(self) -> None:
         """
@@ -277,19 +287,68 @@ class HeuristicParser:
         Parses solution pool definitions from the configuration and initializes instances.
 
         Args:
-            eval (Evaluator): Evaluation function for configuring solution pools.
+            evaluator (Evaluator): Evaluation function for configuring solution pools.
         """
         try:
             if "solution_pools" not in self.definition:
                 return
             for p in self.definition["solution_pools"]:
                 if p["name"].lower() == "list_pool":
-                    pool = ListPool()
+                    pool_evaluator = self.parse_evaluator(p["parameters"]["evaluator"])
+                    pool = ListPool(evaluator=pool_evaluator)
                 else:
                     raise ValueError(f"Unavailable solution pool: {p['name']}")
+
                 self.solution_pools[p["id"]] = pool
         except Exception as e:
             LogManager.something_went_wrong(Util.get_current_method_name(), e)
+
+    def parse_evaluator(self, evaluator_dict: dict) -> Optional[Evaluator]:
+        """
+        Parses evaluator configurations from a dictionary and initializes instances.
+
+        Args:
+            evaluator_dict (dict): Dictionary with evaluator definitions.
+
+        Returns:
+            Evaluator: Configured evaluator instance.
+        """
+        try:
+            if "alwabp_evaluator" in evaluator_dict:
+                config = evaluator_dict["alwabp_evaluator"]
+                stop_on_first = config.get("stop_on_first", "true").lower() == "true"
+                constraints = self.parse_constraints(config.get("constraints", {}))
+                return AlwabpEvaluator(stop_on_first, *constraints)
+
+            elif "job_rotation_alwabp_evaluator" in evaluator_dict:
+                config = evaluator_dict["job_rotation_alwabp_evaluator"]
+                stop_on_first = config.get("stop_on_first", "true").lower() == "true"
+                constraints = self.parse_constraints(config.get("constraints", {}))
+                return JobRotationAlwabpEvaluator(stop_on_first, *constraints)
+            else:
+                raise ValueError(f"Unavailable evaluator: {evaluator_dict}")
+        except Exception as e:
+            LogManager.something_went_wrong(Util.get_current_method_name(), e)
+
+    def parse_constraints(self, constraints_dict: dict) -> List[Constraint]:
+        """
+        Parses constraints configurations from a dictionary.
+
+        Args:
+            constraints_dict (dict): Dictionary with constraint definitions.
+
+        Returns:
+            list: List of constraint instances.
+        """
+        constraints = []
+        try:
+            if "max_cycle_time" in constraints_dict:
+                constraints.append(MaxCycleTimeConstraint())
+
+            return constraints
+        except Exception as e:
+            LogManager.something_went_wrong(Util.get_current_method_name(), e)
+            return []
 
     def parse_metaheuristics(self, evaluator: Evaluator):
         """
@@ -313,6 +372,11 @@ class HeuristicParser:
                     )
                     ns = self.neighborhood_selections[m["neighborhood_selection"]]
                     order_moves = m["parameters"]["order_moves"].lower() == "true"
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
 
                     meta = GRC(
                         thread_id,
@@ -322,6 +386,7 @@ class HeuristicParser:
                         acceptance_criteria,  # type: ignore
                         ns,
                         order_moves,
+                        destination_pool,
                     )
                 elif m["name"].lower() == "grasp":
                     thread_id = 0
@@ -359,6 +424,7 @@ class HeuristicParser:
                         m["acceptance_criteria"]
                     )
                     ns = self.neighborhood_selections[m["neighborhood_selection"]]
+
                     meta = FirstImprovement(
                         thread_id,
                         stop_criteria,  # type: ignore
@@ -373,6 +439,7 @@ class HeuristicParser:
                         m["acceptance_criteria"]
                     )
                     ns = self.neighborhood_selections[m["neighborhood_selection"]]
+
                     meta = BestImprovement(
                         thread_id,
                         stop_criteria,  # type: ignore
@@ -387,12 +454,19 @@ class HeuristicParser:
                         m["acceptance_criteria"]
                     )
                     ns = self.neighborhood_selections[m["neighborhood_selection"]]
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
+
                     meta = MultipleBestImprovement(
                         thread_id,
                         stop_criteria,  # type: ignore
                         evaluator,
                         acceptance_criteria,  # type: ignore
                         ns,
+                        destination_pool,
                     )
                 elif m["name"].lower() == "job_rotation_lp_selector":
                     thread_id = 0
@@ -401,14 +475,27 @@ class HeuristicParser:
                         m["acceptance_criteria"]
                     )
                     number_of_periods = int(m["parameters"].get("number_of_periods", 1))
-                    solver_path = Path(m["parameters"].get("solver_path", None))
+                    gurobi_path = Path(m["parameters"].get("gurobi_path", None))
+                    origin_pool = (
+                        self.solution_pools[m["origin_pool"]]
+                        if "origin_pool" in m
+                        else None
+                    )
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
+
                     meta = JobRotationLPSelector(
                         thread_id,
                         stop_criteria,  # type: ignore
                         evaluator,
                         acceptance_criteria,  # type: ignore
                         number_of_periods,
-                        solver_path,
+                        gurobi_path,
+                        origin_pool,
+                        destination_pool,
                     )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")
@@ -491,6 +578,8 @@ class HeuristicParser:
                 return BetterOrSameAcceptanceCriteria()
             elif "better" in criteria:
                 return BetterAcceptanceCriteria()
+            elif "always" in criteria:
+                return AlwaysAcceptAcceptanceCriteria()
             else:
                 raise ValueError(f"Unavailable acceptance criteria: {criteria}")
         except Exception as e:

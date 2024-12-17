@@ -14,12 +14,11 @@ class ElitePool(Pool):
         :param limit_size: Maximum number of solutions in the pool.
         :param evaluator: Evaluator used to evaluate solutions.
         """
-        super().__init__()
+        super().__init__(evaluator=evaluator)
         self._list: List[Solution] = []
         self.limit = limit_size
         self.worst_evaluation: Optional[Evaluation] = None
         self.worst_sol_index: int = 0
-        self.evaluator = evaluator
 
     def any(self) -> bool:
         """Returns True if there are any solutions in the pool, False otherwise."""
@@ -27,7 +26,7 @@ class ElitePool(Pool):
 
     def copy(self) -> "ElitePool":
         """Creates a copy of the current pool."""
-        new_pool = ElitePool(self.limit, self.evaluator)
+        new_pool = ElitePool(self.limit, self.evaluator)  # type: ignore
         new_pool._list = [sol.copy() for sol in self._list]
         return new_pool
 
@@ -50,15 +49,15 @@ class ElitePool(Pool):
             return True
         else:
             if self.worst_evaluation is None:
-                self.worst_evaluation = self.evaluator.evaluate(self._list[0])
+                self.worst_evaluation = self.evaluator.evaluate(self._list[0])  # type: ignore
                 self.worst_sol_index = 0
                 for i in range(1, self.limit):
-                    eval2 = self.evaluator.evaluate(self._list[i])
+                    eval2 = self.evaluator.evaluate(self._list[i])  # type: ignore
                     if self.worst_evaluation.better_than(eval2):
                         self.worst_evaluation = eval2
                         self.worst_sol_index = i
 
-            eval_sol = self.evaluator.evaluate(sol)
+            eval_sol = self.evaluator.evaluate(sol)  # type: ignore
             if eval_sol.better_than(self.worst_evaluation):
                 hash_sol = sol.solution_hash()
                 if any(l.solution_hash() == hash_sol for l in self._list):
