@@ -104,7 +104,7 @@ class JobRotationLPSelector(MetaHeuristic):
                 )
 
                 # Objective function: Maximize unique tasks and minimize cycle time sum
-                epsilon = 1e-1  # Small scaling factor for secondary objective
+                epsilon = 1e-6  # Small scaling factor for secondary objective
                 model += (
                     lpSum(z[w, t] for w in workers for t in tasks)
                     - epsilon * cycle_time_sum,
