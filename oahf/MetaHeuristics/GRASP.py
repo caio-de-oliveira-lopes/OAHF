@@ -95,7 +95,7 @@ class GRASP(MetaHeuristic):
 
         while not self.stop_on_evaluations([best_eval]):
             curr_pool = construction.run_operation(
-                curr_pool, construction.destination_pool, self
+                curr_pool, None, self
             )
 
             curr_sol = curr_pool.get_best(self.evaluator)
@@ -103,7 +103,7 @@ class GRASP(MetaHeuristic):
                 continue
 
             curr_pool = local_search.run_operation(
-                curr_pool, local_search.destination_pool, self
+                curr_pool, None, self
             )
             curr_sol = curr_pool.get_best(self.evaluator)
 

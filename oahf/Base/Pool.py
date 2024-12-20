@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Iterator, List, Optional, Tuple
 
 from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
@@ -6,6 +7,7 @@ from oahf.Base.Entity import Entity
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.Solution import Solution
 from oahf.Base.ThreadManager import ThreadManager
+from oahf.Utils.Util import Util
 
 
 class PoolEventReport:
@@ -126,3 +128,21 @@ class Pool(Entity, ABC):
                         best_eval = new_eval
                 return best
         return None
+
+    def to_dict(self) -> dict:
+        """
+        Converts the pool data into a dictionary format.
+
+        Returns:
+            dict: A structured dictionary representing the Pool.
+        """
+        
+        pool_dict = super().to_dict()
+        
+        pool_dict.update({
+            "solutions": [
+                solution.to_dict() for solution in self.get_list()
+            ],
+        })
+        
+        return pool_dict

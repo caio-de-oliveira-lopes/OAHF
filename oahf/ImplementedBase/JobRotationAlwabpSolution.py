@@ -130,10 +130,43 @@ class JobRotationAlwabpSolution(Solution):
         result.append("Job Rotation ALWABP Solution:")
         result.append(f"ID: {self.id}")
         result.append(
-            f"Number of Distinct Tasks: {self.calculate_total_distinct_tasks()}"
+            f"Number of Distinct Tasks:"
         )
+        
+        workers = self.period_solutions[0].workers if self.period_solutions[0] else []
+        for w in workers:
+            result.append(f"    Worker {w}: {self.calculate_worker_distinct_tasks(w)}")
+        result.append(f"    Total: {self.calculate_total_distinct_tasks()}")
+        
         result.append(f"Average Cycle Time: {str(int(self.get_average_cycle_time()))}")
         result.append(Util.line())
         for i, sol in enumerate(self.period_solutions):
             result.append(f"Period {i + 1}:\n{sol}")
         return "\n".join(result)
+
+    def to_dict(self) -> dict:
+        """
+        Converts the solution data into a dictionary format.
+
+        Returns:
+            dict: A structured dictionary representing the Job Rotation ALWABP solution.
+        """
+        
+        solution_dict = super().to_dict()
+        
+        solution_dict.update({
+            "distinct_tasks_per_worker": {
+                worker: self.calculate_worker_distinct_tasks(worker)
+                for worker in (
+                    self.period_solutions[0].workers if self.period_solutions[0] else []
+                )
+            },
+            "total_distinct_tasks": self.calculate_total_distinct_tasks(),
+            "average_cycle_time": self.get_average_cycle_time(),
+            "period_solutions": [
+                solution.to_dict() if solution is not None else None
+                for solution in self.period_solutions
+            ],
+        })
+        
+        return solution_dict

@@ -1,6 +1,9 @@
+from pathlib import Path
 import threading
 from abc import ABC
 from typing import Optional
+
+from oahf.Utils.Util import Util
 
 
 class Entity(ABC):
@@ -52,3 +55,13 @@ class Entity(ABC):
     def __str__(self) -> str:
         """String representation of the entity in the format 'name_id'."""
         return f"{self.__name}_{self.__id}"
+    
+    def to_dict(self) -> dict:
+        """Returns a dict representation of an object"""
+        return {
+            "id": self.id,
+            "name": self.name
+        }
+    
+    def write_json(self, output_path: Path) -> None:
+        Util.write_json_to_file(output_path.joinpath(f"output_{self.name}_{self.id}.json"), self.to_dict())

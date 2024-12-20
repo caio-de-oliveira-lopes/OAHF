@@ -226,3 +226,21 @@ class Util:
     @classmethod
     def get_optimization_start_time(cls):
         return cls._optimization_start_time
+
+    @staticmethod
+    def write_json_to_file(filepath: Path, data: dict) -> None:
+        """
+        Writes a dictionary to a JSON file.
+
+        Args:
+            filepath (str): The full path to the JSON file, including the filename.
+            data (dict): The dictionary to be written to the file.
+
+        Raises:
+            IOError: If there is an issue writing the file.
+        """
+        try:
+            with open(filepath, "w", encoding="utf-8") as file:
+                json.dump(data, file, ensure_ascii=False, indent=4)
+        except IOError as e:
+            raise IOError(f"Failed to write JSON to {filepath}: {e}")

@@ -373,6 +373,34 @@ class AlwabpSolution(Solution):
         result.append(f"Unassigned Tasks: {unassigned_tasks}")
         result.append(Util.line())
         return "\n".join(result)
+    
+    def to_dict(self) -> dict:
+        """
+        Converts the solution data into a dictionary format.
+
+        Returns:
+            dict: A structured dictionary representing the task allocations per station.
+        """
+
+        solution_dict = super().to_dict()
+        
+        solution_dict.update({
+            "number_of_tasks": len(self.tasks),
+            "number_of_workers": len(self.workers),
+            "number_of_stations": len(self.stations),
+            "max_cycle_time": int(self.get_max_cycle_time()),
+            "task_allocations_per_station": [],
+            "unassigned_tasks": self.unassigned_tasks if len(self.unassigned_tasks) > 0 else []
+        })
+
+        for station in self.stations:
+            worker = self.station_worker_assignment.get(station, None)
+            station_data = {"station": station, "worker": worker, "tasks": []}
+            if worker is not None:
+                station_data["tasks"] = self.station_tasks_assignment.get(station, [])
+            solution_dict["task_allocations_per_station"].append(station_data)
+
+        return solution_dict
 
     def calculate_cycle_time(
         self, station: int, force_calculate: bool = False

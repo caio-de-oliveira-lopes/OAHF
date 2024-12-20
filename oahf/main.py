@@ -40,7 +40,12 @@ def main(args=sys.argv[1:]) -> None:
     if original_solution:
         solution = original_solution.copy()
         ThreadManager.initialize(1, problem_data.random_seed)
-        print(heuristic_parser.run_definition(solution, evaluator))
+        final_solution = heuristic_parser.run_definition(solution, evaluator)
+        
+        heuristic_parser.write_pools(problem_data.output_path)
+        
+        if final_solution:
+            final_solution.write_json(problem_data.output_path)
 
 
 def create_init_files(root_dir):

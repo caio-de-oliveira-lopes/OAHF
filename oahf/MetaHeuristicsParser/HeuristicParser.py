@@ -150,6 +150,10 @@ class HeuristicParser:
                 final_pool.add_solution(pool.get_best())
 
         return final_pool.get_best()
+    
+    def write_pools(self, output_path: Path) -> None:
+        for pool in list(self.solution_pools.values()):
+            pool.write_json(output_path)
 
     def fix_all_solutions_in_pools(self) -> None:
         """

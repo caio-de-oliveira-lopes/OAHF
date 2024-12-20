@@ -12,7 +12,6 @@ from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.ThreadManager import ThreadManager
 from oahf.Logger.LogManager import LogManager
-from oahf.Utils.Util import Util
 
 
 class GRC(MetaHeuristic):
