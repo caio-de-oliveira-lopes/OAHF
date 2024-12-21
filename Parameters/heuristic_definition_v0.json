@@ -1,4 +1,12 @@
 {
+	"default_evaluator": {
+		"alwabp_evaluator": {
+			"stop_on_first": "true",
+			"constraints": {
+				"max_cycle_time": {}
+			}
+		}
+	},
 	"neighborhoods": [
 		{
 			"id": 0,
@@ -309,8 +317,7 @@
 			}
 		}
 	],
-	"solution_pools":
-	[
+	"solution_pools": [
 		{
 			"id": 0,
 			"name": "list_pool",
@@ -440,7 +447,7 @@
 				"order_moves": "false"
 			},
 			"neighborhood_selection": 5
-		}, 
+		},
 		{
 			"id": 6,
 			"name": "multiple_best_improvement",
@@ -453,7 +460,7 @@
 			"parameters": {},
 			"neighborhood_selection": 6,
 			"destination_pool": 0
-		}, 
+		},
 		{
 			"id": 7,
 			"name": "multiple_best_improvement",
@@ -466,7 +473,7 @@
 			"parameters": {},
 			"neighborhood_selection": 7,
 			"destination_pool": 0
-		}, 
+		},
 		{
 			"id": 8,
 			"name": "multiple_best_improvement",
@@ -479,7 +486,7 @@
 			"parameters": {},
 			"neighborhood_selection": 8,
 			"destination_pool": 0
-		}, 
+		},
 		{
 			"id": 9,
 			"name": "multiple_best_improvement",
@@ -492,7 +499,7 @@
 			"parameters": {},
 			"neighborhood_selection": 9,
 			"destination_pool": 0
-		}, 
+		},
 		{
 			"id": 10,
 			"name": "multiple_best_improvement",
@@ -505,7 +512,7 @@
 			"parameters": {},
 			"neighborhood_selection": 10,
 			"destination_pool": 0
-		}, 
+		},
 		{
 			"id": 11,
 			"name": "multiple_best_improvement",

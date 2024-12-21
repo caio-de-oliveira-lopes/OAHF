@@ -35,6 +35,8 @@ class AlwabpSolution(Solution):
             number_of_stations (int): The total number of stations.
         """
         super().__init__()
+        self.name = "AlwabpSolution"
+
         self.tasks: List[int] = [
             (i + 1) for i in range(number_of_tasks)
         ]  # List of tasks [1, 2, ..., number_of_tasks]
@@ -246,24 +248,38 @@ class AlwabpSolution(Solution):
         """
         num_stations: int = len(self.stations)
 
-        for i in range(0, int(num_stations / 2)):
+        for i in range(1, int(num_stations / 2) + 1):
             # Swap tasks between station i and its mirror counterpart
             (
                 self.station_tasks_assignment[i],
-                self.station_tasks_assignment[num_stations - 1 - i],
+                self.station_tasks_assignment[num_stations - i + 1],
             ) = (
-                self.station_tasks_assignment[num_stations - 1 - i],
+                self.station_tasks_assignment[num_stations - i + 1],
                 self.station_tasks_assignment[i],
+            )
+
+            # Swap workers between station i and its mirror counterpart
+            (
+                self.station_worker_assignment[i],
+                self.station_worker_assignment[num_stations - i + 1],
+            ) = (
+                self.station_worker_assignment[num_stations - i + 1],
+                self.station_worker_assignment[i],
             )
 
             # Swap cycle times between station i and its mirror counterpart
             (
                 self.station_cycle_time_memo[i],
-                self.station_cycle_time_memo[num_stations - 1 - i],
+                self.station_cycle_time_memo[num_stations - i + 1],
             ) = (
-                self.station_cycle_time_memo[num_stations - 1 - i],
+                self.station_cycle_time_memo[num_stations - i + 1],
                 self.station_cycle_time_memo[i],
             )
+
+        for station in self.stations:
+            worker = self.station_worker_assignment[station]
+            if worker is not None:
+                self.worker_station_assignment[worker] = station
 
     def fix_solution(self) -> None:
         self.default_graph_orientation = GraphOrientation.FORWARD
@@ -373,7 +389,7 @@ class AlwabpSolution(Solution):
         result.append(f"Unassigned Tasks: {unassigned_tasks}")
         result.append(Util.line())
         return "\n".join(result)
-    
+
     def to_dict(self) -> dict:
         """
         Converts the solution data into a dictionary format.
@@ -383,15 +399,19 @@ class AlwabpSolution(Solution):
         """
 
         solution_dict = super().to_dict()
-        
-        solution_dict.update({
-            "number_of_tasks": len(self.tasks),
-            "number_of_workers": len(self.workers),
-            "number_of_stations": len(self.stations),
-            "max_cycle_time": int(self.get_max_cycle_time()),
-            "task_allocations_per_station": [],
-            "unassigned_tasks": self.unassigned_tasks if len(self.unassigned_tasks) > 0 else []
-        })
+
+        solution_dict.update(
+            {
+                "number_of_tasks": len(self.tasks),
+                "number_of_workers": len(self.workers),
+                "number_of_stations": len(self.stations),
+                "max_cycle_time": int(self.get_max_cycle_time()),
+                "task_allocations_per_station": [],
+                "unassigned_tasks": (
+                    self.unassigned_tasks if len(self.unassigned_tasks) > 0 else []
+                ),
+            }
+        )
 
         for station in self.stations:
             worker = self.station_worker_assignment.get(station, None)

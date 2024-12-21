@@ -2,6 +2,8 @@ import hashlib
 import json
 import multiprocessing
 import os
+import re
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import ClassVar, List, Optional, Type
@@ -20,6 +22,7 @@ class Util:
     _line: ClassVar[str] = (
         "-------------------------------------------------------------------"
     )
+    _start_timestamp: float = time.time()
 
     @classmethod
     def eps(cls) -> float:
@@ -227,8 +230,8 @@ class Util:
     def get_optimization_start_time(cls):
         return cls._optimization_start_time
 
-    @staticmethod
-    def write_json_to_file(filepath: Path, data: dict) -> None:
+    @classmethod
+    def write_json_to_file(cls, filepath: Path, data: dict) -> None:
         """
         Writes a dictionary to a JSON file.
 
@@ -244,3 +247,36 @@ class Util:
                 json.dump(data, file, ensure_ascii=False, indent=4)
         except IOError as e:
             raise IOError(f"Failed to write JSON to {filepath}: {e}")
+
+    @classmethod
+    def camel_to_snake_case(cls, name: str) -> str:
+        """
+        Converts a camelCase or PascalCase string to snake_case format.
+
+        Args:
+            name (str): The input string in camelCase or PascalCase format.
+
+        Returns:
+            str: The converted string in snake_case format.
+        """
+        # Insert an underscore before any uppercase letter that follows a lowercase letter or number
+        snake_case = re.sub(r"(?<=[a-z0-9])([A-Z])", r"_\1", name)
+        # Convert the entire string to lowercase
+        return snake_case.lower()
+
+    @classmethod
+    def set_start_timestamp(cls, start_timestamp: float):
+        cls._start_timestamp = start_timestamp
+
+    @classmethod
+    def get_duration_from_start_timestamp(cls) -> str:
+        # Record the end time
+        end_time = time.time()
+
+        # Calculate the duration
+        duration = end_time - cls._start_timestamp
+
+        hours, remainder = divmod(duration, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"

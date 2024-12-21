@@ -16,6 +16,7 @@ from .JobRotationAlwabpEvaluator import JobRotationAlwabpEvaluator
 from .JobRotationAlwabpSolution import JobRotationAlwabpSolution
 from .ListPool import ListPool
 from .ListSelection import ListSelection
+from .LpExecutionData import LpExecutionData
 from .MaxCycleTimeConstraint import MaxCycleTimeConstraint
 from .MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
 from .NoStopCriteria import NoStopCriteria
@@ -51,6 +52,7 @@ __all__ = [
     "JobRotationAlwabpSolution",
     "ListPool",
     "ListSelection",
+    "LpExecutionData",
     "MaxCycleTimeConstraint",
     "MaxCycleTimeStopCriteria",
     "NoStopCriteria",

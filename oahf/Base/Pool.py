@@ -1,44 +1,30 @@
+import inspect
 from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import Iterator, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional
 
-from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
 from oahf.Base.Entity import Entity
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.Solution import Solution
-from oahf.Base.ThreadManager import ThreadManager
-from oahf.Utils.Util import Util
-
-
-class PoolEventReport:
-    def __init__(
-        self,
-        accepted: bool,
-        objective_function: float,
-        diversity: float,
-        constraints: List[ConstraintEvaluation],
-    ):
-        self.accepted = accepted
-        self.constraints = constraints
-        self.objective_function = objective_function
-        self.diversity = diversity
-
-
-class PoolReport:
-    def __init__(self):
-        self.events: List[Tuple[int, PoolEventReport]] = []
-        self.name: str = ""
-        self.id: int = 0
 
 
 class Pool(Entity, ABC):
     def __init__(
-        self, solutions: List[Solution] = [], evaluator: Optional[Evaluator] = None
+        self,
+        solutions: List[Solution] = [],
+        heuristic_parser_key: Optional[int] = None,
+        evaluator: Optional[Evaluator] = None,
     ):
         super().__init__()
-        self.report = PoolReport()
         self.solutions: List[Solution] = solutions.copy()
         self.evaluator = evaluator
+        self.name = "Pool"
+        self.heuristic_parser_key = heuristic_parser_key
+
+        if self.heuristic_parser_key is not None:
+            self.output_id = self.heuristic_parser_key
+
+        # key must be the solution ID and value will be composed of keys "metaheuristic" and "execution_time":
+        self._solution_info: Dict[int, Dict[str, str]] = {}
 
     @abstractmethod
     def get_solution_at(self, index: int) -> Solution:
@@ -69,45 +55,50 @@ class Pool(Entity, ABC):
     @abstractmethod
     def copy(self) -> "Pool":
         """Create a copy of the pool."""
-        new_pool = self.__class__()
+        new_pool = self.__class__([], self.heuristic_parser_key)
         new_pool.solutions = self.solutions.copy()
         return new_pool
-
-    def add(self, solution: Solution, evaluator: Evaluator) -> bool:
-        """Add a solution to the pool and evaluate it."""
-        accepted = self.add_solution(solution)
-        eval = evaluator.evaluate(solution)
-        diversity = 0.0  # Assuming diversity calculation logic will be added
-        self.report.events.append(
-            (
-                ThreadManager.elapsed_milliseconds(),
-                PoolEventReport(
-                    accepted,
-                    eval.get_objective_function(),
-                    diversity,
-                    eval.get_infeasible_constraints(),
-                ),
-            )
-        )
-        return accepted
-
-    def get_report(self) -> PoolReport:
-        """Get the report of the pool."""
-        self.report.name = self.__class__.__name__
-        return self.report
-
-    @abstractmethod
-    def add_solution(self, solution: Optional[Solution]) -> bool:
-        """Add a solution to the pool (to be implemented by subclasses)."""
-        if solution and solution not in self.solutions:
-            self.solutions.append(solution)
-            return True
-        return False
 
     @abstractmethod
     def get_list(self) -> List[Solution]:
         """Get a list of solutions in the pool."""
         return self.solutions
+
+    @abstractmethod
+    def add_solution(self, solution: Optional[Solution]) -> bool:
+        """Add a solution to the pool (to be implemented by subclasses).
+
+        Tracks the most recent MetaHeuristic subclass that called this method.
+        """
+
+        from oahf.Base.MetaHeuristic import MetaHeuristic
+        from oahf.Utils.Util import Util
+
+        if solution and solution not in self.solutions:
+            # Get the current stack trace
+            stack = inspect.stack()
+
+            # Traverse the stack to find the first class that inherits from MetaHeuristic
+            for frame in stack:
+                # Get the instance (self) and the class associated with the frame
+                instance = frame.frame.f_locals.get("self")
+                if instance and isinstance(instance, MetaHeuristic):
+                    if solution.id not in self._solution_info:
+                        self._solution_info[solution.id] = {}
+
+                    # Store the MetaHeuristic subclass name and the current execution time
+                    self._solution_info[solution.id]["metaheuristic"] = type(
+                        instance
+                    ).__name__
+                    self._solution_info[solution.id][
+                        "execution_time"
+                    ] = Util.get_duration_from_start_timestamp()
+
+                    break
+
+            self.solutions.append(solution)
+            return True
+        return False
 
     def get_best(self, evaluator: Optional[Evaluator] = None) -> Optional[Solution]:
         """
@@ -136,13 +127,16 @@ class Pool(Entity, ABC):
         Returns:
             dict: A structured dictionary representing the Pool.
         """
-        
+
         pool_dict = super().to_dict()
-        
-        pool_dict.update({
-            "solutions": [
-                solution.to_dict() for solution in self.get_list()
-            ],
-        })
-        
+        pool_dict["id"] = self.heuristic_parser_key
+
+        pool_dict.update(
+            {
+                "pool_size": self.count(),
+                "solution_info": self._solution_info,
+                "solutions": [solution.to_dict() for solution in self.get_list()],
+            }
+        )
+
         return pool_dict

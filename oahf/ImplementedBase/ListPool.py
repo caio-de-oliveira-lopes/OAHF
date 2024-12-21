@@ -7,9 +7,13 @@ from oahf.Base.Solution import Solution
 
 class ListPool(Pool):
     def __init__(
-        self, solutions: List[Solution] = [], evaluator: Optional[Evaluator] = None
+        self,
+        solutions: List[Solution] = [],
+        heuristic_parser_key: Optional[int] = None,
+        evaluator: Optional[Evaluator] = None,
     ):
-        super().__init__(solutions, evaluator)
+        super().__init__(solutions, heuristic_parser_key, evaluator)
+        self.name = "ListPool"
 
     def get_solution_at(self, index: int) -> Solution:
         """Get the solution at the specified index."""
@@ -34,8 +38,9 @@ class ListPool(Pool):
 
     def copy(self) -> "ListPool":
         """Create a copy of the pool."""
-        new_pool = ListPool()
-        new_pool.solutions = [sol.copy() for sol in self.solutions]
+        new_pool = ListPool(
+            [sol.copy() for sol in self.solutions], self.heuristic_parser_key
+        )
         new_pool.evaluator = self.evaluator
         return new_pool
 

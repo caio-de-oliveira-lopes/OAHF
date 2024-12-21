@@ -33,19 +33,19 @@ def main(args=sys.argv[1:]) -> None:
     print(Util.line())
 
     heuristic_parser = HeuristicParser()
-    evaluator = AlwabpEvaluator(True, MaxCycleTimeConstraint())
-    heuristic_parser.parse_file(problem_data.heuristic_definition_file, evaluator)
+    evaluator = heuristic_parser.parse_file(problem_data.heuristic_definition_file)
     original_solution: Optional[Solution] = Util.read_input(problem_data)
 
-    if original_solution:
+    if evaluator and original_solution:
         solution = original_solution.copy()
         ThreadManager.initialize(1, problem_data.random_seed)
         final_solution = heuristic_parser.run_definition(solution, evaluator)
-        
-        heuristic_parser.write_pools(problem_data.output_path)
-        
+
+        heuristic_parser.write_pools()
+
         if final_solution:
-            final_solution.write_json(problem_data.output_path)
+            final_solution.write_json()
+            print(final_solution)
 
 
 def create_init_files(root_dir):

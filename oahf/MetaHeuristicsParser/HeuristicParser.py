@@ -76,7 +76,7 @@ class HeuristicParser:
         self.metaheuristics: Dict[int, MetaHeuristic] = {}
         self.ordered_metaheuristics: List[MetaHeuristic] = []
 
-    def parse_file(self, path: Union[Path, str], evaluator: Evaluator):
+    def parse_file(self, path: Union[Path, str]) -> Optional[Evaluator]:
         """
         Reads and parses the configuration file at the given path.
 
@@ -87,12 +87,18 @@ class HeuristicParser:
         with open(path, "r") as file:
             self.definition = json.load(file)
 
-        self.parse_neighborhoods(evaluator)
-        self.parse_neighborhood_selections()
-        self.parse_solution_pools(evaluator)
-        self.parse_metaheuristics(evaluator)
+        evaluator: Optional[Evaluator] = self.parse_evaluator(
+            self.definition["default_evaluator"]
+        )
+        if evaluator:
+            self.parse_neighborhoods(evaluator)
+            self.parse_neighborhood_selections()
+            self.parse_solution_pools(evaluator)
+            self.parse_metaheuristics(evaluator)
 
-        self.fill_ordered_metaheuristics()
+            self.fill_ordered_metaheuristics()
+
+        return evaluator
 
     def fill_ordered_metaheuristics(self):
         """
@@ -117,43 +123,36 @@ class HeuristicParser:
     ) -> Optional[Solution]:
         # Record the start time
         start_time = time.time()
+        Util.set_start_timestamp(start_time)
 
         for mh in self.ordered_metaheuristics:
             origin_pool = (
                 mh.origin_pool
                 if mh.origin_pool is not None
-                else ListPool([initial_sol], evaluator)
+                else ListPool([initial_sol], None, evaluator)
             )
             mh.run_operation(origin_pool, mh.destination_pool)
 
-        # Record the end time
-        end_time = time.time()
-
-        # Calculate the duration
-        duration = end_time - start_time
-
-        hours, remainder = divmod(duration, 3600)
-        minutes, seconds = divmod(remainder, 60)
-
         print(Util.line())
         Util.logger().info(
-            f"Total Execution Time: {int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+            f"Total Execution Time: {Util.get_duration_from_start_timestamp()}"
         )
 
         self.fix_all_solutions_in_pools()
 
-        final_pool = self.ordered_metaheuristics[-1].destination_pool or ListPool(
-            evaluator=evaluator
-        )
-        if final_pool.count() == 0:
-            for pool in list(self.solution_pools.values()):
-                final_pool.add_solution(pool.get_best())
+        if self.ordered_metaheuristics:
+            final_pool = self.ordered_metaheuristics[-1].destination_pool or ListPool(
+                evaluator=evaluator
+            )
+            if final_pool.count() == 0:
+                for pool in list(self.solution_pools.values()):
+                    final_pool.add_solution(pool.get_best())
 
-        return final_pool.get_best()
-    
-    def write_pools(self, output_path: Path) -> None:
+            return final_pool.get_best()
+
+    def write_pools(self) -> None:
         for pool in list(self.solution_pools.values()):
-            pool.write_json(output_path)
+            pool.write_json()
 
     def fix_all_solutions_in_pools(self) -> None:
         """
@@ -299,7 +298,7 @@ class HeuristicParser:
             for p in self.definition["solution_pools"]:
                 if p["name"].lower() == "list_pool":
                     pool_evaluator = self.parse_evaluator(p["parameters"]["evaluator"])
-                    pool = ListPool(evaluator=pool_evaluator)
+                    pool = ListPool([], p["id"], evaluator=pool_evaluator)
                 else:
                     raise ValueError(f"Unavailable solution pool: {p['name']}")
 

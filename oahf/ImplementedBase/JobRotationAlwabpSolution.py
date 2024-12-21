@@ -2,17 +2,20 @@ from typing import List, Optional
 
 from oahf.Base.Solution import Solution
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
+from oahf.ImplementedBase.LpExecutionData import LpExecutionData
 from oahf.Utils.Util import Util
 
 
 class JobRotationAlwabpSolution(Solution):
-    def __init__(self, number_of_periods: int):
+    def __init__(self, number_of_periods: int, lp_execution_data: LpExecutionData):
         super().__init__()
         self.number_of_periods = number_of_periods
         self.period_solutions: List[Optional[AlwabpSolution]] = [
             None
         ] * number_of_periods  # List to hold solutions for each period
         self._distinct_tasks_memo = {}  # Memorization for distinct tasks per worker
+        self.lp_execution_data = lp_execution_data
+        self.name = "JobRotationAlwabpSolution"
 
     def assign_solution_to_period(self, period: int, solution: AlwabpSolution):
         """
@@ -84,7 +87,9 @@ class JobRotationAlwabpSolution(Solution):
 
     def copy(self) -> "JobRotationAlwabpSolution":
         """Creates a copy of the current JobRotationAlwabpSolution."""
-        copy_solution = JobRotationAlwabpSolution(self.number_of_periods)
+        copy_solution = JobRotationAlwabpSolution(
+            self.number_of_periods, self.lp_execution_data
+        )
         copy_solution.period_solutions = [
             solution.copy() if solution else None for solution in self.period_solutions
         ]
@@ -129,15 +134,14 @@ class JobRotationAlwabpSolution(Solution):
         result = [Util.line()]
         result.append("Job Rotation ALWABP Solution:")
         result.append(f"ID: {self.id}")
-        result.append(
-            f"Number of Distinct Tasks:"
-        )
-        
+        result.append(f"{self.lp_execution_data}")
+        result.append(f"Number of Distinct Tasks:")
+
         workers = self.period_solutions[0].workers if self.period_solutions[0] else []
         for w in workers:
             result.append(f"    Worker {w}: {self.calculate_worker_distinct_tasks(w)}")
         result.append(f"    Total: {self.calculate_total_distinct_tasks()}")
-        
+
         result.append(f"Average Cycle Time: {str(int(self.get_average_cycle_time()))}")
         result.append(Util.line())
         for i, sol in enumerate(self.period_solutions):
@@ -151,22 +155,27 @@ class JobRotationAlwabpSolution(Solution):
         Returns:
             dict: A structured dictionary representing the Job Rotation ALWABP solution.
         """
-        
+
         solution_dict = super().to_dict()
-        
-        solution_dict.update({
-            "distinct_tasks_per_worker": {
-                worker: self.calculate_worker_distinct_tasks(worker)
-                for worker in (
-                    self.period_solutions[0].workers if self.period_solutions[0] else []
-                )
-            },
-            "total_distinct_tasks": self.calculate_total_distinct_tasks(),
-            "average_cycle_time": self.get_average_cycle_time(),
-            "period_solutions": [
-                solution.to_dict() if solution is not None else None
-                for solution in self.period_solutions
-            ],
-        })
-        
+
+        solution_dict.update(
+            {
+                "lp_execution_data": self.lp_execution_data.to_dict(),
+                "distinct_tasks_per_worker": {
+                    worker: self.calculate_worker_distinct_tasks(worker)
+                    for worker in (
+                        self.period_solutions[0].workers
+                        if self.period_solutions[0]
+                        else []
+                    )
+                },
+                "total_distinct_tasks": self.calculate_total_distinct_tasks(),
+                "average_cycle_time": self.get_average_cycle_time(),
+                "period_solutions": [
+                    solution.to_dict() if solution is not None else None
+                    for solution in self.period_solutions
+                ],
+            }
+        )
+
         return solution_dict
