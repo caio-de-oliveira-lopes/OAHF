@@ -1334,3 +1334,52 @@ class AlwabpSolution(Solution):
             related_tasks.append(movement.task)
 
         return set(related_tasks)
+
+    def to_random_keys(self) -> List[float]:
+        """
+        Converts the current solution into a random-keys representation suitable for BRKGA.
+
+        Returns:
+            List[float]: A list of random keys representing the solution.
+        """
+        random_keys = []
+        for task in self.tasks:
+            station = self.find_station_for_task(task)
+            worker = self.station_worker_assignment.get(station) if station else None
+            random_keys.append(
+                (worker or 0) / len(self.workers) + (station or 0) / len(self.stations)
+            )
+        return random_keys
+
+    def from_random_keys(self, random_keys: List[float]) -> "AlwabpSolution":
+        """
+        Reconstructs the solution from a random-keys representation.
+
+        Args:
+            random_keys (List[float]): A list of random keys representing the solution.
+
+        Returns:
+            AlwabpSolution: A reconstructed ALWABP solution.
+        """
+        new_solution = self.copy()
+        new_solution.reset()
+
+        for i, key in enumerate(random_keys):
+            task = self.tasks[i]
+            worker = int(key * len(self.workers))
+            station = int((key * len(self.stations)) % len(self.stations))
+
+            if new_solution.can_task_be_assigned_to(task, station, worker):
+                new_solution.add_task_to_station(task, station)
+                new_solution.add_worker_to_station(worker, station)
+
+        return new_solution
+
+    def get_fitness_value(self) -> float:
+        """
+        Evaluates the current solution based on the maximum cycle time.
+
+        Returns:
+            float: The fitness value of the solution.
+        """
+        return self.get_max_cycle_time()

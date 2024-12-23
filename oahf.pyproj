@@ -104,6 +104,7 @@
     <Compile Include="oahf\Logger\Logger.py" />
     <Compile Include="oahf\Logger\__init__.py" />
     <Compile Include="oahf\MetaHeuristicsParser\HeuristicParser.py" />
+    <Compile Include="oahf\MetaHeuristics\BRKGA.py" />
     <Compile Include="oahf\MetaHeuristics\JobRotationLPSelector.py" />
     <Compile Include="oahf\MetaHeuristics\MultipleBestImprovement.py" />
     <Compile Include="oahf\MetaHeuristics\GeneticAlgorithm.py" />

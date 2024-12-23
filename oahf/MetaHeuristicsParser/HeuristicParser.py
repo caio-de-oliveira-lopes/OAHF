@@ -46,6 +46,7 @@ from oahf.ImplementedBase.WorkerSwapNS import WorkerSwapNS
 from oahf.ImplementedBase.WorkerSwapReconstructNS import WorkerSwapReconstructNS
 from oahf.Logger.LogManager import LogManager
 from oahf.MetaHeuristics.BestImprovement import BestImprovement
+from oahf.MetaHeuristics.BRKGA import BRKGA
 from oahf.MetaHeuristics.FirstImprovement import FirstImprovement
 from oahf.MetaHeuristics.GRASP import GRASP
 from oahf.MetaHeuristics.GRC import GRC
@@ -497,6 +498,40 @@ class HeuristicParser:
                         acceptance_criteria,  # type: ignore
                         number_of_periods,
                         gurobi_path,
+                        origin_pool,
+                        destination_pool,
+                    )
+                elif m["name"].lower() == "brkga":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    acceptance_criteria = self.parse_acceptance_criteria(
+                        m["acceptance_criteria"]
+                    )
+                    origin_pool = (
+                        self.solution_pools[m["origin_pool"]]
+                        if "origin_pool" in m
+                        else None
+                    )
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
+
+                    population_size: int = m["parameters"].get("population_size", 100)
+                    elite_fraction: float = m["parameters"].get("elite_fraction", 0.2)
+                    mutant_fraction: float = m["parameters"].get("mutant_fraction", 0.1)
+                    bias: float = m["parameters"].get("bias", 0.7)
+
+                    meta = BRKGA(
+                        thread_id,
+                        stop_criteria,  # type: ignore
+                        evaluator,
+                        acceptance_criteria,  # type: ignore
+                        population_size,
+                        elite_fraction,
+                        mutant_fraction,
+                        bias,
                         origin_pool,
                         destination_pool,
                     )
