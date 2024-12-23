@@ -13,6 +13,7 @@ from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.Commons.ProblemData import ProblemData
 from oahf.ImplementedBase.AlwabpEvaluator import AlwabpEvaluator
 from oahf.ImplementedBase.AlwabpSolution import (
     GraphOrientation,
@@ -63,13 +64,14 @@ class HeuristicParser:
     solution pools, and metaheuristics.
     """
 
-    def __init__(self):
+    def __init__(self, problem_data: ProblemData):
         """
         Initializes the parser with problem data.
 
         Args:
             data (ProblemData): The data required to configure the heuristic components.
         """
+        self.problem_data: ProblemData = problem_data
         self.definition: Dict = {}
         self.neighborhoods: Dict[int, Neighborhood] = {}
         self.neighborhood_selections: Dict[int, NeighborhoodSelection] = {}
@@ -490,6 +492,11 @@ class HeuristicParser:
                         if "destination_pool" in m
                         else None
                     )
+                    tolerance_percentage: Optional[float] = (
+                        float(m["parameters"].get("tolerance_percentage", None))
+                        if m["parameters"].get("tolerance_percentage", None)
+                        else None
+                    )
 
                     meta = JobRotationLPSelector(
                         thread_id,
@@ -498,6 +505,8 @@ class HeuristicParser:
                         acceptance_criteria,  # type: ignore
                         number_of_periods,
                         gurobi_path,
+                        self.problem_data,
+                        tolerance_percentage,
                         origin_pool,
                         destination_pool,
                     )

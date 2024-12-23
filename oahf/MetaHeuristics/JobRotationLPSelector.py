@@ -11,11 +11,13 @@ from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.Commons.ProblemData import ProblemData
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution, GraphOrientation
 from oahf.ImplementedBase.JobRotationAlwabpSolution import JobRotationAlwabpSolution
 from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.LpExecutionData import LpExecutionData
 from oahf.Logger.LogManager import LogManager
+from oahf.Utils.Util import Util
 
 
 class JobRotationLPSelector(MetaHeuristic):
@@ -28,6 +30,8 @@ class JobRotationLPSelector(MetaHeuristic):
         acceptance_criteria: AcceptanceCriteria,
         number_of_periods: int,
         gurobi_path: Path,
+        problem_data: ProblemData,
+        tolerance_percentage: Optional[float] = None,
         origin_pool: Optional[Pool] = None,
         destination_pool: Optional[Pool] = None,
     ):
@@ -41,6 +45,11 @@ class JobRotationLPSelector(MetaHeuristic):
         )
         self.number_of_periods = number_of_periods
         self.gurobi_path = gurobi_path
+        self.problem_data = problem_data
+        self.cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(
+            self.problem_data.cycle_time_path, self.problem_data.file_name
+        )
+        self.tolerance_percentage = tolerance_percentage
 
     def copy(self, thread: int) -> "JobRotationLPSelector":
         """Creates a copy of the current BestImprovement instance."""
@@ -50,7 +59,9 @@ class JobRotationLPSelector(MetaHeuristic):
             self.evaluator,
             self.acceptance_criteria.copy(),
             self.number_of_periods,
-            self.gurobi_path,  # type: ignore
+            self.gurobi_path,
+            self.problem_data,
+            self.tolerance_percentage,
             origin_pool=self.origin_pool.copy() if self.origin_pool else None,
             destination_pool=(
                 self.destination_pool.copy() if self.destination_pool else None
@@ -150,6 +161,13 @@ class JobRotationLPSelector(MetaHeuristic):
                         for j in range(number_of_solutions)
                     )
                 )
+
+                if self.tolerance_percentage is not None:
+                    grb_model.addConstr(
+                        cycle_time_average
+                        <= self.cycle_time_limit * (1 + self.tolerance_percentage),
+                        name="cycle_time_tolerance_constraint",
+                    )
 
                 # Optimize the model
                 grb_model.optimize()

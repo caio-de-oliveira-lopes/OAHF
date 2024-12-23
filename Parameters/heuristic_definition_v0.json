@@ -713,7 +713,8 @@
 			},
 			"parameters": {
 				"number_of_periods": 5,
-				"gurobi_path": "C:\\gurobi1200\\win64\\bin\\gurobi.bat"
+				"gurobi_path": "C:\\gurobi1200\\win64\\bin\\gurobi.bat",
+				"tolerance_percentage": 0.2
 			},
 			"execution_order": 6,
 			"origin_pool": 0,

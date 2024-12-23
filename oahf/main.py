@@ -32,7 +32,7 @@ def main(args=sys.argv[1:]) -> None:
     Util.logger().info(f"Optimizing instance {problem_data.file_name}.")
     print(Util.line())
 
-    heuristic_parser = HeuristicParser()
+    heuristic_parser = HeuristicParser(problem_data)
     evaluator = heuristic_parser.parse_file(problem_data.heuristic_definition_file)
     original_solution: Optional[Solution] = Util.read_input(problem_data)
 

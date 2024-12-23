@@ -1,4 +1,5 @@
 from .BestImprovement import BestImprovement
+from .BRKGA import BRKGA
 from .FirstImprovement import FirstImprovement
 from .GenericMultipleMetaheuristic import GenericMultipleMetaheuristic
 from .GeneticAlgorithm import GeneticAlgorithm
@@ -12,6 +13,7 @@ from .Pertubation import Pertubation
 
 __all__ = [
     "BestImprovement",
+    "BRKGA",
     "FirstImprovement",
     "GenericMultipleMetaheuristic",
     "GeneticAlgorithm",
