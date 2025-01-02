@@ -24,6 +24,29 @@ class Movement(Entity, ABC):
         """Apply the movement to the solution."""
         pass
 
+    @abstractmethod
+    def __eq__(self, other: object) -> bool:
+        """
+        Check equality between two Movement instances.
+
+        Args:
+            other (object): The other instance to compare.
+
+        Returns:
+            bool: True if equal, False otherwise.
+        """
+        pass
+
+    @abstractmethod
+    def __hash__(self) -> int:
+        """
+        Generate a hash for the Movement instance.
+
+        Returns:
+            int: The hash value.
+        """
+        pass
+
     def apply_operation(self) -> bool:
         """Wrapper method to apply the movement and report the outcome."""
         self.report.report_apply_start()

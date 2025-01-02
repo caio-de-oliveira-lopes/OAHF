@@ -116,6 +116,7 @@
     <Compile Include="oahf\MetaHeuristics\GenericMultipleMetaheuristic.py" />
     <Compile Include="oahf\MetaHeuristics\FirstImprovement.py" />
     <Compile Include="oahf\MetaHeuristics\BestImprovement.py" />
+    <Compile Include="oahf\MetaHeuristics\TabuSearch.py" />
     <Compile Include="oahf\MetaHeuristics\__init__.py" />
     <Compile Include="oahf\Utils\EnumUtil.py" />
     <Compile Include="oahf\Utils\PairStore.py" />

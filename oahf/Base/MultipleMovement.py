@@ -24,18 +24,18 @@ class MultipleMovement(Movement):
         return sum(movement.get_cost() for movement in self.movements)
 
     def apply(self) -> bool:
-        """Apply each movement and return whether any movement was successful."""
-        worked = False
+        """Apply each movement and return whether all movements were successful."""
         for movement in self.movements:
-            worked = movement.apply_operation() or worked
-        return worked
+            if not movement.apply_operation():
+                return False
+        return True
 
     def unapply(self) -> bool:
-        """Unapply each movement in reverse order and return whether any movement was successfully unapplied."""
-        worked = False
+        """Unapply each movement in reverse order and return whether all movements were successfully unapplied."""
         for movement in reversed(self.movements):
-            worked = movement.unapply_operation(None) or worked
-        return worked
+            if not movement.unapply_operation(None):
+                return False
+        return True
 
     def set_unapply_inconsistent(self):
         """Override this method as it is not implemented in this class."""
@@ -70,3 +70,34 @@ class MultipleMovement(Movement):
         )
 
         return copied_multiple_movement
+
+    def __eq__(self, other: object) -> bool:
+        """
+        Check equality between two MultipleMovement instances.
+
+        Args:
+            other (object): The other instance to compare.
+
+        Returns:
+            bool: True if equal, False otherwise.
+        """
+        if not isinstance(other, MultipleMovement):
+            return False
+        return (
+            self.solution == other.solution
+            and self.override_cost == other.override_cost
+            and self.movements == other.movements
+        )
+
+    def __hash__(self) -> int:
+        """
+        Generate a hash for the MultipleMovement instance.
+
+        Returns:
+            int: The hash value.
+        """
+        return hash((
+            self.solution,
+            self.override_cost,
+            tuple(self.movements),
+        ))
