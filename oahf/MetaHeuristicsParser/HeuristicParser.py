@@ -53,6 +53,7 @@ from oahf.MetaHeuristics.GRASP import GRASP
 from oahf.MetaHeuristics.GRC import GRC
 from oahf.MetaHeuristics.JobRotationLPSelector import JobRotationLPSelector
 from oahf.MetaHeuristics.MultipleBestImprovement import MultipleBestImprovement
+from oahf.MetaHeuristics.TabuSearch import TabuSearch
 from oahf.Utils.EnumUtil import EnumUtil
 from oahf.Utils.Util import Util
 
@@ -476,10 +477,6 @@ class HeuristicParser:
                     )
                 elif m["name"].lower() == "job_rotation_lp_selector":
                     thread_id = 0
-                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
-                    acceptance_criteria = self.parse_acceptance_criteria(
-                        m["acceptance_criteria"]
-                    )
                     number_of_periods = int(m["parameters"].get("number_of_periods", 1))
                     gurobi_path = Path(m["parameters"].get("gurobi_path", None))
                     origin_pool = (
@@ -500,9 +497,6 @@ class HeuristicParser:
 
                     meta = JobRotationLPSelector(
                         thread_id,
-                        stop_criteria,  # type: ignore
-                        evaluator,
-                        acceptance_criteria,  # type: ignore
                         number_of_periods,
                         gurobi_path,
                         self.problem_data,
@@ -543,6 +537,23 @@ class HeuristicParser:
                         bias,
                         origin_pool,
                         destination_pool,
+                    )
+                elif m["name"].lower() == "tabu":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    acceptance_criteria = self.parse_acceptance_criteria(
+                        m["acceptance_criteria"]
+                    )
+                    ns = self.neighborhood_selections[m["neighborhood_selection"]]
+                    tabu_tenure: int = m["parameters"].get("tabu_tenure", 10)
+
+                    meta = TabuSearch(
+                        thread_id,
+                        stop_criteria,  # type: ignore
+                        evaluator,
+                        acceptance_criteria,  # type: ignore
+                        ns,
+                        tabu_tenure,
                     )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")

@@ -13,9 +13,12 @@ from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Commons.ProblemData import ProblemData
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution, GraphOrientation
+from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import AlwaysAcceptAcceptanceCriteria
+from oahf.ImplementedBase.JobRotationAlwabpEvaluator import JobRotationAlwabpEvaluator
 from oahf.ImplementedBase.JobRotationAlwabpSolution import JobRotationAlwabpSolution
 from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.LpExecutionData import LpExecutionData
+from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
 
@@ -25,9 +28,6 @@ class JobRotationLPSelector(MetaHeuristic):
     def __init__(
         self,
         thread_id: int,
-        stop_criteria: StopCriteria,
-        evaluator: Evaluator,
-        acceptance_criteria: AcceptanceCriteria,
         number_of_periods: int,
         gurobi_path: Path,
         problem_data: ProblemData,
@@ -37,9 +37,9 @@ class JobRotationLPSelector(MetaHeuristic):
     ):
         super().__init__(
             thread_id,
-            stop_criteria,
-            evaluator,
-            acceptance_criteria,
+            NoStopCriteria(),
+            JobRotationAlwabpEvaluator(),
+            AlwaysAcceptAcceptanceCriteria(),
             origin_pool=origin_pool,
             destination_pool=destination_pool,
         )
@@ -55,9 +55,6 @@ class JobRotationLPSelector(MetaHeuristic):
         """Creates a copy of the current BestImprovement instance."""
         return JobRotationLPSelector(
             thread,
-            self.stop_criteria.copy(),
-            self.evaluator,
-            self.acceptance_criteria.copy(),
             self.number_of_periods,
             self.gurobi_path,
             self.problem_data,
