@@ -13,6 +13,15 @@ class Movement(Entity, ABC):
         super().__init__()
         self.report: EfficiencyReport = report
         self.solution: Solution = solution
+        self._tabu_counter_over_iterations: float = 0.25
+
+    @property
+    def tabu_counter_over_iterations(self) -> float:
+        return self._tabu_counter_over_iterations
+
+    @tabu_counter_over_iterations.setter
+    def tabu_counter_over_iterations(self, value: float) -> None:
+        self._tabu_counter_over_iteartions = value
 
     @abstractmethod
     def get_cost(self) -> float:

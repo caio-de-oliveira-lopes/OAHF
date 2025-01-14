@@ -69,3 +69,15 @@ class Evaluation(Entity):
         return self.get_objective_function_value() + sum(
             x.penalty for x in self.constraints if self.constraints
         )
+
+    def update_penalties(self) -> None:
+        """
+        Updates the penalty associated with the constraint type based on the current penalty value:
+        - If the penalty is positive, the associated penalty for the constraint type is doubled.
+        - If the penalty is zero, the associated penalty for the constraint type is halved.
+        """
+        for constraint in self.constraints:
+            if constraint.penalty > 0:
+                constraint.constraint_type().multiply_penalty(2)
+            elif constraint.penalty == 0.0:
+                constraint.constraint_type().multiply_penalty(0.5)

@@ -23,6 +23,9 @@ class MaxPositionalWeightType(Enum):
 
 
 class AlwabpSolution(Solution):
+    _task_station_frequency = {}
+    _worker_station_frequency = {}
+
     def __init__(
         self, number_of_tasks: int, number_of_workers: int, number_of_stations: int
     ) -> None:
@@ -1383,3 +1386,193 @@ class AlwabpSolution(Solution):
             float: The fitness value of the solution.
         """
         return self.get_max_cycle_time()
+
+    @classmethod
+    def update_task_station_frequencies(
+        cls,
+        solution: "AlwabpSolution",
+        task_station_frequency: Dict[int, Dict[int, int]],
+    ) -> None:
+        """
+        Updates a global frequency dictionary to count how many times each task
+        has been allocated to specific stations across multiple solutions.
+
+        Args:
+            solution (AlwabpSolution): The ALWABP solution to process.
+            task_station_frequency (Dict[int, Dict[int, int]]): A nested dictionary where:
+                - Key is the task ID.
+                - Value is another dictionary where:
+                    - Key is the station ID.
+                    - Value is the count of times the task has been allocated to that station.
+        """
+        # Iterate over all stations and their tasks in the solution
+        for station, tasks in solution.station_tasks_assignment.items():
+            for task in tasks:
+                # Ensure the task exists in the task_station_frequency dictionary
+                if task not in task_station_frequency:
+                    task_station_frequency[task] = {}
+
+                # Increment the count for the station where the task is allocated
+                if station not in task_station_frequency[task]:
+                    task_station_frequency[task][station] = 0
+                task_station_frequency[task][station] += 1
+
+    @classmethod
+    def get_most_frequent_task_in_station(
+        cls, task_station_frequency: Dict[int, Dict[int, int]], station: int
+    ) -> int:
+        """
+        Finds the task that appeared most frequently in a given station.
+
+        Args:
+            task_station_frequency (Dict[int, Dict[int, int]]): Frequency dictionary
+                where the key is the task ID, and the value is another dictionary with:
+                - Key: Station ID.
+                - Value: Count of times the task was allocated to the station.
+            station (int): The station ID to check.
+
+        Returns:
+            int: The ID of the task that appeared most frequently in the station.
+                 Returns -1 if no tasks were assigned to the station.
+        """
+        max_frequency = -1
+        most_frequent_task = -1
+
+        # Iterate through all tasks to find the one with the highest frequency in the station
+        for task, station_data in task_station_frequency.items():
+            if station in station_data and station_data[station] > max_frequency:
+                max_frequency = station_data[station]
+                most_frequent_task = task
+
+        return most_frequent_task
+
+    @classmethod
+    def get_least_frequent_task_in_station(
+        cls, task_station_frequency: Dict[int, Dict[int, int]], station: int
+    ) -> int:
+        """
+        Finds the task that appeared least frequently in a given station.
+
+        Args:
+            task_station_frequency (Dict[int, Dict[int, int]]): Frequency dictionary
+                where the key is the task ID, and the value is another dictionary with:
+                - Key: Station ID.
+                - Value: Count of times the task was allocated to the station.
+            station (int): The station ID to check.
+
+        Returns:
+            int: The ID of the task that appeared least frequently in the station.
+                 Returns -1 if no tasks were assigned to the station.
+        """
+        min_frequency = float("inf")
+        least_frequent_task = -1
+
+        # Iterate through all tasks to find the one with the lowest frequency in the station
+        for task, station_data in task_station_frequency.items():
+            if station in station_data and station_data[station] < min_frequency:
+                min_frequency = station_data[station]
+                least_frequent_task = task
+
+        # If no task was found in the station, return -1
+        return least_frequent_task if min_frequency < float("inf") else -1
+
+    @classmethod
+    def update_worker_station_frequencies(
+        cls,
+        solution: "AlwabpSolution",
+        worker_station_frequency: Dict[int, Dict[int, int]],
+    ) -> None:
+        """
+        Updates a global frequency dictionary to count how many times each worker
+        has been allocated to specific stations across multiple solutions.
+
+        Args:
+            solution (AlwabpSolution): The ALWABP solution to process.
+            worker_station_frequency (Dict[int, Dict[int, int]]): A nested dictionary where:
+                - Key is the worker ID.
+                - Value is another dictionary where:
+                    - Key is the station ID.
+                    - Value is the count of times the worker has been assigned to that station.
+        """
+        # Iterate over all stations and their assigned workers
+        for station, worker in solution.station_worker_assignment.items():
+            if worker is not None:
+                # Ensure the worker exists in the worker_station_frequency dictionary
+                if worker not in worker_station_frequency:
+                    worker_station_frequency[worker] = {}
+
+                # Increment the count for the station where the worker is assigned
+                if station not in worker_station_frequency[worker]:
+                    worker_station_frequency[worker][station] = 0
+                worker_station_frequency[worker][station] += 1
+
+    @classmethod
+    def get_most_frequent_worker_in_station(
+        cls, worker_station_frequency: Dict[int, Dict[int, int]], station: int
+    ) -> int:
+        """
+        Finds the worker that appeared most frequently in a given station.
+
+        Args:
+            worker_station_frequency (Dict[int, Dict[int, int]]): Frequency dictionary
+                where the key is the worker ID, and the value is another dictionary with:
+                - Key: Station ID.
+                - Value: Count of times the worker was allocated to the station.
+            station (int): The station ID to check.
+
+        Returns:
+            int: The ID of the worker that appeared most frequently in the station.
+                 Returns -1 if no workers were assigned to the station.
+        """
+        max_frequency = -1
+        most_frequent_worker = -1
+
+        # Iterate through all workers to find the one with the highest frequency in the station
+        for worker, station_data in worker_station_frequency.items():
+            if station in station_data and station_data[station] > max_frequency:
+                max_frequency = station_data[station]
+                most_frequent_worker = worker
+
+        return most_frequent_worker
+
+    @classmethod
+    def get_least_frequent_worker_in_station(
+        cls, worker_station_frequency: Dict[int, Dict[int, int]], station: int
+    ) -> int:
+        """
+        Finds the worker that appeared least frequently in a given station.
+
+        Args:
+            worker_station_frequency (Dict[int, Dict[int, int]]): Frequency dictionary
+                where the key is the worker ID, and the value is another dictionary with:
+                - Key: Station ID.
+                - Value: Count of times the worker was allocated to the station.
+            station (int): The station ID to check.
+
+        Returns:
+            int: The ID of the worker that appeared least frequently in the station.
+                 Returns -1 if no workers were assigned to the station.
+        """
+        min_frequency = float("inf")
+        least_frequent_worker = -1
+
+        # Iterate through all workers to find the one with the lowest frequency in the station
+        for worker, station_data in worker_station_frequency.items():
+            if station in station_data and station_data[station] < min_frequency:
+                min_frequency = station_data[station]
+                least_frequent_worker = worker
+
+        # If no worker was found in the station, return -1
+        return least_frequent_worker if min_frequency < float("inf") else -1
+
+    @classmethod
+    def update_intensification_diversification_structures(
+        cls, solution: "AlwabpSolution"
+    ) -> None:
+        cls.update_task_station_frequencies(solution, cls._task_station_frequency)
+        cls.update_worker_station_frequencies(solution, cls._worker_station_frequency)
+
+    @classmethod
+    def reset_intensification_diversification_structures(cls) -> None:
+        cls._task_station_frequency = {}
+        cls._worker_station_frequency = {}

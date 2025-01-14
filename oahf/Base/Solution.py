@@ -197,3 +197,13 @@ class Solution(Entity, ABC):
             List[float]: A list of fitness values corresponding to each solution.
         """
         return [solution.get_fitness_value() for solution in population]
+
+    @classmethod
+    def update_intensification_diversification_structures(
+        cls, solution: "Solution"
+    ) -> None:
+        pass
+
+    @classmethod
+    def reset_intensification_diversification_structures(cls) -> None:
+        pass

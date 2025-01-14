@@ -1,13 +1,13 @@
-from typing import Dict, List, Optional, Tuple, Type
 from abc import ABC, abstractmethod
+from typing import Dict, List, Optional, Tuple, Type
 
 from oahf.Base.Constraint import Constraint
 from oahf.Base.EfficiencyReport import EfficiencyReport, Event
+from oahf.Base.Entity import Entity
 from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Logger.LogManager import LogManager
-from oahf.Base.Entity import Entity
 
 
 class Neighborhood(Entity, ABC):
@@ -28,14 +28,14 @@ class Neighborhood(Entity, ABC):
         self.stop_criteria: Optional["StopCriteria"] = stop_criteria
         self.is_perturbation: bool = is_perturbation
         self._allow_infeasible_movements: bool = False
-        
+
     @property
     def allow_infeasible_movements(self) -> bool:
-        return self.allow_infeasible_movements
-    
+        return self._allow_infeasible_movements
+
     @allow_infeasible_movements.setter
     def allow_infeasible_movements(self, value: bool) -> None:
-        self.allow_infeasible_movements = value
+        self._allow_infeasible_movements = value
 
     def copy(self) -> "Neighborhood":
         """Abstract method to create a copy of the neighborhood."""

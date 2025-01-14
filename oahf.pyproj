@@ -75,6 +75,7 @@
     <Compile Include="oahf\ImplementedBase\LpExecutionData.py" />
     <Compile Include="oahf\ImplementedBase\MaxCycleTimeStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\NoStopCriteria.py" />
+    <Compile Include="oahf\ImplementedBase\PrecedenceConstraint.py" />
     <Compile Include="oahf\ImplementedBase\RearrangeCriticalTaskNS.py" />
     <Compile Include="oahf\ImplementedBase\TasksUnassignedStopCriteria.py" />
     <Compile Include="oahf\ImplementedBase\TaskSwapNS.py" />
@@ -95,6 +96,7 @@
     <Compile Include="oahf\ImplementedBase\BetterAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\WorkerSwapNS.py" />
     <Compile Include="oahf\ImplementedBase\WorkerSwapReconstructNS.py" />
+    <Compile Include="oahf\ImplementedBase\WorkerTaskConstraint.py" />
     <Compile Include="oahf\ImplementedBase\__init__.py" />
     <Compile Include="oahf\Logger\JsonListFileHandler.py" />
     <Compile Include="oahf\main.py" />

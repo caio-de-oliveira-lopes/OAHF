@@ -182,6 +182,8 @@ class WorkerSwapReconstructNS(Neighborhood):
                                 self.solution, self.report, full_move_composition
                             )
 
+                            move.tabu_counter_over_iterations = 0.5
+
                             yield move  # Return the composed movement.
 
                         # Revert the worker swap if reconstruction was invalid.

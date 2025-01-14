@@ -3,20 +3,30 @@ from typing import Optional
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
+from oahf.Base.Movement import Movement
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
+from oahf.ImplementedBase.ListSelection import ListSelection
+from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
+from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
 from oahf.Logger.LogManager import LogManager
+from oahf.MetaHeuristics.BestImprovement import BestImprovement
+
 
 class TabuSearch(MetaHeuristic):
     def __init__(
         self,
         thread_id: int,
-        stop_criteria: StopCriteria,
+        stop_criteria: StopTimeIterationCriteria,
         evaluator: Evaluator,
         acceptance_criteria: AcceptanceCriteria,
         ns: NeighborhoodSelection,
-        tabu_tenure: int,
+        intensification_criteria: StopTimeIterationCriteria,
+        second_level_ns: NeighborhoodSelection,
+        intensification_ns: NeighborhoodSelection,
+        diversification_ns: NeighborhoodSelection,
     ) -> None:
         """
         Initializes the TabuSearch metaheuristic.
@@ -30,18 +40,24 @@ class TabuSearch(MetaHeuristic):
             tabu_tenure (int): The number of iterations a move remains in the tabu list.
         """
         super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, ns)
-        self.tabu_list = []  # List to store tabu moves
-        self.tabu_tenure = tabu_tenure
+        self.tabu_list = TabuSearch.TabuTenure()
+        self.intensification_criteria = intensification_criteria
+        self.second_level_ns = second_level_ns
+        self.intensification_ns = intensification_ns
+        self.diversification_ns = diversification_ns
 
     def copy(self, thread: int) -> "MetaHeuristic":
         """Creates a copy of the current TabuSearch instance."""
         return TabuSearch(
             thread,
-            self.stop_criteria.copy(),
+            self.stop_criteria.copy(),  # type: ignore
             self.evaluator,
             self.acceptance_criteria.copy(),
             self.neighborhood_selection.copy(),  # type: ignore
-            self.tabu_tenure,
+            self.intensification_criteria.copy(),  # type: ignore
+            self.second_level_ns.copy(),
+            self.intensification_ns.copy(),
+            self.diversification_ns.copy(),
         )
 
     def run(self, sol: Solution) -> Solution:
@@ -49,55 +65,122 @@ class TabuSearch(MetaHeuristic):
         best_sol = sol.copy()
         curr_sol = best_sol
         best_eval = self.evaluator.evaluate(best_sol)
-        
+
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
+        type(best_sol).reset_intensification_diversification_structures()
+
+        counter = 0
 
         while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]):  # type: ignore
+            if counter % self.neighborhood_selection.num_neighborhoods() == 0:  # type: ignore
+                curr_eval = self.evaluator.evaluate(curr_sol)
+                curr_eval.update_penalties()
             try:
                 if ns is None:
                     break
-                
+
                 ns.allow_infeasible_movements = True
                 build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
 
                 if build:
+                    counter += 1
                     best_move = None
                     best_move_eval = None
 
-                    while (move := ns.get_move_operation()) is not None and not self.stop_on_evaluations([best_eval]):
-                        if move not in self.tabu_list:
-                            worked = move.apply_operation()
-                            if worked:
-                                curr_eval = self.evaluator.evaluate(curr_sol)
+                    while (
+                        move := ns.get_move_operation()
+                    ) is not None and not self.stop_on_evaluations([best_eval]):
+                        worked = move.apply_operation()
+                        if worked:
+                            curr_eval = self.evaluator.evaluate(curr_sol)
 
-                                # TODO: make the new constraints soft constraints, so they'll pass by
-                                if best_move_eval is not None and self.acceptance_criteria.accept(best_move_eval, curr_eval, curr_sol):
+                            if not curr_eval.infeasible():
+                                type(
+                                    curr_sol
+                                ).update_intensification_diversification_structures(
+                                    curr_sol
+                                )
+
+                            if (
+                                best_move_eval is not None
+                                and self.acceptance_criteria.accept(
+                                    best_move_eval, curr_eval, curr_sol
+                                )
+                            ):
+                                if (
+                                    not curr_eval.infeasible()
+                                    and move in self.tabu_list
+                                ):
+
+                                    best_improv = BestImprovement(
+                                        self.thread_id,
+                                        NoStopCriteria(),
+                                        self.evaluator,
+                                        self.acceptance_criteria,
+                                        self.second_level_ns,
+                                    )
+
+                                    curr_sol = best_improv.run(curr_sol)
+
+                                    if self.acceptance_criteria.accept(
+                                        best_eval, curr_eval, curr_sol
+                                    ):
+                                        best_sol = curr_sol.copy()
+                                        best_eval = curr_eval
+                                        break
+                                else:
                                     best_move_eval = curr_eval
                                     best_move = move
 
-                                move.unapply_operation(curr_eval)
-                                self.evaluator.update_evaluation_after_unapply(curr_sol)
+                            move.unapply_operation(curr_eval)
+                            self.evaluator.update_evaluation_after_unapply(curr_sol)
 
-                            self.stop_criteria.increment_counter()
+                    self.stop_criteria.increment_counter()
+                    self.intensification_criteria.increment_counter()
 
                     if best_move:
                         best_move.apply_operation()
                         curr_eval = self.evaluator.evaluate(curr_sol)
-                        
+
                         # Update best solution if necessary
-                        if self.acceptance_criteria.accept(best_eval, curr_eval, curr_sol):
+                        if self.acceptance_criteria.accept(
+                            best_eval, curr_eval, curr_sol
+                        ):
                             best_sol = curr_sol.copy()
                             best_eval = curr_eval
 
                         # Add move to tabu list and enforce tabu tenure
-                        self.tabu_list.append(best_move)
-                        if len(self.tabu_list) > self.tabu_tenure:
-                            self.tabu_list.pop(0)
+                        self.tabu_list.add_element(
+                            best_move, self.get_tabu_iterations_block(best_move)
+                        )
+                        self.tabu_list.decrement_and_clean()
+
+                    # Apply intensification or diversification strategy
+                    selected_ns = (
+                        self.intensification_ns
+                        if self.intensification_criteria.stop()
+                        else self.diversification_ns
+                    )
+
+                    best_improv = BestImprovement(
+                        self.thread_id,
+                        NoStopCriteria(),
+                        self.evaluator,
+                        self.acceptance_criteria,
+                        selected_ns,
+                    )
+
+                    curr_sol = best_improv.run(curr_sol)
+
+                    # Update best solution if necessary
+                    if self.acceptance_criteria.accept(best_eval, curr_eval, curr_sol):
+                        best_sol = curr_sol.copy()
+                        best_eval = curr_eval
 
                 if self.log_solutions:
                     self.log_best_solution(best_eval)
-                    
+
                 ns.allow_infeasible_movements = False
 
             except Exception as ex:
@@ -105,4 +188,60 @@ class TabuSearch(MetaHeuristic):
                 curr_sol = best_sol.copy()
                 ns.allow_infeasible_movements = False
 
+        type(best_sol).reset_intensification_diversification_structures()
+
         return best_sol
+
+    def get_tabu_iterations_block(self, movement: Movement) -> int:
+        stop_criteria = self.get_stop_criteria()
+        iterations = 1000
+
+        if (
+            isinstance(stop_criteria, StopTimeIterationCriteria)
+            and stop_criteria.max_iterations
+        ):
+            iterations = stop_criteria.max_iterations
+
+        return int(iterations * movement.tabu_counter_over_iterations)
+
+    class TabuTenure:
+        def __init__(self):
+            # Dictionary to store elements and their counters
+            self.elements = {}
+
+        def add_element(self, element, iterations):
+            """
+            Adds an element to the structure with a given counter value.
+            """
+            if element not in self.elements:
+                self.elements[element] = iterations
+
+        def decrement_and_clean(self):
+            """
+            Decrements all counters and removes elements with a counter of zero.
+            """
+            to_remove = []
+            for element in self.elements:
+                self.elements[element] -= 1  # Decrement the counter
+                if self.elements[element] <= 0:
+                    to_remove.append(element)  # Mark for removal
+
+            # Remove elements with zero counters
+            for element in to_remove:
+                del self.elements[element]
+
+        def get_elements(self):
+            """
+            Returns the list of remaining elements.
+            """
+            return list(self.elements.keys())
+
+        def __contains__(self, item):
+            """
+            Implements the 'in' operator for this class.
+            Returns True if the element is in the structure; False otherwise.
+            """
+            return item in self.elements
+
+        def reset(self):
+            self.elements = {}

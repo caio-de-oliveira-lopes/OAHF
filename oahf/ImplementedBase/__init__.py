@@ -20,6 +20,7 @@ from .LpExecutionData import LpExecutionData
 from .MaxCycleTimeConstraint import MaxCycleTimeConstraint
 from .MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
 from .NoStopCriteria import NoStopCriteria
+from .PrecedenceConstraint import PrecedenceConstraint
 from .ProbabilityListSelection import ProbabilityListSelection
 from .RandomListSelection import RandomListSelection
 from .RearrangeCriticalTaskNS import RearrangeCriticalTaskNS
@@ -32,6 +33,7 @@ from .ThresholdAcceptance import ThresholdAcceptance
 from .WorkersUnassignedStopCriteria import WorkersUnassignedStopCriteria
 from .WorkerSwapNS import WorkerSwapNS
 from .WorkerSwapReconstructNS import WorkerSwapReconstructNS
+from .WorkerTaskConstraint import WorkerTaskConstraint
 
 __all__ = [
     "AlwabpEvaluation",
@@ -56,6 +58,7 @@ __all__ = [
     "MaxCycleTimeConstraint",
     "MaxCycleTimeStopCriteria",
     "NoStopCriteria",
+    "PrecedenceConstraint",
     "ProbabilityListSelection",
     "RandomListSelection",
     "RearrangeCriticalTaskNS",
@@ -68,4 +71,5 @@ __all__ = [
     "WorkersUnassignedStopCriteria",
     "WorkerSwapNS",
     "WorkerSwapReconstructNS",
+    "WorkerTaskConstraint",
 ]

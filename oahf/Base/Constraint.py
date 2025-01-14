@@ -27,3 +27,21 @@ class Constraint(Entity, ABC):
         :return: A ConstraintEvaluation object (default behavior is to ignore stop criteria).
         """
         return self.evaluate(solution)
+
+    @classmethod
+    @abstractmethod
+    def multiply_penalty(cls, multiplier: float) -> None:
+        """
+        Adjust the penalty multiplier for the constraint violations.
+        :param multiplier: Multiplier for the penalty value.
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
+    def set_penalty(cls, value: float) -> None:
+        """
+        Set the penalty value for the constraint violations.
+        :param value: Penalty value.
+        """
+        pass

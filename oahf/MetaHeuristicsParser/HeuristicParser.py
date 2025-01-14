@@ -545,7 +545,25 @@ class HeuristicParser:
                         m["acceptance_criteria"]
                     )
                     ns = self.neighborhood_selections[m["neighborhood_selection"]]
-                    tabu_tenure: int = m["parameters"].get("tabu_tenure", 10)
+                    intensification_criteria = self.parse_stop_criteria(
+                        m["parameters"]["intensification_criteria"]
+                    )
+                    second_level_ns = self.neighborhood_selections[
+                        m["parameters"]["second_neighborhood_selection"]
+                    ]
+                    intensification_ns = self.neighborhood_selections[
+                        m["parameters"]["intensification_neighborhood_selection"]
+                    ]
+                    diversification_ns = self.neighborhood_selections[
+                        m["parameters"]["diversification_neighborhood_selection"]
+                    ]
+
+                    if not isinstance(
+                        intensification_criteria, StopTimeIterationCriteria
+                    ):
+                        raise ValueError(
+                            f"Intensification Criteria must be StopTimeIterationCriteria. Metaheuristic {m['id']}: {m['name']}"
+                        )
 
                     meta = TabuSearch(
                         thread_id,
@@ -553,7 +571,10 @@ class HeuristicParser:
                         evaluator,
                         acceptance_criteria,  # type: ignore
                         ns,
-                        tabu_tenure,
+                        intensification_criteria,
+                        second_level_ns,
+                        intensification_ns,
+                        diversification_ns,
                     )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")
