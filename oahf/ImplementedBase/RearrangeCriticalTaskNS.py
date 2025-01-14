@@ -34,7 +34,7 @@ class RearrangeCriticalTaskNS(Neighborhood):
         self.solution: Optional[AlwabpSolution] = None
         self.thread_id: int = 0
         self.cost_function = None
-        self.graph_orientation = graph_orientation
+        self.graph_orientation: GraphOrientation = graph_orientation
 
     def build_neighborhood(self, thread_id: int, solution: AlwabpSolution) -> bool:
         """
@@ -104,12 +104,15 @@ class RearrangeCriticalTaskNS(Neighborhood):
                 ]
                 # Iterate over non-critical workstations
                 for ncw in self.non_critical_workstations:
-                    # Retrieve tasks that can be rearranged while maintaining precedence constraints
-                    available_tasks_to_rearrange = [
-                        task
-                        for task in tasks_on_critical_station
-                        if self.solution.can_task_be_assigned_to(task, ncw)
-                    ]
+                    if self.allow_infeasible_movements:
+                        available_tasks_to_rearrange = tasks_on_critical_station
+                    else:
+                        # Retrieve tasks that can be rearranged while maintaining precedence constraints
+                        available_tasks_to_rearrange = [
+                            task
+                            for task in tasks_on_critical_station
+                            if self.solution.can_task_be_assigned_to(task, ncw)
+                        ]
 
                     for task in available_tasks_to_rearrange:
                         # Define the removal and insertion movements

@@ -145,15 +145,16 @@ class TaskSwapNS(Neighborhood):
                                     [test_move_3, test_move_4],
                                 )
 
-                                # Apply the second movement and check feasibility.
-                                if (
-                                    reinsertion_test_2.apply()
-                                    and solution_copy.can_task_be_assigned_to(
+                                # Apply the second movement and check feasibility. 
+                                # Checks feasibility only if self.allow_infeasible_movements is not set
+                                if (reinsertion_test_2.apply() 
+                                    and (self.allow_infeasible_movements 
+                                    or (solution_copy.can_task_be_assigned_to(
                                         task_ws1, ws2
                                     )
                                     and solution_copy.can_task_be_assigned_to(
                                         task_ws2, ws1
-                                    )
+                                    )))
                                 ):
                                     # Movements are copied to operate on the original solution.
                                     reinsertion_move_1 = reinsertion_test_1.copy(

@@ -100,7 +100,6 @@ class AlwabpInsertionMovement(Movement):
             self.task == other.task
             and self.worker == other.worker
             and self.station == other.station
-            and self.solution is other.solution
         )
 
     def __hash__(self) -> int:
@@ -111,4 +110,4 @@ class AlwabpInsertionMovement(Movement):
         Returns:
             int: Hash value for the instance.
         """
-        return hash((self.task, self.worker, self.station, id(self.solution)))
+        return hash((self.task, self.worker, self.station))

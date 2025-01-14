@@ -57,12 +57,13 @@ class TabuSearch(MetaHeuristic):
             try:
                 if ns is None:
                     break
-
+                
+                ns.allow_infeasible_movements = True
                 build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
 
                 if build:
                     best_move = None
-                    best_eval = self.evaluator.evaluate(best_sol)
+                    best_move_eval = None
 
                     while (move := ns.get_move_operation()) is not None and not self.stop_on_evaluations([best_eval]):
                         if move not in self.tabu_list:
@@ -70,8 +71,9 @@ class TabuSearch(MetaHeuristic):
                             if worked:
                                 curr_eval = self.evaluator.evaluate(curr_sol)
 
-                                if best_eval is not None and self.acceptance_criteria.accept(best_eval, curr_eval, curr_sol):
-                                    best_eval = curr_eval
+                                # TODO: make the new constraints soft constraints, so they'll pass by
+                                if best_move_eval is not None and self.acceptance_criteria.accept(best_move_eval, curr_eval, curr_sol):
+                                    best_move_eval = curr_eval
                                     best_move = move
 
                                 move.unapply_operation(curr_eval)
@@ -82,7 +84,7 @@ class TabuSearch(MetaHeuristic):
                     if best_move:
                         best_move.apply_operation()
                         curr_eval = self.evaluator.evaluate(curr_sol)
-
+                        
                         # Update best solution if necessary
                         if self.acceptance_criteria.accept(best_eval, curr_eval, curr_sol):
                             best_sol = curr_sol.copy()
@@ -95,9 +97,12 @@ class TabuSearch(MetaHeuristic):
 
                 if self.log_solutions:
                     self.log_best_solution(best_eval)
+                    
+                ns.allow_infeasible_movements = False
 
             except Exception as ex:
                 LogManager.something_went_wrong(self.__class__.__name__, ex)
                 curr_sol = best_sol.copy()
+                ns.allow_infeasible_movements = False
 
         return best_sol
