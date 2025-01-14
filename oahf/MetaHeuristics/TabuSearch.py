@@ -1,14 +1,9 @@
-from typing import Optional
-
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Movement import Movement
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Solution import Solution
-from oahf.Base.StopCriteria import StopCriteria
-from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
-from oahf.ImplementedBase.ListSelection import ListSelection
 from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
 from oahf.Logger.LogManager import LogManager
@@ -68,9 +63,11 @@ class TabuSearch(MetaHeuristic):
 
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
+        self.intensification_criteria.reset()
         type(best_sol).reset_intensification_diversification_structures()
 
         counter = 0
+        intensification = True
 
         while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]):  # type: ignore
             if counter % self.neighborhood_selection.num_neighborhoods() == 0:  # type: ignore
@@ -95,7 +92,10 @@ class TabuSearch(MetaHeuristic):
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)
 
-                            if not curr_eval.infeasible():
+                            if (
+                                not curr_eval.infeasible()
+                                and not curr_eval.has_penalty()
+                            ):
                                 type(
                                     curr_sol
                                 ).update_intensification_diversification_structures(
@@ -110,6 +110,7 @@ class TabuSearch(MetaHeuristic):
                             ):
                                 if (
                                     not curr_eval.infeasible()
+                                    and not curr_eval.has_penalty()
                                     and move in self.tabu_list
                                 ):
 
@@ -157,26 +158,35 @@ class TabuSearch(MetaHeuristic):
                         self.tabu_list.decrement_and_clean()
 
                     # Apply intensification or diversification strategy
-                    selected_ns = (
-                        self.intensification_ns
-                        if self.intensification_criteria.stop()
-                        else self.diversification_ns
-                    )
 
-                    best_improv = BestImprovement(
-                        self.thread_id,
-                        NoStopCriteria(),
-                        self.evaluator,
-                        self.acceptance_criteria,
-                        selected_ns,
-                    )
+                    if self.intensification_criteria.stop():
 
-                    curr_sol = best_improv.run(curr_sol)
+                        self.intensification_criteria.reset()
 
-                    # Update best solution if necessary
-                    if self.acceptance_criteria.accept(best_eval, curr_eval, curr_sol):
-                        best_sol = curr_sol.copy()
-                        best_eval = curr_eval
+                        selected_ns = (
+                            self.intensification_ns
+                            if intensification
+                            else self.diversification_ns
+                        )
+
+                        intensification = not intensification
+
+                        best_improv = BestImprovement(
+                            self.thread_id,
+                            NoStopCriteria(),
+                            self.evaluator,
+                            self.acceptance_criteria,
+                            selected_ns,
+                        )
+
+                        curr_sol = best_improv.run(curr_sol)
+
+                        # Update best solution if necessary
+                        if self.acceptance_criteria.accept(
+                            best_eval, curr_eval, curr_sol
+                        ):
+                            best_sol = curr_sol.copy()
+                            best_eval = curr_eval
 
                 if self.log_solutions:
                     self.log_best_solution(best_eval)

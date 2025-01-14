@@ -81,3 +81,9 @@ class Evaluation(Entity):
                 constraint.constraint_type().multiply_penalty(2)
             elif constraint.penalty == 0.0:
                 constraint.constraint_type().multiply_penalty(0.5)
+
+    def has_penalty(self) -> bool:
+        for constraint in self.constraints:
+            if constraint.penalty != 0.0:
+                return True
+        return False

@@ -66,6 +66,10 @@
     <Compile Include="oahf\ImplementedBase\AlwabpSolution.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpEvaluator.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpEvaluation.py" />
+    <Compile Include="oahf\ImplementedBase\AlwabpTaskDiversificationNS.py" />
+    <Compile Include="oahf\ImplementedBase\AlwabpTaskIntensificationNS.py" />
+    <Compile Include="oahf\ImplementedBase\AlwabpWorkerDiversificationNS.py" />
+    <Compile Include="oahf\ImplementedBase\AlwabpWorkerIntensificationNS.py" />
     <Compile Include="oahf\ImplementedBase\AlwabpWorkerOrientedInsertNS.py" />
     <Compile Include="oahf\ImplementedBase\AlwaysAcceptAcceptanceCriteria.py" />
     <Compile Include="oahf\ImplementedBase\ConsecutiveTaskSwapNS.py" />
