@@ -46,8 +46,6 @@ class BestImprovement(MetaHeuristic):
         curr_sol = best_sol
         best_eval = self.evaluator.evaluate(best_sol)
 
-        self.evaluator.save_evaluation_state(curr_sol)
-
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
 
@@ -78,7 +76,6 @@ class BestImprovement(MetaHeuristic):
                                 best_eval = curr_eval
 
                             move.unapply_operation(curr_eval)
-                            self.evaluator.update_evaluation_after_unapply(curr_sol)
 
                         self.stop_criteria.increment_counter()
 
@@ -89,5 +86,4 @@ class BestImprovement(MetaHeuristic):
                 LogManager.something_went_wrong(self.__class__.__name__, ex)
                 curr_sol = best_sol.copy()
 
-        self.evaluator.save_evaluation_state(best_sol)
         return best_sol
