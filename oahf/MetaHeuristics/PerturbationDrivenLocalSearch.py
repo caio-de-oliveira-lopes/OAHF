@@ -25,11 +25,16 @@ class PerturbationDrivenLocalSearch(MetaHeuristic):
         Initializes the PerturbationDrivenLocalSearch metaheuristic.
 
         Args:
-            thread_id (int): Identifier for the thread.
-            stop_criteria (StopCriteria): The stopping criteria for the algorithm.
-            evaluator (Evaluator): The evaluator used to assess solutions.
-            acceptance_criteria (AcceptanceCriteria): The acceptance criteria for solutions.
-            perturbation (Pertubation): Perturbation mechanism applied before local search.
+            thread_id (int): The thread identifier, used to manage thread-specific operations.
+            stop_criteria (StopCriteria): Criteria that determine when the algorithm should stop 
+                iterating.
+            evaluator (Evaluator): An object responsible for evaluating the quality of solutions.
+            acceptance_criteria (AcceptanceCriteria): Criteria to decide whether a new solution 
+                should be accepted into the current set of solutions.
+            perturbation (Pertubation): A mechanism used to apply controlled changes to solutions, 
+                helping the algorithm escape local optima by diversifying the search space.
+            local_search (MetaHeuristic): A local search metaheuristic used to intensively improve 
+                the solutions generated after perturbation.
         """
         super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, None, [perturbation, local_search])
         self.perturbation = perturbation

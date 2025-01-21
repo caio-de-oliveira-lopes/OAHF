@@ -19,15 +19,21 @@ class Pertubation(MetaHeuristic):
         acceptance_criteria: AcceptanceCriteria,
         accept_infeasible: bool,
     ) -> None:
-        """Initialize the Pertubation meta-heuristic.
+        """
+        Initialize the Perturbation metaheuristic.
 
         Args:
-            thread_id (int): The ID of the thread.
-            stop (StopCriteria): The stopping criteria for the algorithm.
-            evaluator (Evaluator): The evaluator used to assess solutions.
-            ns (NeighborhoodSelection): The neighborhood selection method.
-            accept_infeasible (bool): Whether to accept infeasible solutions.
-            criteria (AcceptanceCriteria): The acceptance criteria for solutions.
+            thread_id (int): The thread identifier, used to manage thread-specific operations.
+            stop (StopCriteria): Criteria that determine when the Perturbation algorithm should stop 
+                iterating.
+            evaluator (Evaluator): An object responsible for evaluating the quality of solutions.
+            ns (NeighborhoodSelection): The neighborhood selection strategy used to explore 
+                the solution space during the algorithm's execution.
+            acceptance_criteria (AcceptanceCriteria): Criteria for determining whether a new solution 
+                should be accepted into the current set of solutions.
+            accept_infeasible (bool): A flag indicating whether infeasible solutions can be accepted, 
+                allowing the algorithm to explore areas outside the feasible region to potentially 
+                escape local optima.
         """
         super().__init__(thread_id, stop, evaluator, acceptance_criteria, ns)
         self.accept_infeasible = accept_infeasible
