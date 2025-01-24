@@ -5,7 +5,9 @@ from oahf.Base.Movement import Movement
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Solution import Solution
 from oahf.ImplementedBase import ListSelection
-from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import AlwaysAcceptAcceptanceCriteria
+from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
+    AlwaysAcceptAcceptanceCriteria,
+)
 from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
@@ -13,7 +15,9 @@ from oahf.Logger.LogManager import LogManager
 from oahf.MetaHeuristics.BestImprovement import BestImprovement
 from oahf.MetaHeuristics.MultipleBestImprovement import MultipleBestImprovement
 from oahf.MetaHeuristics.Pertubation import Pertubation
-from oahf.MetaHeuristics.PerturbationDrivenLocalSearch import PerturbationDrivenLocalSearch
+from oahf.MetaHeuristics.PerturbationDrivenLocalSearch import (
+    PerturbationDrivenLocalSearch,
+)
 
 
 class TabuSearch(MetaHeuristic):
@@ -36,24 +40,24 @@ class TabuSearch(MetaHeuristic):
 
         Args:
             thread_id (int): The thread identifier, used to manage thread-specific operations.
-            stop_criteria (StopTimeIterationCriteria): Criteria that determine when the 
+            stop_criteria (StopTimeIterationCriteria): Criteria that determine when the
                 TabuSearch should stop iterating.
             evaluator (Evaluator): An object responsible for evaluating the quality of solutions.
-            acceptance_criteria (AcceptanceCriteria): Criteria to decide whether a new solution 
+            acceptance_criteria (AcceptanceCriteria): Criteria to decide whether a new solution
                 should be accepted.
-            ns (NeighborhoodSelection): Primary neighborhood selection strategy for exploring 
+            ns (NeighborhoodSelection): Primary neighborhood selection strategy for exploring
                 solution space.
-            intensification_criteria (StopTimeIterationCriteria): Criteria for stopping 
+            intensification_criteria (StopTimeIterationCriteria): Criteria for stopping
                 the intensification phase.
-            second_level_ns (NeighborhoodSelection): Secondary neighborhood selection strategy 
+            second_level_ns (NeighborhoodSelection): Secondary neighborhood selection strategy
                 for deeper exploration of promising regions in the solution space.
-            intensification_ns (NeighborhoodSelection): Neighborhood selection strategy used 
+            intensification_ns (NeighborhoodSelection): Neighborhood selection strategy used
                 during the intensification phase to refine solutions.
-            diversification_ns (NeighborhoodSelection): Neighborhood selection strategy used 
+            diversification_ns (NeighborhoodSelection): Neighborhood selection strategy used
                 during the diversification phase to explore less-visited regions of the solution space.
-            intensification_ls (MetaHeuristic): A local search metaheuristic used to enhance 
+            intensification_ls (MetaHeuristic): A local search metaheuristic used to enhance
                 solutions during the intensification phase.
-            diversification_ls (MetaHeuristic): A local search metaheuristic used to explore 
+            diversification_ls (MetaHeuristic): A local search metaheuristic used to explore
                 diverse solutions during the diversification phase.
         """
         super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, ns)
@@ -104,7 +108,7 @@ class TabuSearch(MetaHeuristic):
                     break
 
                 ns.allow_infeasible_movements = True
-                build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
+                build = ns.build_neighborhood_operation(self.thread_id, curr_sol)  # type: ignore
 
                 if build:
                     counter += 1
@@ -194,7 +198,7 @@ class TabuSearch(MetaHeuristic):
                             if intensification
                             else self.diversification_ns
                         )
-                        
+
                         selected_ls = (
                             self.intensification_ls
                             if intensification
@@ -202,17 +206,29 @@ class TabuSearch(MetaHeuristic):
                         )
 
                         intensification = not intensification
-                        pool = ListPool(solutions = [curr_sol])
-                        
-                        while (search := selected_ns.get_next(self.thread_id)):
-                            perturbation = Pertubation(self.thread_id, NoStopCriteria(), self.evaluator, ListSelection(False, search), 
-                                                       AlwaysAcceptAcceptanceCriteria(), True)
-                        
-                            perturbation_ls = PerturbationDrivenLocalSearch(self.thread_id, NoStopCriteria(), self.evaluator, 
-                                                                        self.acceptance_criteria, perturbation, selected_ls)
+                        pool = ListPool(solutions=[curr_sol])
+
+                        while search := selected_ns.get_next(self.thread_id):
+                            perturbation = Pertubation(
+                                self.thread_id,
+                                NoStopCriteria(),
+                                self.evaluator,
+                                ListSelection(False, search),
+                                AlwaysAcceptAcceptanceCriteria(),
+                                True,
+                            )
+
+                            perturbation_ls = PerturbationDrivenLocalSearch(
+                                self.thread_id,
+                                NoStopCriteria(),
+                                self.evaluator,
+                                self.acceptance_criteria,
+                                perturbation,
+                                selected_ls,
+                            )
 
                             pool.add_solution(perturbation_ls.run(curr_sol))
-                            
+
                         curr_sol = pool.get_best(self.evaluator)
 
                         # Update best solution if necessary

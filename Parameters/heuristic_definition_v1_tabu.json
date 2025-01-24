@@ -1,0 +1,815 @@
+{
+	"default_evaluator": {
+		"alwabp_evaluator": {
+			"stop_on_first": "true",
+			"constraints": {
+				"max_cycle_time": {},
+				"precedence": {},
+				"worker_task": {},
+			}
+		}
+	},
+	"neighborhoods": [
+		{
+			"id": 0,
+			"name": "alwabp_worker_oriented_insert",
+			"parameters": {
+				"pw": "max",
+				"graph_orientation": "forward",
+				"greediness": 0
+			}
+		},
+		{
+			"id": 1,
+			"name": "alwabp_worker_oriented_insert",
+			"parameters": {
+				"pw": "min",
+				"graph_orientation": "forward",
+				"greediness": 0
+			}
+		},
+		{
+			"id": 2,
+			"name": "alwabp_worker_oriented_insert",
+			"parameters": {
+				"pw": "average",
+				"graph_orientation": "forward",
+				"greediness": 0
+			}
+		},
+		{
+			"id": 3,
+			"name": "alwabp_worker_oriented_insert",
+			"parameters": {
+				"pw": "max",
+				"graph_orientation": "backward",
+				"greediness": 0
+			}
+		},
+		{
+			"id": 4,
+			"name": "alwabp_worker_oriented_insert",
+			"parameters": {
+				"pw": "min",
+				"graph_orientation": "backward",
+				"greediness": 0
+			}
+		},
+		{
+			"id": 5,
+			"name": "alwabp_worker_oriented_insert",
+			"parameters": {
+				"pw": "average",
+				"graph_orientation": "backward",
+				"greediness": 0
+			}
+		},
+		{
+			"id": 6,
+			"name": "rearrange_critical_task",
+			"parameters": {
+				"graph_orientation": "forward"
+			}
+		},
+		{
+			"id": 7,
+			"name": "rearrange_critical_task",
+			"parameters": {
+				"graph_orientation": "backward"
+			}
+		},
+		{
+			"id": 8,
+			"name": "task_swap",
+			"parameters": {
+				"graph_orientation": "forward"
+			}
+		},
+		{
+			"id": 9,
+			"name": "task_swap",
+			"parameters": {
+				"graph_orientation": "backward"
+			}
+		},
+		{
+			"id": 10,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 0 ]
+				}
+			}
+		},
+		{
+			"id": 11,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 1 ]
+				}
+			}
+		},
+		{
+			"id": 12,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 2 ]
+				}
+			}
+		},
+		{
+			"id": 13,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 3 ]
+				}
+			}
+		},
+		{
+			"id": 14,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 4 ]
+				}
+			}
+		},
+		{
+			"id": 15,
+			"name": "worker_swap_reconstruct",
+			"parameters": {
+				"reconstruct": {
+					"greediness": 1,
+					"stop_criteria": {
+						"max_cycle_time": {
+							"cycle_time_limit": 500
+						}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [ 5 ]
+				}
+			}
+		},
+		{
+			"id": 16,
+			"name": "consecutive_task_swap",
+			"parameters": {
+				"graph_orientation": "forward"
+			}
+		},
+		{
+			"id": 17,
+			"name": "consecutive_task_swap",
+			"parameters": {
+				"graph_orientation": "backward"
+			}
+		},
+		{
+			"id": 18,
+			"name": "alwabp_task_intensification",
+		},
+		{
+			"id": 19,
+			"name": "alwabp_task_diversification",
+		},
+		{
+			"id": 20,
+			"name": "alwabp_worker_intensification",
+		},
+		{
+			"id": 21,
+			"name": "alwabp_worker_diversification",
+		}
+	],
+	"neighborhood_selections": [
+		{
+			"id": 0,
+			"name": "list_selection",
+			"neighborhood_ids": [ 0 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 1,
+			"name": "list_selection",
+			"neighborhood_ids": [ 1 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 2,
+			"name": "list_selection",
+			"neighborhood_ids": [ 2 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 3,
+			"name": "list_selection",
+			"neighborhood_ids": [ 3 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 4,
+			"name": "list_selection",
+			"neighborhood_ids": [ 4 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 5,
+			"name": "list_selection",
+			"neighborhood_ids": [ 5 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 6,
+			"name": "list_selection",
+			"neighborhood_ids": [ 6, 8, 10, 16 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 7,
+			"name": "list_selection",
+			"neighborhood_ids": [ 6, 8, 11, 16 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 8,
+			"name": "list_selection",
+			"neighborhood_ids": [ 6, 8, 12, 16 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 9,
+			"name": "list_selection",
+			"neighborhood_ids": [ 7, 9, 13, 17 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 10,
+			"name": "list_selection",
+			"neighborhood_ids": [ 7, 9, 14, 17 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 11,
+			"name": "list_selection",
+			"neighborhood_ids": [ 7, 9, 15, 17 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 12,
+			"name": "list_selection",
+			"neighborhood_ids": [ 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ],
+			"parameters": {
+				"circular": "true"
+			}
+		},
+		{
+			"id": 13,
+			"name": "list_selection",
+			"neighborhood_ids": [ 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 14,
+			"name": "list_selection",
+			"neighborhood_ids": [ 18, 20 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 15,
+			"name": "list_selection",
+			"neighborhood_ids": [ 19, 21 ],
+			"parameters": {
+				"circular": "false"
+			}
+		},
+		{
+			"id": 16,
+			"name": "list_selection",
+			"neighborhood_ids": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 ],
+			"parameters": {
+				"circular": "false"
+			}
+		}
+	],
+	"solution_pools": [
+		{
+			"id": 0,
+			"name": "list_pool",
+			"parameters": {
+				"evaluator": {
+					"alwabp_evaluator": {
+						"stop_on_first": "true",
+						"constraints": {
+							"max_cycle_time": {}
+						}
+					}
+				}
+			}
+		},
+		{
+			"id": 1,
+			"name": "list_pool",
+			"parameters": {
+				"evaluator": {
+					"job_rotation_alwabp_evaluator": {
+						"stop_on_first": "true",
+						"constraints": {}
+					}
+				}
+			}
+		}
+	],
+	"metaheuristics": [
+		{
+			"id": 0,
+			"name": "grc",
+			"stop_criteria": {
+				"workers_unassigned": {
+					"num_unassigned_workers": 0
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {
+				"greediness": 1,
+				"order_moves": "false"
+			},
+			"neighborhood_selection": 0
+		},
+		{
+			"id": 1,
+			"name": "grc",
+			"stop_criteria": {
+				"workers_unassigned": {
+					"num_unassigned_workers": 0
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {
+				"greediness": 1,
+				"order_moves": "false"
+			},
+			"neighborhood_selection": 1
+		},
+		{
+			"id": 2,
+			"name": "grc",
+			"stop_criteria": {
+				"workers_unassigned": {
+					"num_unassigned_workers": 0
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {
+				"greediness": 1,
+				"order_moves": "false"
+			},
+			"neighborhood_selection": 2
+		},
+		{
+			"id": 3,
+			"name": "grc",
+			"stop_criteria": {
+				"workers_unassigned": {
+					"num_unassigned_workers": 0
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {
+				"greediness": 1,
+				"order_moves": "false"
+			},
+			"neighborhood_selection": 3
+		},
+		{
+			"id": 4,
+			"name": "grc",
+			"stop_criteria": {
+				"workers_unassigned": {
+					"num_unassigned_workers": 0
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {
+				"greediness": 1,
+				"order_moves": "false"
+			},
+			"neighborhood_selection": 4
+		},
+		{
+			"id": 5,
+			"name": "grc",
+			"stop_criteria": {
+				"workers_unassigned": {
+					"num_unassigned_workers": 0
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {
+				"greediness": 1,
+				"order_moves": "false"
+			},
+			"neighborhood_selection": 5
+		},
+		{
+			"id": 6,
+			"name": "multiple_best_improvement",
+			"stop_criteria": {
+				"no_stop": {}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {},
+			"neighborhood_selection": 6,
+			"destination_pool": 0
+		},
+		{
+			"id": 7,
+			"name": "multiple_best_improvement",
+			"stop_criteria": {
+				"no_stop": {}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {},
+			"neighborhood_selection": 7,
+			"destination_pool": 0
+		},
+		{
+			"id": 8,
+			"name": "multiple_best_improvement",
+			"stop_criteria": {
+				"no_stop": {}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {},
+			"neighborhood_selection": 8,
+			"destination_pool": 0
+		},
+		{
+			"id": 9,
+			"name": "multiple_best_improvement",
+			"stop_criteria": {
+				"no_stop": {}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {},
+			"neighborhood_selection": 9,
+			"destination_pool": 0
+		},
+		{
+			"id": 10,
+			"name": "multiple_best_improvement",
+			"stop_criteria": {
+				"no_stop": {}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {},
+			"neighborhood_selection": 10,
+			"destination_pool": 0
+		},
+		{
+			"id": 11,
+			"name": "multiple_best_improvement",
+			"stop_criteria": {
+				"no_stop": {}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {},
+			"neighborhood_selection": 11,
+			"destination_pool": 0
+		},
+		{
+			"id": 12,
+			"name": "grasp",
+			"stop_criteria": {
+				"multiple_stop_criteria": {
+					"stop_when_any": "true",
+					"stop_criterias": [
+						{
+							"time_iteration": {
+								"iterations": 1
+							}
+						},
+						{
+							"max_cycle_time": {
+								"cycle_time_limit": 500
+							}
+						}
+					]
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"metaheuristics_used": [ 0, 6 ],
+			"parameters": {},
+			"neighborhood_selection": 0,
+			"execution_order": 0,
+			"destination_pool": 0
+		},
+		{
+			"id": 13,
+			"name": "grasp",
+			"stop_criteria": {
+				"multiple_stop_criteria": {
+					"stop_when_any": "true",
+					"stop_criterias": [
+						{
+							"time_iteration": {
+								"iterations": 1
+							}
+						},
+						{
+							"max_cycle_time": {
+								"cycle_time_limit": 500
+							}
+						}
+					]
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"metaheuristics_used": [ 1, 7 ],
+			"parameters": {},
+			"neighborhood_selection": 0,
+			"execution_order": 1,
+			"destination_pool": 0
+		},
+		{
+			"id": 14,
+			"name": "grasp",
+			"stop_criteria": {
+				"multiple_stop_criteria": {
+					"stop_when_any": "true",
+					"stop_criterias": [
+						{
+							"time_iteration": {
+								"iterations": 1
+							}
+						},
+						{
+							"max_cycle_time": {
+								"cycle_time_limit": 500
+							}
+						}
+					]
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"metaheuristics_used": [ 2, 8 ],
+			"parameters": {},
+			"neighborhood_selection": 0,
+			"execution_order": 2,
+			"destination_pool": 0
+		},
+		{
+			"id": 15,
+			"name": "grasp",
+			"stop_criteria": {
+				"multiple_stop_criteria": {
+					"stop_when_any": "true",
+					"stop_criterias": [
+						{
+							"time_iteration": {
+								"iterations": 1
+							}
+						},
+						{
+							"max_cycle_time": {
+								"cycle_time_limit": 500
+							}
+						}
+					]
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"metaheuristics_used": [ 3, 9 ],
+			"parameters": {},
+			"neighborhood_selection": 0,
+			"execution_order": 3,
+			"destination_pool": 0
+		},
+		{
+			"id": 16,
+			"name": "grasp",
+			"stop_criteria": {
+				"multiple_stop_criteria": {
+					"stop_when_any": "true",
+					"stop_criterias": [
+						{
+							"time_iteration": {
+								"iterations": 1
+							}
+						},
+						{
+							"max_cycle_time": {
+								"cycle_time_limit": 500
+							}
+						}
+					]
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"metaheuristics_used": [ 4, 10 ],
+			"parameters": {},
+			"neighborhood_selection": 0,
+			"execution_order": 4,
+			"destination_pool": 0
+		},
+		{
+			"id": 17,
+			"name": "grasp",
+			"stop_criteria": {
+				"multiple_stop_criteria": {
+					"stop_when_any": "true",
+					"stop_criterias": [
+						{
+							"time_iteration": {
+								"iterations": 1
+							}
+						},
+						{
+							"max_cycle_time": {
+								"cycle_time_limit": 500
+							}
+						}
+					]
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"metaheuristics_used": [ 5, 11 ],
+			"parameters": {},
+			"neighborhood_selection": 0,
+			"execution_order": 5,
+			"destination_pool": 0
+		},
+		{
+			"id": 18,
+			"name": "multiple_best_improvement",
+			"stop_criteria": {
+				"no_stop": {}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"parameters": {},
+			"neighborhood_selection": 16,
+			"destination_pool": 0
+		},
+		{
+			"id": 19,
+			"name": "tabu",
+			"stop_criteria": {
+				"time_iteration": {
+					"iterations": 20000
+				}
+			},
+			"acceptance_criteria": {
+				"better": {}
+			},
+			"neighborhood_selection": 12,
+			"parameters": {
+				"intensification_criteria": {
+					"time_iteration": {
+						"iterations": 3000
+					}
+				},
+				"second_neighborhood_selection": 13,
+				"intensification_neighborhood_selection": 14,
+				"diversification_neighborhood_selection": 15,
+				"intensification_local_search": 18,
+				"diversification_local_search": 18,
+			},
+			"execution_order": 6,
+			"origin_pool": 0,
+			"destination_pool": 0
+		},
+		{
+			"id": 20,
+			"name": "job_rotation_lp_selector",
+			"parameters": {
+				"number_of_periods": 5,
+				"gurobi_path": "C:\\gurobi1200\\win64\\bin\\gurobi.bat",
+				"tolerance_percentage": 0.2
+			},
+			"execution_order": 7,
+			"origin_pool": 0,
+			"destination_pool": 1
+		}
+	]
+}

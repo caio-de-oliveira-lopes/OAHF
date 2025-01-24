@@ -1338,45 +1338,50 @@ class AlwabpSolution(Solution):
 
         return set(related_tasks)
 
-    def to_random_keys(self) -> List[float]:
+    def to_random_keys(self) -> List[List[int]]:
         """
-        Converts the current solution into a random-keys representation suitable for BRKGA.
+        Converts the current solution into a matrix representation (workers x tasks) suitable for BRKGA.
 
         Returns:
-            List[float]: A list of random keys representing the solution.
+            List[List[int]]: A matrix where each row represents a worker and each column a task,
+                             with 1 indicating assignment and 0 otherwise.
         """
-        random_keys = []
-        for task in self.tasks:
-            station = self.find_station_for_task(task)
-            worker = self.station_worker_assignment.get(station) if station else None
-            random_keys.append(
-                (worker or 0) / len(self.workers) + (station or 0) / len(self.stations)
-            )
-        return random_keys
+        # Initialize a matrix with dimensions workers x tasks filled with 0s
+        matrix = [[0 for _ in range(len(self.tasks))] for _ in range(len(self.workers))]
 
-    def from_random_keys(self, random_keys: List[float]) -> "AlwabpSolution":
+        for task in self.tasks:
+            worker = None
+            for w in self.workers:
+                if task in self.tasks_executed_by_worker[w]:
+                    worker = w
+                    break
+
+            if worker:
+                matrix[worker - 1][task - 1] = 1  # Adjust for 0-based indexing
+
+        return matrix
+
+    def from_random_keys(self, random_keys: List[List[int]]) -> "AlwabpSolution":
         """
-        Reconstructs the solution from a random-keys representation.
+        Compiles the solution from a matrix representation (workers x tasks) into a dictionary.
 
         Args:
-            random_keys (List[float]): A list of random keys representing the solution.
-
+            random_keys (List[List[int]]): A matrix where each row represents a worker and each column a task,
+                                           with 1 indicating assignment and 0 otherwise.
         Returns:
             AlwabpSolution: A reconstructed ALWABP solution.
         """
-        new_solution = self.copy()
-        new_solution.reset()
+        worker_tasks = {}
 
-        for i, key in enumerate(random_keys):
-            task = self.tasks[i]
-            worker = int(key * len(self.workers))
-            station = int((key * len(self.stations)) % len(self.stations))
+        for worker_idx, task_row in enumerate(random_keys):
+            assigned_tasks = [
+                self.tasks[task_idx]
+                for task_idx, assigned in enumerate(task_row)
+                if assigned == 1
+            ]
+            worker_tasks[self.workers[worker_idx]] = assigned_tasks
 
-            if new_solution.can_task_be_assigned_to(task, station, worker):
-                new_solution.add_task_to_station(task, station)
-                new_solution.add_worker_to_station(worker, station)
-
-        return new_solution
+        pass
 
     def get_fitness_value(self) -> float:
         """

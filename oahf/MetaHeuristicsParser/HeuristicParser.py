@@ -36,6 +36,7 @@ from oahf.ImplementedBase.ListSelection import ListSelection
 from oahf.ImplementedBase.MaxCycleTimeConstraint import MaxCycleTimeConstraint
 from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
 from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
+from oahf.ImplementedBase.PrecedenceConstraint import PrecedenceConstraint
 from oahf.ImplementedBase.RearrangeCriticalTaskNS import RearrangeCriticalTaskNS
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
 from oahf.ImplementedBase.TasksUnassignedStopCriteria import TasksUnassignedStopCriteria
@@ -45,6 +46,7 @@ from oahf.ImplementedBase.WorkersUnassignedStopCriteria import (
 )
 from oahf.ImplementedBase.WorkerSwapNS import WorkerSwapNS
 from oahf.ImplementedBase.WorkerSwapReconstructNS import WorkerSwapReconstructNS
+from oahf.ImplementedBase.WorkerTaskConstraint import WorkerTaskConstraint
 from oahf.Logger.LogManager import LogManager
 from oahf.MetaHeuristics.BestImprovement import BestImprovement
 from oahf.MetaHeuristics.BRKGA import BRKGA
@@ -351,7 +353,10 @@ class HeuristicParser:
         try:
             if "max_cycle_time" in constraints_dict:
                 constraints.append(MaxCycleTimeConstraint())
-
+            if "precedence" in constraints_dict:
+                constraints.append(PrecedenceConstraint())
+            if "worker_task" in constraints_dict:
+                constraints.append(WorkerTaskConstraint())
             return constraints
         except Exception as e:
             LogManager.something_went_wrong(Util.get_current_method_name(), e)
@@ -565,6 +570,13 @@ class HeuristicParser:
                             f"Intensification Criteria must be StopTimeIterationCriteria. Metaheuristic {m['id']}: {m['name']}"
                         )
 
+                    intensification_ls = self.metaheuristics[
+                        int(m["parameters"]["intensification_local_search"])
+                    ]
+                    diversification_ls = self.metaheuristics[
+                        int(m["parameters"]["diversification_local_search"])
+                    ]
+
                     meta = TabuSearch(
                         thread_id,
                         stop_criteria,  # type: ignore
@@ -575,6 +587,8 @@ class HeuristicParser:
                         second_level_ns,
                         intensification_ns,
                         diversification_ns,
+                        intensification_ls,
+                        diversification_ls,
                     )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")
