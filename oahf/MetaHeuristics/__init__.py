@@ -10,6 +10,7 @@ from .JobRotationLPSelector import JobRotationLPSelector
 from .MultipleBestImprovement import MultipleBestImprovement
 from .ParallelILS import ParallelILS
 from .Pertubation import Pertubation
+from .PerturbationDrivenLocalSearch import PerturbationDrivenLocalSearch
 from .TabuSearch import TabuSearch
 
 __all__ = [
@@ -25,5 +26,6 @@ __all__ = [
     "MultipleBestImprovement",
     "ParallelILS",
     "Pertubation",
+    "PerturbationDrivenLocalSearch",
     "TabuSearch",
 ]

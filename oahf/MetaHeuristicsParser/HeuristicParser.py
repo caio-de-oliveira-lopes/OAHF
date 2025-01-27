@@ -19,6 +19,14 @@ from oahf.ImplementedBase.AlwabpSolution import (
     GraphOrientation,
     MaxPositionalWeightType,
 )
+from oahf.ImplementedBase.AlwabpTaskDiversificationNS import AlwabpTaskDiversificationNS
+from oahf.ImplementedBase.AlwabpTaskIntensificationNS import AlwabpTaskIntensificationNS
+from oahf.ImplementedBase.AlwabpWorkerDiversificationNS import (
+    AlwabpWorkerDiversificationNS,
+)
+from oahf.ImplementedBase.AlwabpWorkerIntensificationNS import (
+    AlwabpWorkerIntensificationNS,
+)
 from oahf.ImplementedBase.AlwabpWorkerOrientedInsertNS import (
     AlwabpWorkerOrientedInsertNS,
 )
@@ -263,6 +271,14 @@ class HeuristicParser:
                     neighborhood = WorkerSwapReconstructNS(
                         grc, evaluator, stop_criteria
                     )
+                elif n["name"].lower() == "alwabp_task_intensification":
+                    neighborhood = AlwabpTaskIntensificationNS()
+                elif n["name"].lower() == "alwabp_task_diversification":
+                    neighborhood = AlwabpTaskDiversificationNS()
+                elif n["name"].lower() == "alwabp_worker_intensification":
+                    neighborhood = AlwabpWorkerIntensificationNS()
+                elif n["name"].lower() == "alwabp_worker_diversification":
+                    neighborhood = AlwabpWorkerDiversificationNS()
                 else:
                     raise ValueError(f"Unavailable neighborhood: {n['name']}")
                 self.neighborhoods[n["id"]] = neighborhood

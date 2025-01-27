@@ -3,6 +3,10 @@ from .AlwabpEvaluator import AlwabpEvaluator
 from .AlwabpInsertionMovement import AlwabpInsertionMovement
 from .AlwabpRemovalMovement import AlwabpRemovalMovement
 from .AlwabpSolution import AlwabpSolution
+from .AlwabpTaskDiversificationNS import AlwabpTaskDiversificationNS
+from .AlwabpTaskIntensificationNS import AlwabpTaskIntensificationNS
+from .AlwabpWorkerDiversificationNS import AlwabpWorkerDiversificationNS
+from .AlwabpWorkerIntensificationNS import AlwabpWorkerIntensificationNS
 from .AlwabpWorkerOrientedInsertNS import AlwabpWorkerOrientedInsertNS
 from .AlwaysAcceptAcceptanceCriteria import AlwaysAcceptAcceptanceCriteria
 from .BetterAcceptanceCriteria import BetterAcceptanceCriteria
@@ -41,6 +45,10 @@ __all__ = [
     "AlwabpInsertionMovement",
     "AlwabpRemovalMovement",
     "AlwabpSolution",
+    "AlwabpTaskDiversificationNS",
+    "AlwabpTaskIntensificationNS",
+    "AlwabpWorkerDiversificationNS",
+    "AlwabpWorkerIntensificationNS",
     "AlwabpWorkerOrientedInsertNS",
     "AlwaysAcceptAcceptanceCriteria",
     "BetterAcceptanceCriteria",
