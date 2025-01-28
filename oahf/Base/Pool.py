@@ -140,3 +140,18 @@ class Pool(Entity, ABC):
         )
 
         return pool_dict
+
+    @classmethod
+    @abstractmethod
+    def from_dict(cls, data: dict) -> "Pool":
+        """
+        Creates an instance of the Pool class from a dictionary.
+
+        Args:
+            data (dict): A dictionary representing the Pool.
+
+        Returns:
+            Pool: An instance of the Pool class populated with data from the dictionary.
+        """
+        
+        raise NotImplementedError

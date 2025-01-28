@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from oahf.Base.Entity import Entity
 
@@ -207,3 +207,11 @@ class Solution(Entity, ABC):
     @classmethod
     def reset_intensification_diversification_structures(cls) -> None:
         pass
+    
+    @classmethod
+    @abstractmethod
+    def from_dict(cls, data: Dict, base_solution: "Solution") -> "Solution":
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
+        

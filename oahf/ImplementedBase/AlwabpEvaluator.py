@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Optional, Type
 
 from oahf.Base.Constraint import Constraint
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Evaluator import Evaluator
+from oahf.Base.Solution import Solution
 from oahf.ImplementedBase.AlwabpEvaluation import AlwabpEvaluation
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
@@ -33,3 +34,6 @@ class AlwabpEvaluator(Evaluator):
             )
         else:
             return AlwabpEvaluation((), float("inf"), None, int("inf"), int("inf"), int("inf"))
+        
+    def get_solution_type(self) -> Type[Solution]:
+        return AlwabpSolution

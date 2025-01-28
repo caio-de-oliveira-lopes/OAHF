@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from oahf.Base.Constraint import Constraint
 from oahf.Base.Entity import Entity
@@ -52,3 +52,7 @@ class Evaluator(Entity, ABC):
     def stop_on_first_infeasibility(self) -> bool:
         """Returns whether to stop on the first infeasibility."""
         return self._stop_on_first_infeasibility
+    
+    @abstractmethod
+    def get_solution_type(self) -> Type[Solution]:
+        return Solution

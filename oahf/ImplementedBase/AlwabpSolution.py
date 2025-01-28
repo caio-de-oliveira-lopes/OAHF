@@ -424,6 +424,57 @@ class AlwabpSolution(Solution):
             solution_dict["task_allocations_per_station"].append(station_data)
 
         return solution_dict
+    
+    @classmethod
+    def from_dict(cls, data: dict, base_solution: "AlwabpSolution") -> "AlwabpSolution":
+        """
+        Reconstructs an ALWABP solution from a dictionary while respecting the problem's precedences
+        and rules. Uses an existing solution instance to set up the necessary parameters.
+
+        Args:
+            data (dict): A dictionary representing the serialized solution.
+            base_solution (AlwabpSolution): An existing ALWABP solution instance that provides
+                                            problem-specific parameters such as precedences.
+
+        Returns:
+            AlwabpSolution: A reconstructed ALWABP solution instance.
+        """
+        # Start by creating a copy of the base solution
+        solution = base_solution.copy()
+
+        # Ensure the solution's default orientation is set to FORWARD
+        solution.default_graph_orientation = GraphOrientation.FORWARD
+        solution.reset()  # Reset the solution state before populating it
+
+        # Set the basic properties
+        solution.id = data.get("id", solution.id)
+        solution._cycle_time_limit = data.get("cycle_time_limit", solution._cycle_time_limit)
+
+        # Assign workers and tasks to stations
+        for allocation in data.get("task_allocations_per_station", []):
+            station = allocation["station"]
+            worker = allocation.get("worker")
+            tasks = allocation.get("tasks", [])
+
+            # Assign the worker to the station if present
+            if worker is not None:
+                solution.add_worker_to_station(worker, station, recalculate_cycle_time=False)
+
+            # Assign the tasks to the station
+            for task in tasks:
+                solution.add_task_to_station(task, station)
+
+        # Update unassigned tasks
+        unassigned_tasks = data.get("unassigned_tasks", [])
+        solution._unassigned_tasks = unassigned_tasks
+
+        # Recalculate cycle times after all assignments
+        for station in solution.stations:
+            solution.calculate_cycle_time(station, force_calculate=True)
+
+        # Return the reconstructed solution
+        return solution
+
 
     def calculate_cycle_time(
         self, station: int, force_calculate: bool = False
