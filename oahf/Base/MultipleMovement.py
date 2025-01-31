@@ -84,8 +84,7 @@ class MultipleMovement(Movement):
         if not isinstance(other, MultipleMovement):
             return False
         return (
-            self.solution == other.solution
-            and self.override_cost == other.override_cost
+            self.override_cost == other.override_cost
             and self.movements == other.movements
         )
 
@@ -96,8 +95,9 @@ class MultipleMovement(Movement):
         Returns:
             int: The hash value.
         """
-        return hash((
-            self.solution,
-            self.override_cost,
-            tuple(self.movements),
-        ))
+        return hash(
+            (
+                self.override_cost,
+                tuple(self.movements),
+            )
+        )

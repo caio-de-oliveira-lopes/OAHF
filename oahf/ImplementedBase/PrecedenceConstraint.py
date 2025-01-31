@@ -43,8 +43,9 @@ class PrecedenceConstraint(Constraint):
         """
         Counts the number of precedence violations in the current solution.
 
-        Precedence violations occur when a task is executed before another task
-        that it depends on, according to the precedence constraints.
+        A precedence violation occurs when:
+        - A task `B` is executed before another task `A` that it depends on.
+        - Task `A` has been allocated but appears in a later station than task `B`.
 
         :param solution: A Solution object (AlwabpSolution).
 
@@ -59,26 +60,29 @@ class PrecedenceConstraint(Constraint):
         if not isinstance(solution, AlwabpSolution):
             return violation_count
 
+        # Map each allocated task to its station
+        task_station_map = {
+            task: station
+            for station, tasks in solution.station_tasks_assignment.items()
+            for task in tasks
+        }
+
         # Iterate through all stations
         for station, tasks in solution.station_tasks_assignment.items():
-            # Set of all preceding tasks that should have been completed before this station
-            completed_tasks = set()
-            for previous_station in range(1, station):
-                completed_tasks.update(
-                    solution.station_tasks_assignment[previous_station]
-                )
-
-            # Check each task in the current station
             for task in tasks:
                 # Retrieve all tasks that must precede this task
                 precedences = solution.all_task_precedences[
                     solution.default_graph_orientation
                 ].get(task, [])
 
-                # Count violations if any precedence task is not in the completed set
+                # Check if any precedent task has been allocated in a later station
                 for preceding_task in precedences:
-                    if preceding_task not in completed_tasks:
-                        violation_count += 1
+                    if preceding_task in task_station_map:
+                        preceding_task_station = task_station_map[preceding_task]
+
+                        # Penalize only if the precedent task is in a later station
+                        if preceding_task_station > station:
+                            violation_count += 1
 
         return violation_count
 

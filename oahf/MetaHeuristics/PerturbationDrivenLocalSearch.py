@@ -7,8 +7,8 @@ from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Logger.LogManager import LogManager
-from oahf.MetaHeuristics.Pertubation import Pertubation
 from oahf.MetaHeuristics.BestImprovement import BestImprovement
+from oahf.MetaHeuristics.Pertubation import Pertubation
 
 
 class PerturbationDrivenLocalSearch(MetaHeuristic):
@@ -19,24 +19,31 @@ class PerturbationDrivenLocalSearch(MetaHeuristic):
         evaluator: Evaluator,
         acceptance_criteria: AcceptanceCriteria,
         perturbation: Pertubation,
-        local_search: MetaHeuristic
+        local_search: MetaHeuristic,
     ) -> None:
         """
         Initializes the PerturbationDrivenLocalSearch metaheuristic.
 
         Args:
             thread_id (int): The thread identifier, used to manage thread-specific operations.
-            stop_criteria (StopCriteria): Criteria that determine when the algorithm should stop 
+            stop_criteria (StopCriteria): Criteria that determine when the algorithm should stop
                 iterating.
             evaluator (Evaluator): An object responsible for evaluating the quality of solutions.
-            acceptance_criteria (AcceptanceCriteria): Criteria to decide whether a new solution 
+            acceptance_criteria (AcceptanceCriteria): Criteria to decide whether a new solution
                 should be accepted into the current set of solutions.
-            perturbation (Pertubation): A mechanism used to apply controlled changes to solutions, 
+            perturbation (Pertubation): A mechanism used to apply controlled changes to solutions,
                 helping the algorithm escape local optima by diversifying the search space.
-            local_search (MetaHeuristic): A local search metaheuristic used to intensively improve 
+            local_search (MetaHeuristic): A local search metaheuristic used to intensively improve
                 the solutions generated after perturbation.
         """
-        super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, None, [perturbation, local_search])
+        super().__init__(
+            thread_id,
+            stop_criteria,
+            evaluator,
+            acceptance_criteria,
+            None,
+            [perturbation, local_search],
+        )
         self.perturbation = perturbation
         self.local_search = local_search
 
@@ -62,14 +69,16 @@ class PerturbationDrivenLocalSearch(MetaHeuristic):
         while not self.stop_on_evaluations([best_eval]):
             try:
                 # Apply perturbation
-                perturbed_sol = self.perturbation.run(best_sol)
+                perturbed_sol = self.perturbation.run(best_sol.copy())
 
                 # Perform local search using BestImprovement
                 improved_sol = self.local_search.run(perturbed_sol)
                 improved_eval = self.evaluator.evaluate(improved_sol)
 
                 # Update the best solution if improvement is found
-                if self.acceptance_criteria.accept(best_eval, improved_eval, improved_sol):
+                if self.acceptance_criteria.accept(
+                    best_eval, improved_eval, improved_sol
+                ):
                     best_sol = improved_sol.copy()
                     best_eval = improved_eval
 

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Type
 
 from oahf.Base.Constraint import Constraint
 from oahf.Base.Evaluation import Evaluation
@@ -30,3 +30,6 @@ class JobRotationAlwabpEvaluator(Evaluator):
             )
         else:
             return JobRotationAlwabpEvaluation((), int(0), float("inf"))
+
+    def get_solution_type(self) -> Type[JobRotationAlwabpSolution]:
+        return JobRotationAlwabpSolution

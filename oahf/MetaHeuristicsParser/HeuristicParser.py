@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from oahf.Base import AcceptanceCriteria
+from oahf.Base import AcceptanceCriteria, Evaluation
 from oahf.Base.Constraint import Constraint
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
@@ -90,7 +90,9 @@ class HeuristicParser:
         self.metaheuristics: Dict[int, MetaHeuristic] = {}
         self.ordered_metaheuristics: List[MetaHeuristic] = []
 
-    def parse_file(self, path: Union[Path, str], original_solution: Solution) -> Optional[Evaluator]:
+    def parse_file(
+        self, path: Union[Path, str], original_solution: Solution
+    ) -> Optional[Evaluator]:
         """
         Reads and parses the configuration file at the given path.
 
@@ -183,6 +185,16 @@ class HeuristicParser:
             for solution in pool.get_list()
         ):
             solution.fix_solution()
+
+    def get_best_solution_from_pools(
+        self, original_solution: "Solution", evaluator: Evaluator
+    ) -> "Solution":
+        result_pool = ListPool([original_solution])
+
+        for pool in list(self.solution_pools.values()):
+            result_pool.add_solution(pool.get_best(evaluator))
+
+        return result_pool.get_best(evaluator)  # type: ignore
 
     def parse_neighborhoods(self, evaluator: Evaluator):
         """
@@ -318,13 +330,27 @@ class HeuristicParser:
             if "solution_pools" not in self.definition:
                 return
             for p in self.definition["solution_pools"]:
-                if p["name"].lower() == "list_pool":                    
+                if p["name"].lower() == "list_pool":
                     pool_evaluator = self.parse_evaluator(p["parameters"]["evaluator"])
-                    
-                    solutions = p.get("solutions", [])
-                    solution_type = pool_evaluator.get_solution_type() if pool_evaluator else evaluator.get_solution_type() 
-                    parsed_solutions = [solution_type.from_dict(sol, original_solution) for sol in solutions]
-                    
+
+                    solutions_file_path = p.get("solutions_file_path", None)
+                    parsed_solutions = []
+
+                    if solutions_file_path:
+                        with open(solutions_file_path, "r") as file:
+                            data = json.load(file)
+
+                        solutions = data.get("solutions", [])
+                        solution_type = (
+                            pool_evaluator.get_solution_type()
+                            if pool_evaluator
+                            else evaluator.get_solution_type()
+                        )
+                        parsed_solutions = [
+                            solution_type.from_dict(sol, original_solution)
+                            for sol in solutions
+                        ]
+
                     pool = ListPool(parsed_solutions, p["id"], evaluator=pool_evaluator)
                 else:
                     raise ValueError(f"Unavailable solution pool: {p['name']}")

@@ -82,7 +82,7 @@ class AlwabpRemovalMovement(Movement):
         copied_movement.override_cost = self.override_cost
 
         return copied_movement
-    
+
     def __eq__(self, other: object) -> bool:
         """
         Checks equality between two AlwabpRemovalMovement instances.
@@ -101,7 +101,6 @@ class AlwabpRemovalMovement(Movement):
             self.task == other.task
             and self.worker == other.worker
             and self.station == other.station
-            and self.solution is other.solution
         )
 
     def __hash__(self) -> int:
@@ -112,4 +111,4 @@ class AlwabpRemovalMovement(Movement):
         Returns:
             int: Hash value for the instance.
         """
-        return hash((self.task, self.worker, self.station, id(self.solution)))
+        return hash((self.task, self.worker, self.station))

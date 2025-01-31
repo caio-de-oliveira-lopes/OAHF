@@ -379,6 +379,7 @@
 		{
 			"id": 0,
 			"name": "list_pool",
+			"solutions_file_path": "C:\\Projetos\\OAHF\\Parameters\\output_list_pool_0.json",
 			"parameters": {
 				"evaluator": {
 					"alwabp_evaluator": {

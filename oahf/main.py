@@ -34,12 +34,16 @@ def main(args=sys.argv[1:]) -> None:
 
     heuristic_parser = HeuristicParser(problem_data)
     original_solution: Optional[Solution] = Util.read_input(problem_data)
-    
+
     if original_solution:
-        evaluator = heuristic_parser.parse_file(problem_data.heuristic_definition_file, original_solution)
+        evaluator = heuristic_parser.parse_file(
+            problem_data.heuristic_definition_file, original_solution
+        )
 
         if evaluator:
-            solution = original_solution.copy()
+            solution = heuristic_parser.get_best_solution_from_pools(
+                original_solution, evaluator
+            )
             ThreadManager.initialize(1, problem_data.random_seed)
             final_solution = heuristic_parser.run_definition(solution, evaluator)
 

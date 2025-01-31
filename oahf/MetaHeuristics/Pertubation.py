@@ -24,15 +24,15 @@ class Pertubation(MetaHeuristic):
 
         Args:
             thread_id (int): The thread identifier, used to manage thread-specific operations.
-            stop (StopCriteria): Criteria that determine when the Perturbation algorithm should stop 
+            stop (StopCriteria): Criteria that determine when the Perturbation algorithm should stop
                 iterating.
             evaluator (Evaluator): An object responsible for evaluating the quality of solutions.
-            ns (NeighborhoodSelection): The neighborhood selection strategy used to explore 
+            ns (NeighborhoodSelection): The neighborhood selection strategy used to explore
                 the solution space during the algorithm's execution.
-            acceptance_criteria (AcceptanceCriteria): Criteria for determining whether a new solution 
+            acceptance_criteria (AcceptanceCriteria): Criteria for determining whether a new solution
                 should be accepted into the current set of solutions.
-            accept_infeasible (bool): A flag indicating whether infeasible solutions can be accepted, 
-                allowing the algorithm to explore areas outside the feasible region to potentially 
+            accept_infeasible (bool): A flag indicating whether infeasible solutions can be accepted,
+                allowing the algorithm to explore areas outside the feasible region to potentially
                 escape local optima.
         """
         super().__init__(thread_id, stop, evaluator, acceptance_criteria, ns)
@@ -51,7 +51,7 @@ class Pertubation(MetaHeuristic):
             thread,
             self.stop_criteria.copy(),
             self.evaluator,
-            self.neighborhood_selection.copy(), # type: ignore
+            self.neighborhood_selection.copy(),  # type: ignore
             self.acceptance_criteria.copy(),
             self.accept_infeasible,
         )
@@ -65,8 +65,8 @@ class Pertubation(MetaHeuristic):
         Returns:
             Solution: The best solution found during execution.
         """
-        best_sol = sol  # Keep track of the best solution
-        curr_sol = best_sol
+        best_sol = sol.copy()  # Keep track of the best solution
+        curr_sol = sol.copy()
         best_eval = self.evaluator.evaluate(best_sol)
 
         self.stop_criteria.reset()
@@ -75,7 +75,7 @@ class Pertubation(MetaHeuristic):
             ns = None
 
             try:
-                ns = self.neighborhood_selection.get_next(self.thread_id) # type: ignore
+                ns = self.neighborhood_selection.get_next(self.thread_id)  # type: ignore
             except Exception as ex:
                 LogManager.unable_to_get_neighborhood()
 
@@ -88,11 +88,19 @@ class Pertubation(MetaHeuristic):
                 if build:
                     move = ns.get_move_operation()
                     self.stop_criteria.increment_counter()
-                    while move is not None and not self.stop_on_evaluations([best_eval]):
+                    while move is not None and not self.stop_on_evaluations(
+                        [best_eval]
+                    ):
                         worked = move.apply_operation()
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)
-                            if self.acceptance_criteria.accept(best_eval, curr_eval, curr_sol) and self.accept_infeasible or not curr_eval.infeasible():
+                            if (
+                                self.acceptance_criteria.accept(
+                                    best_eval, curr_eval, curr_sol
+                                )
+                                and self.accept_infeasible
+                                or not curr_eval.infeasible()
+                            ):
                                 best_sol = curr_sol.copy()
                                 return best_sol
                             else:
@@ -100,7 +108,7 @@ class Pertubation(MetaHeuristic):
 
                         move = ns.get_move_operation()
                         self.stop_criteria.increment_counter()
-            except Exception as ex:                
+            except Exception as ex:
                 LogManager.something_went_wrong(str(ns), ex)
 
                 curr_sol = best_sol.copy()

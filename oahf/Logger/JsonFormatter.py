@@ -55,12 +55,13 @@ class JsonFormatter(logging.Formatter):
         # Substrings that identify logging-related frames
         keywords = [
             "__init__.py",
-            "logger.py",
+            "logger",
             "logging.handlers",
-            "Logger.py",
-            "LogManager.py",
-            "JsonFormatter.py",
+            "Logger",
+            "LogManager",
+            "JsonFormatter",
             "JsonLogger",
+            "JsonListFileHandler",
         ]
 
         # Check if any part of the filename contains any of the keywords

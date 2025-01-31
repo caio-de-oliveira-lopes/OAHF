@@ -115,7 +115,7 @@ class WorkerSwapReconstructNS(Neighborhood):
                         curr_eval = self.evaluator.evaluate(solution_copy)
 
                         # Store workers allocations to restore in case of failure to build the solution
-                        restore_assgnment_moves = [
+                        restore_assignment_moves = [
                             AlwabpInsertionMovement(
                                 None,
                                 solution_copy.station_worker_assignment[s],
@@ -126,13 +126,18 @@ class WorkerSwapReconstructNS(Neighborhood):
                             for s in solution_copy.stations
                         ]
                         restore_assignment = MultipleMovement(
-                            solution_copy, self.report, restore_assgnment_moves
+                            solution_copy, self.report, restore_assignment_moves
                         )
 
                         while not self.stop_criteria.stop_on_evaluations([curr_eval]):
+                            dgo = solution_copy.default_graph_orientation
+
                             reconstructed_solution = (
                                 self.reconstruction_metaheuristic.run(solution_copy)
                             )
+
+                            if isinstance(reconstructed_solution, AlwabpSolution):
+                                reconstructed_solution.default_graph_orientation = dgo
 
                             if (
                                 neighborhood_selection := self.reconstruction_metaheuristic.get_neighborhood_selection()

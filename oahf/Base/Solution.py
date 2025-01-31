@@ -207,11 +207,19 @@ class Solution(Entity, ABC):
     @classmethod
     def reset_intensification_diversification_structures(cls) -> None:
         pass
-    
+
     @classmethod
     @abstractmethod
     def from_dict(cls, data: Dict, base_solution: "Solution") -> "Solution":
         raise NotImplementedError(
             "Abstract Method: must be implemented by child classes."
         )
-        
+
+    def __hash__(self) -> int:
+        """
+        Generates a hash for the solution based on its `solution_hash()` method.
+
+        Returns:
+            int: The hash value of the solution.
+        """
+        return self.solution_hash()

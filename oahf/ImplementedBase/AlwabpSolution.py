@@ -424,7 +424,7 @@ class AlwabpSolution(Solution):
             solution_dict["task_allocations_per_station"].append(station_data)
 
         return solution_dict
-    
+
     @classmethod
     def from_dict(cls, data: dict, base_solution: "AlwabpSolution") -> "AlwabpSolution":
         """
@@ -447,8 +447,8 @@ class AlwabpSolution(Solution):
         solution.reset()  # Reset the solution state before populating it
 
         # Set the basic properties
-        solution.id = data.get("id", solution.id)
-        solution._cycle_time_limit = data.get("cycle_time_limit", solution._cycle_time_limit)
+        # solution.id = data.get("id", solution.id)
+        # solution._cycle_time_limit = data.get("cycle_time_limit", solution._cycle_time_limit)
 
         # Assign workers and tasks to stations
         for allocation in data.get("task_allocations_per_station", []):
@@ -458,7 +458,9 @@ class AlwabpSolution(Solution):
 
             # Assign the worker to the station if present
             if worker is not None:
-                solution.add_worker_to_station(worker, station, recalculate_cycle_time=False)
+                solution.add_worker_to_station(
+                    worker, station, recalculate_cycle_time=False
+                )
 
             # Assign the tasks to the station
             for task in tasks:
@@ -472,9 +474,10 @@ class AlwabpSolution(Solution):
         for station in solution.stations:
             solution.calculate_cycle_time(station, force_calculate=True)
 
+        solution._cycle_time_limit = solution.get_max_cycle_time()
+
         # Return the reconstructed solution
         return solution
-
 
     def calculate_cycle_time(
         self, station: int, force_calculate: bool = False

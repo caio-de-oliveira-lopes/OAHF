@@ -88,7 +88,7 @@ class TabuSearch(MetaHeuristic):
     def run(self, sol: Solution) -> Solution:
         """Executes the Tabu Search on a single solution."""
         best_sol = sol.copy()
-        curr_sol = best_sol
+        curr_sol = sol.copy()
         best_eval = self.evaluator.evaluate(best_sol)
 
         self.stop_criteria.reset()
@@ -101,8 +101,9 @@ class TabuSearch(MetaHeuristic):
 
         while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]):  # type: ignore
             if counter % self.neighborhood_selection.num_neighborhoods() == 0:  # type: ignore
+                best_eval.update_penalties()
                 curr_eval = self.evaluator.evaluate(curr_sol)
-                curr_eval.update_penalties()
+                best_eval = self.evaluator.evaluate(best_sol)
             try:
                 if ns is None:
                     break
@@ -137,7 +138,7 @@ class TabuSearch(MetaHeuristic):
                                 and self.acceptance_criteria.accept(
                                     best_move_eval, curr_eval, curr_sol
                                 )
-                            ):
+                            ) or (best_move_eval is None):
                                 if (
                                     not curr_eval.infeasible()
                                     and not curr_eval.has_penalty()
@@ -153,19 +154,23 @@ class TabuSearch(MetaHeuristic):
                                     )
 
                                     curr_sol = best_improv.run(curr_sol)
+                                    curr_eval = self.evaluator.evaluate(curr_sol)
+
+                                    # In order to update the penalties in the evaluation, we need to evaluate it again
+                                    best_eval = self.evaluator.evaluate(best_sol)
 
                                     if self.acceptance_criteria.accept(
                                         best_eval, curr_eval, curr_sol
                                     ):
-                                        best_sol = curr_sol.copy()
-                                        best_eval = curr_eval
+                                        best_move_eval = curr_eval
+                                        best_move = move
+                                        move.unapply_operation(curr_eval)
                                         break
                                 else:
                                     best_move_eval = curr_eval
                                     best_move = move
 
                             move.unapply_operation(curr_eval)
-                            self.evaluator.update_evaluation_after_unapply(curr_sol)
 
                     self.stop_criteria.increment_counter()
                     self.intensification_criteria.increment_counter()
@@ -174,9 +179,16 @@ class TabuSearch(MetaHeuristic):
                         best_move.apply_operation()
                         curr_eval = self.evaluator.evaluate(curr_sol)
 
+                        # In order to update the penalties in the evaluation, we need to evaluate it again
+                        best_eval = self.evaluator.evaluate(best_sol)
+
                         # Update best solution if necessary
-                        if self.acceptance_criteria.accept(
-                            best_eval, curr_eval, curr_sol
+                        if (
+                            not curr_eval.infeasible()
+                            and not curr_eval.has_penalty()
+                            and self.acceptance_criteria.accept(
+                                best_eval, curr_eval, curr_sol
+                            )
                         ):
                             best_sol = curr_sol.copy()
                             best_eval = curr_eval
@@ -211,7 +223,7 @@ class TabuSearch(MetaHeuristic):
                         while search := selected_ns.get_next(self.thread_id):
                             perturbation = Pertubation(
                                 self.thread_id,
-                                NoStopCriteria(),
+                                StopTimeIterationCriteria(iterations=1),
                                 self.evaluator,
                                 ListSelection(False, search),
                                 AlwaysAcceptAcceptanceCriteria(),
@@ -220,7 +232,7 @@ class TabuSearch(MetaHeuristic):
 
                             perturbation_ls = PerturbationDrivenLocalSearch(
                                 self.thread_id,
-                                NoStopCriteria(),
+                                StopTimeIterationCriteria(iterations=1),
                                 self.evaluator,
                                 self.acceptance_criteria,
                                 perturbation,
@@ -230,13 +242,24 @@ class TabuSearch(MetaHeuristic):
                             pool.add_solution(perturbation_ls.run(curr_sol))
 
                         curr_sol = pool.get_best(self.evaluator)
+                        curr_eval = self.evaluator.evaluate(curr_sol)
+
+                        # In order to update the penalties in the evaluation, we need to evaluate it again
+                        best_eval = self.evaluator.evaluate(best_sol)
 
                         # Update best solution if necessary
-                        if curr_sol and self.acceptance_criteria.accept(
-                            best_eval, curr_eval, curr_sol
+                        if (
+                            curr_sol
+                            and not curr_eval.infeasible()
+                            and not curr_eval.has_penalty()
+                            and self.acceptance_criteria.accept(
+                                best_eval, curr_eval, curr_sol
+                            )
                         ):
                             best_sol = curr_sol.copy()
                             best_eval = curr_eval
+
+                    curr_sol = best_sol.copy()
 
                 if self.log_solutions:
                     self.log_best_solution(best_eval)

@@ -99,9 +99,9 @@ class RearrangeCriticalTaskNS(Neighborhood):
             # critical_workstations = self.critical_workstations
 
             for critical_workstation in critical_workstations:
-                tasks_on_critical_station = self.solution.station_tasks_assignment[
-                    critical_workstation
-                ]
+                tasks_on_critical_station = list(
+                    self.solution.station_tasks_assignment[critical_workstation]
+                )
                 # Iterate over non-critical workstations
                 for ncw in self.non_critical_workstations:
                     if self.allow_infeasible_movements:

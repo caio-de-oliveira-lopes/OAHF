@@ -60,7 +60,7 @@ class MultipleBestImprovement(MetaHeuristic):
     def run(self, sol: Solution) -> Solution:
         """Executes the best improvement strategy on the given solution."""
         best_sol = sol.copy()
-        curr_sol = best_sol
+        curr_sol = sol.copy()
         best_eval = self.evaluator.evaluate(best_sol)
 
         self.stop_criteria.reset()
@@ -70,7 +70,7 @@ class MultipleBestImprovement(MetaHeuristic):
             while not self.stop_on_evaluations([best_eval]):
 
                 self.stop_criteria.increment_counter()
-                best_pool = ListPool()
+                best_pool = ListPool([best_sol])
 
                 for _, ns in zip(range(self.num_selections), iter(lambda: self.neighborhood_selection.get_next(self.thread_id), None)):  # type: ignore
                     try:
