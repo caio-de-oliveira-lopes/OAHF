@@ -179,3 +179,46 @@ class JobRotationAlwabpSolution(Solution):
         )
 
         return solution_dict
+
+    @classmethod
+    def from_dict(
+        cls, data: dict, base_solution: "JobRotationAlwabpSolution"
+    ) -> "JobRotationAlwabpSolution":
+        """
+        Reconstructs a JobRotationAlwabpSolution from a dictionary while maintaining the correct
+        problem constraints and structure. Uses an existing base solution to retain necessary
+        problem parameters.
+
+        Args:
+            data (dict): A dictionary representing the serialized JobRotationAlwabpSolution.
+            base_solution (JobRotationAlwabpSolution): A base instance containing required problem
+                                                       parameters and constraints.
+
+        Returns:
+            JobRotationAlwabpSolution: A reconstructed JobRotationAlwabpSolution instance.
+        """
+        # Start by creating a copy of the base solution
+        solution = base_solution.copy()
+
+        # Reset the solution before assigning new values
+        solution.reset()
+
+        # Extract lp_execution_data
+        if "lp_execution_data" in data:
+            solution.lp_execution_data = LpExecutionData.from_dict(
+                data["lp_execution_data"]
+            )
+
+        # Reconstruct period solutions
+        period_solutions_data = data.get("period_solutions", [])
+        for period_idx, period_data in enumerate(period_solutions_data):
+            if (
+                period_data is not None
+                and base_solution.period_solutions[0] is not None
+            ):
+                period_solution = AlwabpSolution.from_dict(
+                    period_data, base_solution.period_solutions[0]
+                )
+                solution.assign_solution_to_period(period_idx, period_solution)
+
+        return solution

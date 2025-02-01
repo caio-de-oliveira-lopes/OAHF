@@ -60,3 +60,21 @@ class LpExecutionData(Entity):
         )
 
         return pulp_execution_dict
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "LpExecutionData":
+        """
+        Reconstructs an LpExecutionData instance from a dictionary.
+
+        Args:
+            data (dict): A dictionary containing solver statistics.
+
+        Returns:
+            LpExecutionData: A reconstructed instance of LpExecutionData.
+        """
+        return cls(
+            simplex_iterations=data.get("simplex_iterations", 0.0),
+            nodes_explored=data.get("nodes_explored", 0.0),
+            optimality_gap=data.get("optimality_gap", 0.0),
+            solve_seconds=data.get("solve_seconds", 0.0),
+        )
