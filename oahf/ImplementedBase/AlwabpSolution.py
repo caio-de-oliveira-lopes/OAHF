@@ -1392,60 +1392,6 @@ class AlwabpSolution(Solution):
 
         return set(related_tasks)
 
-    def to_random_keys(self) -> List[List[int]]:
-        """
-        Converts the current solution into a matrix representation (workers x tasks) suitable for BRKGA.
-
-        Returns:
-            List[List[int]]: A matrix where each row represents a worker and each column a task,
-                             with 1 indicating assignment and 0 otherwise.
-        """
-        # Initialize a matrix with dimensions workers x tasks filled with 0s
-        matrix = [[0 for _ in range(len(self.tasks))] for _ in range(len(self.workers))]
-
-        for task in self.tasks:
-            worker = None
-            for w in self.workers:
-                if task in self.tasks_executed_by_worker[w]:
-                    worker = w
-                    break
-
-            if worker:
-                matrix[worker - 1][task - 1] = 1  # Adjust for 0-based indexing
-
-        return matrix
-
-    def from_random_keys(self, random_keys: List[List[int]]) -> "AlwabpSolution":
-        """
-        Compiles the solution from a matrix representation (workers x tasks) into a dictionary.
-
-        Args:
-            random_keys (List[List[int]]): A matrix where each row represents a worker and each column a task,
-                                           with 1 indicating assignment and 0 otherwise.
-        Returns:
-            AlwabpSolution: A reconstructed ALWABP solution.
-        """
-        worker_tasks = {}
-
-        for worker_idx, task_row in enumerate(random_keys):
-            assigned_tasks = [
-                self.tasks[task_idx]
-                for task_idx, assigned in enumerate(task_row)
-                if assigned == 1
-            ]
-            worker_tasks[self.workers[worker_idx]] = assigned_tasks
-
-        pass
-
-    def get_fitness_value(self) -> float:
-        """
-        Evaluates the current solution based on the maximum cycle time.
-
-        Returns:
-            float: The fitness value of the solution.
-        """
-        return self.get_max_cycle_time()
-
     @classmethod
     def update_task_station_frequencies(
         cls,

@@ -178,6 +178,8 @@ class TabuSearch(MetaHeuristic):
                     self.stop_criteria.increment_counter()
                     self.intensification_criteria.increment_counter()
 
+                    print(f"Iteracao da Busca Tabu {self.stop_criteria.counter}")  # type: ignore
+
                     if best_move:
                         best_move.apply_operation()
                         curr_eval = self.evaluator.evaluate(curr_sol)
