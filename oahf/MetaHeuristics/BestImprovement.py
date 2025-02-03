@@ -28,7 +28,9 @@ class BestImprovement(MetaHeuristic):
         :param ns: Neighborhood selection strategy.
         :param criteria: Acceptance criteria for new solutions.
         """
-        super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, ns)
+        super().__init__(
+            thread_id, stop_criteria, evaluator, acceptance_criteria, ns.copy()
+        )
 
     def copy(self, thread: int) -> "MetaHeuristic":
         """Creates a copy of the current BestImprovement instance."""

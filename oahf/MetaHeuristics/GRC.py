@@ -42,7 +42,9 @@ class GRC(MetaHeuristic):
             criteria (AcceptanceCriteria): The acceptance criteria for solutions.
         """
 
-        super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, ns)
+        super().__init__(
+            thread_id, stop_criteria, evaluator, acceptance_criteria, ns.copy()
+        )
         self.greediness = greediness
         self.original_greediness = greediness
         self.order_moves = order_moves

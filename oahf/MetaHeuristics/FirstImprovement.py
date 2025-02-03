@@ -27,7 +27,9 @@ class FirstImprovement(MetaHeuristic):
         :param ns: Neighborhood selection strategy.
         :param criteria: Acceptance criteria for new solutions.
         """
-        super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, ns)
+        super().__init__(
+            thread_id, stop_criteria, evaluator, acceptance_criteria, ns.copy()
+        )
 
     def copy(self, thread: int) -> "MetaHeuristic":
         """Creates a copy of the current FirstImprovement instance."""
@@ -50,7 +52,7 @@ class FirstImprovement(MetaHeuristic):
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
 
-        while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]): # type: ignore
+        while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]):  # type: ignore
             try:
                 # Warning: circular selections with no time StopCriteria may get in an infinite loop
                 if ns is None:

@@ -39,7 +39,7 @@ class MultipleBestImprovement(MetaHeuristic):
             stop_criteria,
             evaluator,
             acceptance_criteria,
-            ns,
+            ns.copy(),
             destination_pool=destination_pool,
         )
         self.num_selections = ns.num_neighborhoods()
@@ -67,6 +67,7 @@ class MultipleBestImprovement(MetaHeuristic):
         self.acceptance_criteria.reset()
 
         if self.neighborhood_selection:
+
             while not self.stop_on_evaluations([best_eval]):
 
                 self.stop_criteria.increment_counter()

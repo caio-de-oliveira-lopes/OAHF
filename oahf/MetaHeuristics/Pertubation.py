@@ -35,7 +35,7 @@ class Pertubation(MetaHeuristic):
                 allowing the algorithm to explore areas outside the feasible region to potentially
                 escape local optima.
         """
-        super().__init__(thread_id, stop, evaluator, acceptance_criteria, ns)
+        super().__init__(thread_id, stop, evaluator, acceptance_criteria, ns.copy())
         self.accept_infeasible = accept_infeasible
 
     def copy(self, thread: int) -> "Pertubation":

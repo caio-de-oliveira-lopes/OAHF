@@ -60,12 +60,14 @@ class TabuSearch(MetaHeuristic):
             diversification_ls (MetaHeuristic): A local search metaheuristic used to explore
                 diverse solutions during the diversification phase.
         """
-        super().__init__(thread_id, stop_criteria, evaluator, acceptance_criteria, ns)
+        super().__init__(
+            thread_id, stop_criteria, evaluator, acceptance_criteria, ns.copy()
+        )
         self.tabu_list = TabuSearch.TabuTenure()
         self.intensification_criteria = intensification_criteria
-        self.second_level_ns = second_level_ns
-        self.intensification_ns = intensification_ns
-        self.diversification_ns = diversification_ns
+        self.second_level_ns = second_level_ns.copy()
+        self.intensification_ns = intensification_ns.copy()
+        self.diversification_ns = diversification_ns.copy()
         self.intensification_ls = intensification_ls
         self.diversification_ls = diversification_ls
 
@@ -94,6 +96,7 @@ class TabuSearch(MetaHeuristic):
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
         self.intensification_criteria.reset()
+
         type(best_sol).reset_intensification_diversification_structures()
 
         counter = 0
@@ -206,15 +209,15 @@ class TabuSearch(MetaHeuristic):
                         self.intensification_criteria.reset()
 
                         selected_ns = (
-                            self.intensification_ns
+                            self.intensification_ns.copy()
                             if intensification
-                            else self.diversification_ns
+                            else self.diversification_ns.copy()
                         )
 
                         selected_ls = (
-                            self.intensification_ls
+                            self.intensification_ls.copy(self.thread_id)
                             if intensification
-                            else self.diversification_ls
+                            else self.diversification_ls.copy(self.thread_id)
                         )
 
                         intensification = not intensification
@@ -225,7 +228,7 @@ class TabuSearch(MetaHeuristic):
                                 self.thread_id,
                                 StopTimeIterationCriteria(iterations=1),
                                 self.evaluator,
-                                ListSelection(False, search),
+                                ListSelection(False, search.copy()),
                                 AlwaysAcceptAcceptanceCriteria(),
                                 True,
                             )
