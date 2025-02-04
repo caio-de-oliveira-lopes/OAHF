@@ -40,6 +40,7 @@ class AlwabpSolution(Solution):
         "all_task_precedences",
         "max_positional_weight",
         "station_cycle_time_memo",
+        "get_tasks_executed_by_worker_memo",
         "_cycle_time_limit",
         "_default_graph_orientation",
         "print_solution_updates",
@@ -53,47 +54,61 @@ class AlwabpSolution(Solution):
         self.name = "AlwabpSolution"
 
         # You may consider converting these to tuples if they are never mutated:
-        self.tasks = tuple(range(1, number_of_tasks + 1))
-        self.workers = tuple(range(1, number_of_workers + 1))
-        self.stations = tuple(range(1, number_of_stations + 1))
+        self.tasks: Tuple[int, ...] = tuple(range(1, number_of_tasks + 1))
+        self.workers: Tuple[int, ...] = tuple(range(1, number_of_workers + 1))
+        self.stations: Tuple[int, ...] = tuple(range(1, number_of_stations + 1))
 
         # Create dictionaries with lists that may be mutated.
-        self._task_execution_times = {
+        self._task_execution_times: Dict[int, List[float]] = {
             task: [float("inf")] * number_of_workers for task in self.tasks
         }
-        self._bounded_task_execution_times = {
+        self._bounded_task_execution_times: Dict[int, List[float]] = {
             task: times.copy() for task, times in self._task_execution_times.items()
         }
 
-        self.station_worker_assignment = {station: None for station in self.stations}
-        self.worker_station_assignment = {worker: None for worker in self.workers}
-        self.station_tasks_assignment = {station: [] for station in self.stations}
-        self.task_station_assignment = {task: None for task in self.tasks}
+        self.station_worker_assignment: Dict[int, Optional[int]] = {
+            station: None for station in self.stations
+        }
+        self.worker_station_assignment: Dict[int, Optional[int]] = {
+            worker: None for worker in self.workers
+        }
+        self.station_tasks_assignment: Dict[int, List[int]] = {
+            station: [] for station in self.stations
+        }
+        self.task_station_assignment: Dict[int, Optional[int]] = {
+            task: None for task in self.tasks
+        }
 
-        self._unassigned_workers = list(self.workers)
-        self._unassigned_tasks = list(self.tasks)
+        self._unassigned_workers: List[int] = list(self.workers)
+        self._unassigned_tasks: List[int] = list(self.tasks)
 
-        self.immediate_task_precedences = {
+        self.immediate_task_precedences: Dict[  # type: ignore
+            GraphOrientation, Dict[int, List[int]]
+        ] = {
             graph_orientation: {task: [] for task in self.tasks}
             for graph_orientation in EnumUtil.get_values(GraphOrientation)
         }
-        self.tasks_executed_by_worker = {worker: [] for worker in self.workers}
-        self._cycle_time_limit = None
+        self.tasks_executed_by_worker: Dict[int, Tuple[int, ...]] = {
+            worker: tuple() for worker in self.workers
+        }
+        self._cycle_time_limit: Optional[float] = None
 
-        self.all_task_precedences = {
+        self.all_task_precedences: Dict[GraphOrientation, Dict[int, List[int]]] = {  # type: ignore
             graph_orientation: {task: [] for task in self.tasks}
             for graph_orientation in EnumUtil.get_values(GraphOrientation)
         }
 
-        self.max_positional_weight = {
+        self.max_positional_weight: Dict[MaxPositionalWeightType, Dict[int, float]] = {  # type: ignore
             weight_type: {task: -1 for task in self.tasks}
             for weight_type in EnumUtil.get_values(MaxPositionalWeightType)
         }
 
-        self.station_cycle_time_memo = {station: 0.0 for station in self.stations}
-        self._default_graph_orientation = GraphOrientation.FORWARD
+        self.station_cycle_time_memo: Dict[int, float] = {
+            station: 0.0 for station in self.stations
+        }
+        self._default_graph_orientation: GraphOrientation = GraphOrientation.FORWARD
 
-        self.print_solution_updates = False
+        self.print_solution_updates: bool = False
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -136,9 +151,7 @@ class AlwabpSolution(Solution):
             orientation: {task: lst.copy() for task, lst in inner.items()}
             for orientation, inner in self.immediate_task_precedences.items()
         }
-        result.tasks_executed_by_worker = {
-            k: v.copy() for k, v in self.tasks_executed_by_worker.items()
-        }
+        result.tasks_executed_by_worker = self.tasks_executed_by_worker
         result.all_task_precedences = {
             orientation: {task: lst.copy() for task, lst in inner.items()}
             for orientation, inner in self.all_task_precedences.items()
@@ -198,8 +211,9 @@ class AlwabpSolution(Solution):
         self._calculate_max_positional_weights()
 
     def _update_tasks_executed_by_worker(self) -> None:
-        self.tasks_executed_by_worker: Dict[int, List[int]] = {
-            worker: self.get_tasks_executed_by_worker(worker) for worker in self.workers
+        self.tasks_executed_by_worker = {
+            worker: self.__get_tasks_executed_by_worker(worker)
+            for worker in self.workers
         }
 
     @property
@@ -677,7 +691,7 @@ class AlwabpSolution(Solution):
 
         self.order_solution_tasks()
 
-    def get_tasks_executed_by_worker(self, worker: int) -> List[int]:
+    def __get_tasks_executed_by_worker(self, worker: int) -> Tuple[int, ...]:
         """
         Gets the list of tasks that a specific worker can execute, based on execution times.
 
@@ -702,7 +716,7 @@ class AlwabpSolution(Solution):
             ):  # worker - 1 for index adjustment
                 tasks_executed.append(task)
 
-        return tasks_executed
+        return tuple(tasks_executed)
 
     def order_solution_tasks(self) -> None:
         """
@@ -983,7 +997,7 @@ class AlwabpSolution(Solution):
     ) -> bool:
         worker = worker or self.station_worker_assignment[station]
 
-        if worker and task not in self.get_tasks_executed_by_worker(worker):
+        if worker and task not in self.tasks_executed_by_worker[worker]:
             return False
 
         if (
@@ -1009,7 +1023,7 @@ class AlwabpSolution(Solution):
         return True
 
     def get_task_execution_time(self, task: int, worker: Optional[int] = None) -> float:
-        if worker and task in self.get_tasks_executed_by_worker(worker):
+        if worker and task in self.tasks_executed_by_worker[worker]:
             return self._task_execution_times[task][worker - 1]
         else:
             return max(self._bounded_task_execution_times[task])
@@ -1256,7 +1270,7 @@ class AlwabpSolution(Solution):
               False otherwise.
         """
         tasks = self.station_tasks_assignment[station]
-        executable_tasks = self.get_tasks_executed_by_worker(worker)
+        executable_tasks = self.tasks_executed_by_worker[worker]
 
         for task in tasks:
             if task not in executable_tasks:
@@ -1293,7 +1307,7 @@ class AlwabpSolution(Solution):
         available_moves = [
             move
             for move in movements
-            if move.task in self.get_tasks_executed_by_worker(worker)
+            if move.task in self.tasks_executed_by_worker[worker]
         ]
 
         # available_moves = [move for move in available_moves if self.can_task_be_assigned_to(move.task, move.station, worker)] # type: ignore
