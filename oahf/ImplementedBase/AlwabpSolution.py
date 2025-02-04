@@ -1,6 +1,6 @@
 import copy
 from enum import Enum, auto
-from typing import Callable, Dict, List, Optional, Set
+from typing import Callable, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 
@@ -23,157 +23,141 @@ class MaxPositionalWeightType(Enum):
 
 
 class AlwabpSolution(Solution):
-    _task_station_frequency = {}
-    _worker_station_frequency = {}
+    __slots__ = (
+        "tasks",
+        "workers",
+        "stations",
+        "_task_execution_times",
+        "_bounded_task_execution_times",
+        "station_worker_assignment",
+        "worker_station_assignment",
+        "station_tasks_assignment",
+        "task_station_assignment",
+        "_unassigned_workers",
+        "_unassigned_tasks",
+        "immediate_task_precedences",
+        "tasks_executed_by_worker",
+        "all_task_precedences",
+        "max_positional_weight",
+        "station_cycle_time_memo",
+        "_cycle_time_limit",
+        "_default_graph_orientation",
+        "print_solution_updates",
+        "name",
+    )
 
     def __init__(
         self, number_of_tasks: int, number_of_workers: int, number_of_stations: int
     ) -> None:
-        """
-        Initializes the ALWABP problem with the number of tasks, workers, and stations.
-
-        Args:
-            number_of_tasks (int): The total number of tasks in the problem.
-            number_of_workers (int): The total number of workers.
-            number_of_stations (int): The total number of stations.
-        """
-        super().__init__()
+        super().__init__()  # Calls Entity.__init__ via Solution
         self.name = "AlwabpSolution"
 
-        self.tasks: List[int] = [
-            (i + 1) for i in range(number_of_tasks)
-        ]  # List of tasks [1, 2, ..., number_of_tasks]
-        self.workers: List[int] = [
-            (w + 1) for w in range(number_of_workers)
-        ]  # List of workers [1, 2, ..., number_of_workers]
-        self.stations: List[int] = [
-            (s + 1) for s in range(number_of_stations)
-        ]  # List of stations [1, 2, ..., number_of_stations]
+        # You may consider converting these to tuples if they are never mutated:
+        self.tasks = tuple(range(1, number_of_tasks + 1))
+        self.workers = tuple(range(1, number_of_workers + 1))
+        self.stations = tuple(range(1, number_of_stations + 1))
 
-        # Dictionary where:
-        # key = task, value = list of execution times for each worker
-        # (can have float('inf') values)
-        self._task_execution_times: Dict[int, List[float]] = {
-            task: [float("inf") for _ in range(number_of_workers)]
-            for task in self.tasks
+        # Create dictionaries with lists that may be mutated.
+        self._task_execution_times = {
+            task: [float("inf")] * number_of_workers for task in self.tasks
         }
-        self._bounded_task_execution_times: Dict[int, List[float]] = copy.deepcopy(
-            self._task_execution_times
-        )
-
-        # Dictionary where:
-        # key = station, value = worker assigned to that station
-        self.station_worker_assignment: Dict[int, Optional[int]] = {
-            station: None for station in self.stations
-        }  # Which worker is assigned to each station
-
-        # Dictionary where:
-        # key = worker, value = station assigned to that station
-        self.worker_station_assignment: Dict[int, Optional[int]] = {
-            worker: None for worker in self.workers
-        }  # Which station is assigned to each worker
-
-        # Dictionary where:
-        # key = worker, value = list of tasks assigned to that worker
-        self.station_tasks_assignment: Dict[int, List[int]] = {
-            station: [] for station in self.stations
+        self._bounded_task_execution_times = {
+            task: times.copy() for task, times in self._task_execution_times.items()
         }
 
-        self._unassigned_workers: List[int] = list(self.workers)
-        self._unassigned_tasks: List[int] = list(self.tasks)
+        self.station_worker_assignment = {station: None for station in self.stations}
+        self.worker_station_assignment = {worker: None for worker in self.workers}
+        self.station_tasks_assignment = {station: [] for station in self.stations}
+        self.task_station_assignment = {task: None for task in self.tasks}
 
-        # Dictionary where:
-        # key = GraphOrientation (Forward or Backward), than key = task, value = list of tasks
-        # representing that must precede the key task
-        self.immediate_task_precedences: Dict[  # type: ignore
-            GraphOrientation, Dict[int, List[int]]
-        ] = {
-            graph_orientation: {task: [] for task in self.tasks}  # type: ignore
+        self._unassigned_workers = list(self.workers)
+        self._unassigned_tasks = list(self.tasks)
+
+        self.immediate_task_precedences = {
+            graph_orientation: {task: [] for task in self.tasks}
             for graph_orientation in EnumUtil.get_values(GraphOrientation)
         }
-        # Initialize an empty dictionary to store the results for each worker
-        self.tasks_executed_by_worker: Dict[int, List[int]] = {
-            worker: [] for worker in self.workers
-        }
+        self.tasks_executed_by_worker = {worker: [] for worker in self.workers}
+        self._cycle_time_limit = None
 
-        self._cycle_time_limit: Optional[float] = None
-
-        # Similar structure to self.immediate_task_precedences, needs to call 'process_graph_data' to fill it
-        self.all_task_precedences: Dict[GraphOrientation, Dict[int, List[int]]] = {  # type: ignore
-            graph_orientation: {task: [] for task in self.tasks}  # type: ignore
+        self.all_task_precedences = {
+            graph_orientation: {task: [] for task in self.tasks}
             for graph_orientation in EnumUtil.get_values(GraphOrientation)
         }
 
-        self.max_positional_weight: Dict[MaxPositionalWeightType, Dict[int, float]] = {  # type: ignore
-            positional_weight_type: {task: -1 for task in self.tasks}
-            for positional_weight_type in EnumUtil.get_values(MaxPositionalWeightType)
+        self.max_positional_weight = {
+            weight_type: {task: -1 for task in self.tasks}
+            for weight_type in EnumUtil.get_values(MaxPositionalWeightType)
         }
 
-        # Memorization structure to store the cycle time of each station
-        self.station_cycle_time_memo: Dict[int, float] = {
-            station: 0.0 for station in self.stations
+        self.station_cycle_time_memo = {station: 0.0 for station in self.stations}
+        self._default_graph_orientation = GraphOrientation.FORWARD
+
+        self.print_solution_updates = False
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+
+        # --- Copy parent's private attributes ---
+        # Since __slots__ bypasses __dict__, check if they exist via __dict__ fallback
+        for attr in ("_Entity__id", "_Entity__name"):
+            if attr in self.__dict__:
+                setattr(result, attr, self.__dict__[attr])
+
+        # --- Copy attributes from Solution and AlwabpSolution ---
+        # For immutable or "safe" objects, we can assign directly.
+        result.print_solution_updates = self.print_solution_updates
+        result.name = self.name
+        result.tasks = self.tasks
+        result.workers = self.workers
+        result.stations = self.stations
+
+        # For dictionaries whose values are mutable lists, use shallow copies.
+        result._task_execution_times = {
+            k: v.copy() for k, v in self._task_execution_times.items()
+        }
+        result._bounded_task_execution_times = {
+            k: v.copy() for k, v in self._bounded_task_execution_times.items()
         }
 
-        # Default Graph Orientation
-        self._default_graph_orientation: GraphOrientation = GraphOrientation.FORWARD
+        result.station_worker_assignment = self.station_worker_assignment.copy()
+        result.worker_station_assignment = self.worker_station_assignment.copy()
+        result.station_tasks_assignment = {
+            k: v.copy() for k, v in self.station_tasks_assignment.items()
+        }
+        result.task_station_assignment = self.task_station_assignment.copy()
+        result._unassigned_workers = self._unassigned_workers.copy()
+        result._unassigned_tasks = self._unassigned_tasks.copy()
+
+        # For nested dictionaries, perform a shallow copy of the inner lists.
+        result.immediate_task_precedences = {
+            orientation: {task: lst.copy() for task, lst in inner.items()}
+            for orientation, inner in self.immediate_task_precedences.items()
+        }
+        result.tasks_executed_by_worker = {
+            k: v.copy() for k, v in self.tasks_executed_by_worker.items()
+        }
+        result.all_task_precedences = {
+            orientation: {task: lst.copy() for task, lst in inner.items()}
+            for orientation, inner in self.all_task_precedences.items()
+        }
+        result.max_positional_weight = {
+            k: v.copy() for k, v in self.max_positional_weight.items()
+        }
+        result.station_cycle_time_memo = self.station_cycle_time_memo.copy()
+
+        result._cycle_time_limit = self._cycle_time_limit
+        result._default_graph_orientation = self._default_graph_orientation
+
+        return result
 
     def copy(self) -> "AlwabpSolution":
         """
-        Creates a copy of the current solution.
-
-        Returns:
-            AlwabpSolution: A new instance of the AlwabpSolution with the same data.
+        Creates a deep copy of the current solution using the custom __deepcopy__ method.
         """
-        # Create a new instance with the same dimensions
-        new_copy = AlwabpSolution(
-            number_of_tasks=len(self.tasks),
-            number_of_workers=len(self.workers),
-            number_of_stations=len(self.stations),
-        )
-
-        # Use shallow copies for simpler structures
-        new_copy._task_execution_times = {
-            task: times.copy() for task, times in self._task_execution_times.items()
-        }
-        new_copy._bounded_task_execution_times = {
-            task: times.copy()
-            for task, times in self._bounded_task_execution_times.items()
-        }
-        new_copy.station_worker_assignment = self.station_worker_assignment.copy()
-        new_copy.worker_station_assignment = self.worker_station_assignment.copy()
-        new_copy.station_tasks_assignment = {
-            station: tasks.copy()
-            for station, tasks in self.station_tasks_assignment.items()
-        }
-        new_copy._unassigned_workers = self._unassigned_workers.copy()
-        new_copy._unassigned_tasks = self._unassigned_tasks.copy()
-        new_copy.immediate_task_precedences = {
-            orientation: {
-                task: precedences.copy() for task, precedences in tasks.items()
-            }
-            for orientation, tasks in self.immediate_task_precedences.items()
-        }
-        new_copy.tasks_executed_by_worker = {
-            worker: tasks.copy()
-            for worker, tasks in self.tasks_executed_by_worker.items()
-        }
-        new_copy.all_task_precedences = {
-            orientation: {
-                task: precedences.copy() for task, precedences in tasks.items()
-            }
-            for orientation, tasks in self.all_task_precedences.items()
-        }
-        new_copy.max_positional_weight = {
-            weight_type: weights.copy()
-            for weight_type, weights in self.max_positional_weight.items()
-        }
-        new_copy.station_cycle_time_memo = self.station_cycle_time_memo.copy()
-
-        # Copy immutable attributes
-        new_copy._cycle_time_limit = self._cycle_time_limit
-        new_copy._default_graph_orientation = self._default_graph_orientation
-
-        return new_copy
+        return copy.deepcopy(self)
 
     def validade_aspects(self) -> bool:
         if self.cycle_time_limit and (
@@ -198,6 +182,9 @@ class AlwabpSolution(Solution):
         }
         self.station_tasks_assignment: Dict[int, List[int]] = {
             station: [] for station in self.stations
+        }
+        self.task_station_assignment: Dict[int, Optional[int]] = {
+            task: None for task in self.tasks
         }
         self._unassigned_workers: List[int] = list(self.workers)
         self._unassigned_tasks: List[int] = list(self.tasks)
@@ -869,6 +856,7 @@ class AlwabpSolution(Solution):
         try:
             if task not in self.station_tasks_assignment.get(station, []):
                 self.station_tasks_assignment[station].append(task)
+                self.task_station_assignment[task] = station
                 self._unassigned_tasks.remove(task)
 
                 worker = self.station_worker_assignment[station]
@@ -902,6 +890,7 @@ class AlwabpSolution(Solution):
                 self.station_tasks_assignment[station].remove(
                     task
                 )  # Remove the task from the station's list
+                self.task_station_assignment[task] = None
                 self._unassigned_tasks.append(task)
 
                 worker = self.station_worker_assignment[station]
@@ -930,13 +919,7 @@ class AlwabpSolution(Solution):
             Optional[int]: The station ID where the task is assigned,
             or None if the task is not assigned to any station.
         """
-        # Iterate through station to find the task
-        for station, tasks in self.station_tasks_assignment.items():
-            if task in tasks:
-                return station
-
-        # If the task is not found in any station's tasks, return None
-        return None
+        return self.task_station_assignment[task]
 
     def find_station_for_worker(self, worker: int) -> Optional[int]:
         """

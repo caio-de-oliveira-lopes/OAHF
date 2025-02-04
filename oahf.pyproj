@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>oahf</Name>
     <RootNamespace>oahf</RootNamespace>
-    <InterpreterId>CondaEnv|CondaEnv|oahf</InterpreterId>
+    <InterpreterId>Global|PythonCore|3.9</InterpreterId>
     <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
     <IsWindowsApplication>False</IsWindowsApplication>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
@@ -136,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|oahf" />
+    <InterpreterReference Include="Global|PythonCore|3.9" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

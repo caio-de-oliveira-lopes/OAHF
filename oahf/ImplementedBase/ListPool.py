@@ -51,7 +51,7 @@ class ListPool(Pool):
     def get_list(self) -> List[Solution]:
         """Get a list of solutions in the pool."""
         return self.solutions
-    
+
     @classmethod
     def from_dict(cls, heuristic_parser: "HeuristicParser", data: dict) -> "ListPool":
         """
@@ -63,21 +63,22 @@ class ListPool(Pool):
         Returns:
             ListPool: An instance of the ListPool class populated with data from the dictionary.
         """
-        
+
         from oahf.MetaHeuristicsParser.HeuristicParser import HeuristicParser
-        
+
         if not isinstance(heuristic_parser, HeuristicParser):
-            raise ValueError(f"Unavailable Heuristic Parser when trying to parse pool: {data.get("id")}")
-        
+            raise ValueError(
+                f"Unavailable Heuristic Parser when trying to parse pool: {data.get('id')}"
+            )
+
         # Populate the solutions list
         solutions = data.get("solutions", [])
         parsed_solutions = [Solution.from_dict(sol) for sol in solutions]
 
         instance = ListPool(parsed_solutions, heuristic_parser_key=data.get("id"))
-        
+
         # Populate specific attributes
         instance._solution_info = data.get("solution_info", [])
         instance.evaluator = heuristic_parser.parse_evaluator(data.get("evaluator", {}))
-    
-    
+
         return instance
