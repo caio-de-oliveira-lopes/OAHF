@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple, Type
+from typing import Optional
 
-from oahf.Base.Constraint import Constraint
-from oahf.Base.EfficiencyReport import EfficiencyReport, Event
 from oahf.Base.Entity import Entity
 from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
@@ -24,7 +22,6 @@ class Neighborhood(Entity, ABC):
             is_perturbation (bool): A flag indicating if the neighborhood is a perturbation. Default is False.
         """
         super().__init__()
-        self.report: "EfficiencyReport" = EfficiencyReport(type(self).__name__)
         self.stop_criteria: Optional["StopCriteria"] = stop_criteria
         self.is_perturbation: bool = is_perturbation
         self._allow_infeasible_movements: bool = False
@@ -37,6 +34,7 @@ class Neighborhood(Entity, ABC):
     def allow_infeasible_movements(self, value: bool) -> None:
         self._allow_infeasible_movements = value
 
+    @abstractmethod
     def copy(self) -> "Neighborhood":
         """Abstract method to create a copy of the neighborhood."""
         raise NotImplementedError
@@ -57,10 +55,12 @@ class Neighborhood(Entity, ABC):
         self.clear_related_keys()
         return self.build_neighborhood(thread_id, solution)
 
+    @abstractmethod
     def build_neighborhood(self, thread_id: int, solution: "Solution") -> bool:
         """Abstract method to build the neighborhood. To be implemented in subclasses."""
         raise NotImplementedError
 
+    @abstractmethod
     def get_move(self) -> "Movement":
         """Abstract method to get a movement. To be implemented in subclasses."""
         raise NotImplementedError
@@ -87,8 +87,6 @@ class Neighborhood(Entity, ABC):
         if self.stop():
             return None
 
-        self.report.report_move_search_start()
-
         move: Optional["Movement"] = None
 
         try:
@@ -99,24 +97,11 @@ class Neighborhood(Entity, ABC):
             )
             raise
 
-        self.report.report_move_search_end()
         return move
 
     def stop(self) -> bool:
         """Checks if the stopping criteria have been met."""
         return self.stop_criteria is not None and self.stop_criteria.stop()
-
-    def get_efficiency_report(self) -> str:
-        """Returns the efficiency report as a string."""
-        return str(self.report)
-
-    def get_efficiency_to_json(self) -> List[Tuple[float, Event]]:
-        """Returns the efficiency report in JSON format."""
-        return self.report.to_json()
-
-    def get_constraints(self) -> Dict[Type[Constraint], int]:
-        """Returns the constraints associated with the efficiency report."""
-        return self.report.get_constraints()
 
     def set_stop_criteria(self, stop: Optional["StopCriteria"]) -> None:
         """Sets the stopping criteria for the neighborhood."""

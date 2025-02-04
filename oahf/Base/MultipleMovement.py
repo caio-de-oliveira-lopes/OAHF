@@ -1,6 +1,5 @@
 from typing import Optional, Sequence
 
-from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
 
@@ -9,11 +8,10 @@ class MultipleMovement(Movement):
     def __init__(
         self,
         solution: "Solution",
-        report: "EfficiencyReport",
         movements: Sequence[Movement],
         override_cost: Optional[float] = None,
     ):
-        super().__init__(solution, report)
+        super().__init__(solution)
         self.movements: Sequence[Movement] = movements
         self.override_cost: Optional[float] = override_cost
 
@@ -64,7 +62,6 @@ class MultipleMovement(Movement):
         # Create a new instance of MultipleMovement with copied movements
         copied_multiple_movement = MultipleMovement(
             solution=solution_to_use,
-            report=self.report,
             movements=copied_movements,
             override_cost=self.override_cost,
         )

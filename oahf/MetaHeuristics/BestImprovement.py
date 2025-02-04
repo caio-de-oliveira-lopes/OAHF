@@ -67,22 +67,15 @@ class BestImprovement(MetaHeuristic):
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)
 
-                            if self.log_solutions:
-                                self.log_current_solution(curr_eval)
-
                             if self.acceptance_criteria.accept(
                                 best_eval, curr_eval, curr_sol
                             ):
-                                move.report_apply_improvement(curr_eval, best_eval)
                                 best_sol = curr_sol.copy()
                                 best_eval = curr_eval
 
                             move.unapply_operation(curr_eval)
 
                         self.stop_criteria.increment_counter()
-
-                        if self.log_solutions:
-                            self.log_best_solution(best_eval)
 
             except Exception as ex:
                 LogManager.something_went_wrong(self.__class__.__name__, ex)

@@ -5,7 +5,11 @@ from oahf.Base.Entity import Entity
 
 class ConstraintEvaluation(Entity):
     def __init__(
-        self, constraint: "Constraint", infeasibility: bool, penalty: float = 0.0
+        self,
+        constraint: "Constraint",
+        infeasibility: bool,
+        base_penalty_value: float,
+        penalty: float = 0.0,
     ):
         """
         Initializes a ConstraintEvaluation object.
@@ -15,6 +19,7 @@ class ConstraintEvaluation(Entity):
         """
         super().__init__()
         self._infeasible: bool = infeasibility
+        self._base_penalty_value: float = base_penalty_value
         self._penalty: float = penalty
         self._constraint_type: Type["Constraint"] = type(constraint)
 
@@ -32,3 +37,11 @@ class ConstraintEvaluation(Entity):
     def constraint_type(self) -> Type["Constraint"]:
         """Returns the type of the constraint."""
         return self._constraint_type
+
+    def reevaluate(self) -> None:
+        try:
+            if self.penalty > 0.0:
+                factor = self._constraint_type._penalty() / self._base_penalty_value
+                self._penalty *= factor
+        except:
+            pass

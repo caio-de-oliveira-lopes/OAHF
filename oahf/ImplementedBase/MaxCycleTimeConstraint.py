@@ -29,10 +29,10 @@ class MaxCycleTimeConstraint(Constraint):
             return self.infeasible_evaluation()
 
     def infeasible_evaluation(self, penalty: float = 0) -> "ConstraintEvaluation":
-        return ConstraintEvaluation(self, True, penalty)
+        return ConstraintEvaluation(self, True, 0.0, penalty)
 
     def feasible_evaluation(self, penalty: float = 0) -> "ConstraintEvaluation":
-        return ConstraintEvaluation(self, False, penalty)
+        return ConstraintEvaluation(self, False, 0.0, penalty)
 
     @classmethod
     def multiply_penalty(cls, multiplier: float) -> None:

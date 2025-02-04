@@ -117,18 +117,16 @@ class RearrangeCriticalTaskNS(Neighborhood):
                     for task in available_tasks_to_rearrange:
                         # Define the removal and insertion movements
                         removal_move = AlwabpRemovalMovement(
-                            task, None, critical_workstation, self.solution, self.report
+                            task, None, critical_workstation, self.solution
                         )
                         insertion_move = AlwabpInsertionMovement(
-                            task, None, ncw, self.solution, self.report
+                            task, None, ncw, self.solution
                         )
 
                         # Combine the movements into a rearrange operation
                         rearrange_composition = [removal_move, insertion_move]
 
-                        move = MultipleMovement(
-                            self.solution, self.report, rearrange_composition
-                        )
+                        move = MultipleMovement(self.solution, rearrange_composition)
 
                         yield move
         else:

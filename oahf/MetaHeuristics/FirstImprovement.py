@@ -71,8 +71,7 @@ class FirstImprovement(MetaHeuristic):
                             if self.acceptance_criteria.accept(
                                 best_eval, curr_eval, curr_sol
                             ):
-                                move.report_apply_improvement(curr_eval, best_eval)
-                                best_sol = curr_sol  # No need to copy here
+                                best_sol = curr_sol
                                 ns.accept_movement()
                                 self.evaluator.save_evaluation_state(best_sol)
                                 return best_sol

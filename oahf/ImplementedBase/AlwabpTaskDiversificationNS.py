@@ -88,12 +88,10 @@ class AlwabpTaskDiversificationNS(Neighborhood):
             for station in solution_copy.stations:
                 for task in solution_copy.station_tasks_assignment[station]:
                     cleaning_moves.append(
-                        AlwabpRemovalMovement(
-                            task, None, station, solution_copy, self.report
-                        )
+                        AlwabpRemovalMovement(task, None, station, solution_copy)
                     )
 
-            cleaning_move = MultipleMovement(solution_copy, self.report, cleaning_moves)
+            cleaning_move = MultipleMovement(solution_copy, cleaning_moves)
 
             assign_moves = []
             # Generate task reassignment movements based on the lowest task frequency.
@@ -101,17 +99,13 @@ class AlwabpTaskDiversificationNS(Neighborhood):
                 station = AlwabpSolution.get_station_with_lowest_frequency_to_task(task)
                 if station:
                     assign_moves.append(
-                        AlwabpInsertionMovement(
-                            task, None, station, solution_copy, self.report
-                        )
+                        AlwabpInsertionMovement(task, None, station, solution_copy)
                     )
 
-            assign_move = MultipleMovement(solution_copy, self.report, assign_moves)
+            assign_move = MultipleMovement(solution_copy, assign_moves)
 
             # Combine removal and reassignment movements into a single move.
-            move = MultipleMovement(
-                solution_copy, self.report, [cleaning_move, assign_move]
-            )
+            move = MultipleMovement(solution_copy, [cleaning_move, assign_move])
 
             yield move
         else:

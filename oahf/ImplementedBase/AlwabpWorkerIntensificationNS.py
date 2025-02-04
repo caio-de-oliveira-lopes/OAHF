@@ -88,12 +88,10 @@ class AlwabpWorkerIntensificationNS(Neighborhood):
                 worker = solution_copy.station_worker_assignment[station]
                 if worker:
                     cleaning_moves.append(
-                        AlwabpRemovalMovement(
-                            None, worker, station, solution_copy, self.report
-                        )
+                        AlwabpRemovalMovement(None, worker, station, solution_copy)
                     )
 
-            cleaning_move = MultipleMovement(solution_copy, self.report, cleaning_moves)
+            cleaning_move = MultipleMovement(solution_copy, cleaning_moves)
 
             assign_moves = []
             # Generate worker reassignment movements based on worker frequency.
@@ -103,17 +101,13 @@ class AlwabpWorkerIntensificationNS(Neighborhood):
                 )
                 if station:
                     assign_moves.append(
-                        AlwabpInsertionMovement(
-                            None, worker, station, solution_copy, self.report
-                        )
+                        AlwabpInsertionMovement(None, worker, station, solution_copy)
                     )
 
-            assign_move = MultipleMovement(solution_copy, self.report, assign_moves)
+            assign_move = MultipleMovement(solution_copy, assign_moves)
 
             # Combine removal and reassignment movements into a single move.
-            move = MultipleMovement(
-                solution_copy, self.report, [cleaning_move, assign_move]
-            )
+            move = MultipleMovement(solution_copy, [cleaning_move, assign_move])
 
             yield move
         else:

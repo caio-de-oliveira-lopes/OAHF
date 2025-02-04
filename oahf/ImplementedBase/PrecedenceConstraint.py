@@ -87,7 +87,7 @@ class PrecedenceConstraint(Constraint):
         return violation_count
 
     def infeasible_evaluation(self, penalty: float = 0) -> "ConstraintEvaluation":
-        return ConstraintEvaluation(self, True, penalty)
+        return ConstraintEvaluation(self, True, PrecedenceConstraint._penalty, penalty)
 
     def feasible_evaluation(self, penalty: float = 0) -> "ConstraintEvaluation":
-        return ConstraintEvaluation(self, False, penalty)
+        return ConstraintEvaluation(self, False, PrecedenceConstraint._penalty, penalty)

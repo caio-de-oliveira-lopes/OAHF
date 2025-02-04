@@ -95,28 +95,24 @@ class WorkerSwapNS(Neighborhood):
                         self.solution.station_worker_assignment[ws1],
                         ws1,
                         self.solution,
-                        self.report,
                     )
                     removal_move_2 = AlwabpRemovalMovement(
                         None,
                         self.solution.station_worker_assignment[ws2],
                         ws2,
                         self.solution,
-                        self.report,
                     )
                     insertion_move_1 = AlwabpInsertionMovement(
                         None,
                         self.solution.station_worker_assignment[ws1],
                         ws2,
                         self.solution,
-                        self.report,
                     )
                     insertion_move_2 = AlwabpInsertionMovement(
                         None,
                         self.solution.station_worker_assignment[ws2],
                         ws1,
                         self.solution,
-                        self.report,
                     )
 
                     # Combine the movements into a single swap operation.
@@ -127,9 +123,7 @@ class WorkerSwapNS(Neighborhood):
                         insertion_move_2,
                     ]
 
-                    move = MultipleMovement(
-                        self.solution, self.report, swap_composition
-                    )
+                    move = MultipleMovement(self.solution, swap_composition)
 
                     yield move  # Return the composed movement.
         else:

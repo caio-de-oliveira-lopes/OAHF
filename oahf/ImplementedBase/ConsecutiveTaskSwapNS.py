@@ -145,9 +145,7 @@ class ConsecutiveTaskSwapNS(Neighborhood):
                                     swap_move_1.copy(self.solution),
                                     swap_move_2.copy(self.solution),
                                 ]
-                                move = MultipleMovement(
-                                    self.solution, self.report, swap_composition
-                                )
+                                move = MultipleMovement(self.solution, swap_composition)
 
                                 yield move  # Return the composed movement for evaluation.
 

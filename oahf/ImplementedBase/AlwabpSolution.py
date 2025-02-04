@@ -40,7 +40,6 @@ class AlwabpSolution(Solution):
         "all_task_precedences",
         "max_positional_weight",
         "station_cycle_time_memo",
-        "get_tasks_executed_by_worker_memo",
         "_cycle_time_limit",
         "_default_graph_orientation",
         "print_solution_updates",
@@ -969,8 +968,8 @@ class AlwabpSolution(Solution):
             List[int]: A list of available tasks that can be assigned to the specified station.
         """
         available_tasks_to_assign: List[int] = []
-        unassigned_tasks = (
-            override_unassigned_tasks.copy()
+        unassigned_tasks = set(
+            override_unassigned_tasks
             if override_unassigned_tasks
             else self._unassigned_tasks
         )
@@ -981,9 +980,9 @@ class AlwabpSolution(Solution):
             ]
             can_allocate = True
             for preceding_task in task_precendes:
-                another_station = self.find_station_for_task(preceding_task)
                 if preceding_task in unassigned_tasks or (
-                    another_station and another_station > station
+                    (another_station := self.find_station_for_task(preceding_task))
+                    and another_station > station
                 ):
                     can_allocate = False
                     break

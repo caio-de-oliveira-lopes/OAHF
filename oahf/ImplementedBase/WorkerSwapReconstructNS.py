@@ -92,14 +92,12 @@ class WorkerSwapReconstructNS(Neighborhood):
         if self.solution and self.stop_criteria:
             # Generate removal movements for cleaning.
             cleaning_moves = [
-                AlwabpRemovalMovement(task, None, station, self.solution, self.report)
+                AlwabpRemovalMovement(task, None, station, self.solution)
                 for station in self.solution.stations
                 for task in self.solution.station_tasks_assignment[station]
             ]
 
-            cleaning_movement = MultipleMovement(
-                self.solution, self.report, cleaning_moves
-            )
+            cleaning_movement = MultipleMovement(self.solution, cleaning_moves)
             solution_copy = self.solution.copy()
             cleaning_movement_copy = cleaning_movement.copy(solution_copy)
 
@@ -121,12 +119,11 @@ class WorkerSwapReconstructNS(Neighborhood):
                                 solution_copy.station_worker_assignment[s],
                                 s,
                                 solution_copy,
-                                self.report,
                             )
                             for s in solution_copy.stations
                         ]
                         restore_assignment = MultipleMovement(
-                            solution_copy, self.report, restore_assignment_moves
+                            solution_copy, restore_assignment_moves
                         )
 
                         while not self.stop_criteria.stop_on_evaluations([curr_eval]):
@@ -164,7 +161,7 @@ class WorkerSwapReconstructNS(Neighborhood):
                             # Generate insertion movements for reconstruction.
                             reconstruction_moves = [
                                 AlwabpInsertionMovement(
-                                    task, None, station, self.solution, self.report
+                                    task, None, station, self.solution
                                 )
                                 for station in reconstructed_solution.stations
                                 for task in reconstructed_solution.station_tasks_assignment[
@@ -173,7 +170,7 @@ class WorkerSwapReconstructNS(Neighborhood):
                             ]
 
                             reconstruction_move = MultipleMovement(
-                                self.solution, self.report, reconstruction_moves
+                                self.solution, reconstruction_moves
                             )
 
                             # Combine all movements into a single composed movement.
@@ -184,7 +181,7 @@ class WorkerSwapReconstructNS(Neighborhood):
                             ]
 
                             move = MultipleMovement(
-                                self.solution, self.report, full_move_composition
+                                self.solution, full_move_composition
                             )
 
                             move.tabu_counter_over_iterations = 0.5

@@ -91,6 +91,8 @@ class TabuSearch(MetaHeuristic):
         """Executes the Tabu Search on a single solution."""
         best_sol = sol.copy()
         curr_sol = sol.copy()
+
+        curr_eval = self.evaluator.evaluate(curr_sol)
         best_eval = self.evaluator.evaluate(best_sol)
 
         self.stop_criteria.reset()
@@ -105,8 +107,8 @@ class TabuSearch(MetaHeuristic):
         while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]):  # type: ignore
             if counter % self.neighborhood_selection.num_neighborhoods() == 0:  # type: ignore
                 best_eval.update_penalties()
-                curr_eval = self.evaluator.evaluate(curr_sol)
-                best_eval = self.evaluator.evaluate(best_sol)
+                curr_eval.reevaluate()
+                best_eval.reevaluate()
             try:
                 if ns is None:
                     break
@@ -160,7 +162,7 @@ class TabuSearch(MetaHeuristic):
                                     curr_eval = self.evaluator.evaluate(curr_sol)
 
                                     # In order to update the penalties in the evaluation, we need to evaluate it again
-                                    best_eval = self.evaluator.evaluate(best_sol)
+                                    best_eval.reevaluate()
 
                                     if self.acceptance_criteria.accept(
                                         best_eval, curr_eval, curr_sol
@@ -185,7 +187,7 @@ class TabuSearch(MetaHeuristic):
                         curr_eval = self.evaluator.evaluate(curr_sol)
 
                         # In order to update the penalties in the evaluation, we need to evaluate it again
-                        best_eval = self.evaluator.evaluate(best_sol)
+                        best_eval.reevaluate()
 
                         # Update best solution if necessary
                         if (
@@ -250,7 +252,7 @@ class TabuSearch(MetaHeuristic):
                         curr_eval = self.evaluator.evaluate(curr_sol)
 
                         # In order to update the penalties in the evaluation, we need to evaluate it again
-                        best_eval = self.evaluator.evaluate(best_sol)
+                        best_eval.reevaluate()
 
                         # Update best solution if necessary
                         if (

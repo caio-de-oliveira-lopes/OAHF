@@ -64,7 +64,7 @@ class WorkerTaskConstraint(Constraint):
 
             if worker is not None:
                 # Retrieve tasks executable by the worker
-                executable_tasks = solution.get_tasks_executed_by_worker(worker)
+                executable_tasks = solution.tasks_executed_by_worker[worker]
 
                 # Check each task in the current station
                 for task in tasks:
@@ -80,7 +80,7 @@ class WorkerTaskConstraint(Constraint):
         :param penalty: The penalty for the constraint violation.
         :return: A ConstraintEvaluation object.
         """
-        return ConstraintEvaluation(self, True, penalty)
+        return ConstraintEvaluation(self, True, WorkerTaskConstraint._penalty, penalty)
 
     def feasible_evaluation(self, penalty: float = 0) -> "ConstraintEvaluation":
         """
@@ -88,4 +88,4 @@ class WorkerTaskConstraint(Constraint):
         :param penalty: The penalty for the constraint violation.
         :return: A ConstraintEvaluation object.
         """
-        return ConstraintEvaluation(self, False, penalty)
+        return ConstraintEvaluation(self, False, WorkerTaskConstraint._penalty, penalty)

@@ -2,7 +2,6 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Entity import Entity
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
@@ -18,7 +17,6 @@ class CrossOver(Entity, ABC):
             stop_criteria (StopCriteria): The stopping criteria for the crossover.
         """
         super().__init__()
-        self.report = EfficiencyReport(self.__class__.__name__.split(".")[-1])
         self.stop_criteria = stop_criteria
 
     @abstractmethod
@@ -47,7 +45,6 @@ class CrossOver(Entity, ABC):
         if self.stop():
             return None
 
-        self.report.report_move_search_start()
         new_sol = None
 
         try:
@@ -58,13 +55,8 @@ class CrossOver(Entity, ABC):
             )
             raise
 
-        self.report.report_move_search_end()
         return new_sol
 
     def stop(self) -> bool:
         """Checks whether the stopping criteria are met."""
         return self.stop_criteria is not None and self.stop_criteria.stop()
-
-    def get_efficiency_report(self) -> str:
-        """Returns the efficiency report as a string."""
-        return str(self.report)
