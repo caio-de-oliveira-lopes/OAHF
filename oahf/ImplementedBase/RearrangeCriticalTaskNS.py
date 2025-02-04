@@ -129,7 +129,7 @@ class RearrangeCriticalTaskNS(Neighborhood):
                         move = MultipleMovement(self.solution, rearrange_composition)
 
                         yield move
-        else:
+        elif not self.solution:
             LogManager.invalid_action("generate movements", type(self).__name__)
 
     def copy(self) -> "RearrangeCriticalTaskNS":

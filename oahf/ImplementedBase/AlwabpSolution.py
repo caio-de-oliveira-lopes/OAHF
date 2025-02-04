@@ -14,7 +14,7 @@ from oahf.Utils import EnumUtil
 class GraphOrientation(Enum):
     FORWARD = auto()
     BACKWARD = auto()
-    
+
     @classmethod
     def reverse(cls, graph_orientation: "GraphOrientation") -> "GraphOrientation":
         if graph_orientation == GraphOrientation.FORWARD:
@@ -187,8 +187,8 @@ class AlwabpSolution(Solution):
             self.cycle_time_limit = self.cycle_time_limit + 1
             self.reset()
             return False
-        #else:
-            #self.narrow_bounds()
+        # else:
+        # self.narrow_bounds()
         return super().validate_aspects()
 
     def narrow_bounds(self) -> None:
@@ -240,8 +240,8 @@ class AlwabpSolution(Solution):
         else:
             print(f"Starting with cycle time limit as {str(value)}.")
         self._cycle_time_limit = value
-        #self._update_bounded_task_execution_times()
-        #self._calculate_max_positional_weights()
+        # self._update_bounded_task_execution_times()
+        # self._calculate_max_positional_weights()
 
     @property
     def default_graph_orientation(self) -> GraphOrientation:
@@ -1023,16 +1023,20 @@ class AlwabpSolution(Solution):
         ):
             return False
 
-        for preceding_task in self.all_task_precedences[self.default_graph_orientation][task]:
+        for preceding_task in self.all_task_precedences[self.default_graph_orientation][
+            task
+        ]:
             another_station = self.find_station_for_task(preceding_task)
             if not another_station or another_station > station:
                 return False
-            
-        for sucessor_task in self.all_task_precedences[GraphOrientation.reverse(self.default_graph_orientation)][task]:
+
+        for sucessor_task in self.all_task_precedences[
+            GraphOrientation.reverse(self.default_graph_orientation)
+        ][task]:
             another_station = self.find_station_for_task(sucessor_task)
             if another_station and another_station < station:
                 return False
-            
+
         return True
 
     def get_task_execution_time(self, task: int, worker: Optional[int] = None) -> float:
@@ -1357,6 +1361,9 @@ class AlwabpSolution(Solution):
         Returns:
             List[int]: A list of station IDs that are critical workstations.
         """
+        # Compute the maximum cycle time once
+        max_cycle_time = self.get_max_cycle_time()
+
         critical_stations = []
 
         for station in self.stations:
@@ -1364,8 +1371,11 @@ class AlwabpSolution(Solution):
             cycle_time = self.calculate_cycle_time(station)
 
             # Check if the station is critical
-            if cycle_time == self.get_max_cycle_time():
+            if cycle_time == max_cycle_time:
                 critical_stations.append(station)
+
+        if len(critical_stations) == len(self.stations):
+            return []
 
         return critical_stations
 
