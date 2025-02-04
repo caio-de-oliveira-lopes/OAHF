@@ -9,5 +9,5 @@ __all__ = [
     "JsonListFileHandler",
     "Logger",
     "LogManager",
-    "LogMessages",
+    "LogMessages"
 ]

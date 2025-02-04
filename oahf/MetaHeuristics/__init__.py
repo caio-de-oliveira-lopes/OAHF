@@ -27,5 +27,5 @@ __all__ = [
     "ParallelILS",
     "Pertubation",
     "PerturbationDrivenLocalSearch",
-    "TabuSearch",
+    "TabuSearch"
 ]

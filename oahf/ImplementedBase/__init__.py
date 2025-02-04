@@ -79,5 +79,5 @@ __all__ = [
     "WorkersUnassignedStopCriteria",
     "WorkerSwapNS",
     "WorkerSwapReconstructNS",
-    "WorkerTaskConstraint",
+    "WorkerTaskConstraint"
 ]

@@ -19,7 +19,8 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self,
         max_positional_weight_type: MaxPositionalWeightType,
         graph_orientation: GraphOrientation,
-        greediness: float = 0,
+        greediness: float = 0,        
+        priority_matrix: Optional[List[List[int]]] = None,
         stop_criteria: Optional[StopCriteria] = None,
     ):
         """Initializes the neighborhood search for ALWABP, setting configuration parameters for worker-oriented task insertion."""
@@ -31,7 +32,8 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.max_positional_weight_type = max_positional_weight_type
         self.graph_orientation = graph_orientation
         self.station: Optional[int] = None
-        self.greediness: float = greediness
+        self.greediness: float = greediness        
+        self.priority_matrix = priority_matrix
 
     def build_neighborhood(self, thread_id: int, solution: AlwabpSolution) -> bool:
         """Prepares the neighborhood search by initializing the solution and computing initial station assignments."""
@@ -48,6 +50,33 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.thread_id = thread_id
         self.enumerator = self.all_moves()
         return True
+    
+    def compute_task_priority(self, task: int) -> float:
+        """Computes task priority based on the selected weight type, using the priority matrix if available."""
+        if self.solution:
+            if not self.priority_matrix:
+                return self.solution.get_max_positional_weight_list(self.max_positional_weight_type)[task - 1]
+        
+            workers_priorities = [self.priority_matrix[w][task - 1] for w in range(len(self.priority_matrix))]
+        
+            if self.max_positional_weight_type == MaxPositionalWeightType.MIN:
+                min_predecessor_value = min(
+                    [self.compute_task_priority(pred) for pred in self.solution.all_task_precedences[self.graph_orientation][task]],
+                    default=0
+                )
+                return min(workers_priorities) + min_predecessor_value
+
+            elif self.max_positional_weight_type == MaxPositionalWeightType.MAX:
+                max_predecessor_value = max(
+                    [self.compute_task_priority(pred) for pred in self.solution.all_task_precedences[self.graph_orientation][task]],
+                    default=0
+                )
+                return max(workers_priorities) + max_predecessor_value
+
+            elif self.max_positional_weight_type == MaxPositionalWeightType.AVERAGE:
+                return sum(workers_priorities) / len(workers_priorities)
+
+        return 0  # Fallback case
 
     def get_move(self) -> Optional[Movement]:
         """Retrieves the next available movement in the neighborhood search."""
@@ -69,9 +98,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             worker_moves: Dict[int, MultipleMovement] = {}
 
             # Determine the task list based on positional weights and greediness
-            max_positional_weight_list = self.solution.get_max_positional_weight_list(
-                self.max_positional_weight_type
-            )
+            max_positional_weight_list = [self.compute_task_priority(task) for task in self.solution.tasks]
             c_min = min(max_positional_weight_list)
             c_max = max(max_positional_weight_list)
             threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
@@ -193,5 +220,6 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             self.max_positional_weight_type,
             self.graph_orientation,
             self.greediness,
+            self.priority_matrix,
             self.stop_criteria.copy() if self.stop_criteria else None,
         )
