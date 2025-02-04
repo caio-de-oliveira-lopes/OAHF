@@ -87,3 +87,7 @@ class Evaluation(Entity):
             if constraint.penalty != 0.0:
                 return True
         return False
+
+    def reevaluate(self) -> None:
+        for constraint in self.constraints:
+            constraint.reevaluate()

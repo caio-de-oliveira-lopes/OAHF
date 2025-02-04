@@ -2,7 +2,6 @@ from .AcceptanceCriteria import AcceptanceCriteria
 from .Constraint import Constraint
 from .ConstraintEvaluation import ConstraintEvaluation
 from .CrossOver import CrossOver
-from .EfficiencyReport import EfficiencyReport
 from .Entity import Entity
 from .Evaluation import Evaluation
 from .Evaluator import Evaluator
@@ -24,7 +23,6 @@ __all__ = [
     "Constraint",
     "ConstraintEvaluation",
     "CrossOver",
-    "EfficiencyReport",
     "Entity",
     "Evaluation",
     "Evaluator",
@@ -39,5 +37,5 @@ __all__ = [
     "SharedMemory",
     "Solution",
     "StopCriteria",
-    "ThreadManager"
+    "ThreadManager",
 ]

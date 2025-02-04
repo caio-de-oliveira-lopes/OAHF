@@ -154,11 +154,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
                 if not worker_already_assigned:
                     worker_move = AlwabpInsertionMovement(
-                        None,
-                        unassigned_worker,
-                        self.station,
-                        solution_copy,
-                        self.report,
+                        None, unassigned_worker, self.station, solution_copy
                     )
                     if worker_move.apply():
                         moves_executed_on_copy.append(worker_move)
@@ -168,17 +164,13 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                         task, self.station, unassigned_worker
                     ):
                         new_move = AlwabpInsertionMovement(
-                            task,
-                            unassigned_worker,
-                            self.station,
-                            solution_copy,
-                            self.report,
+                            task, unassigned_worker, self.station, solution_copy
                         )
                         if new_move.apply():
                             moves_executed_on_copy.append(new_move)
 
                 construction_composition = MultipleMovement(
-                    solution_copy, self.report, moves_executed_on_copy
+                    solution_copy, moves_executed_on_copy
                 )
 
                 if moves_executed_on_copy:

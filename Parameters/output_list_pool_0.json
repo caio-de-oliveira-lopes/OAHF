@@ -1,164 +1,140 @@
 {
     "id": 0,
     "name": "ListPool",
-    "pool_size": 38,
+    "pool_size": 32,
     "solution_info": {
-        "-3682": {
+        "-3770": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:00"
         },
-        "-17094": {
+        "-17197": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:00"
         },
-        "-31810": {
+        "-31925": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:01"
         },
-        "-50278": {
+        "-50407": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:02"
         },
-        "-69477": {
+        "-69620": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:03"
         },
-        "-87091": {
+        "-87244": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:04"
         },
-        "-114354": {
-            "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:05"
-        },
-        "-128589": {
+        "-114515": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:06"
         },
-        "-145203": {
+        "-128763": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:07"
         },
-        "-168339": {
+        "-145389": {
+            "metaheuristic": "MultipleBestImprovement",
+            "execution_time": "00:00:07"
+        },
+        "-168537": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:08"
         },
-        "-191254": {
+        "-193531": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:08"
+            "execution_time": "00:00:10"
         },
-        "-221179": {
-            "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:09"
-        },
-        "-253925": {
+        "-221663": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:11"
         },
-        "-282194": {
+        "-252947": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:12"
         },
-        "-318742": {
+        "-282634": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:13"
         },
-        "-324664": {
-            "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:13"
-        },
-        "-332591": {
-            "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:13"
-        },
-        "-351544": {
+        "-301566": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:14"
         },
-        "-376649": {
+        "-319162": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:15"
         },
-        "-416974": {
+        "-343405": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:16"
         },
-        "-452361": {
+        "-358772": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:17"
         },
-        "-480539": {
-            "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:17"
-        },
-        "-491028": {
+        "-369134": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:18"
         },
-        "-501290": {
+        "-384314": {
+            "metaheuristic": "MultipleBestImprovement",
+            "execution_time": "00:00:18"
+        },
+        "-405800": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:19"
         },
-        "-519444": {
-            "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:19"
-        },
-        "-536119": {
+        "-425686": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:20"
         },
-        "-552569": {
+        "-453205": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:21"
         },
-        "-571704": {
+        "-487387": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:22"
         },
-        "-590354": {
-            "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:22"
-        },
-        "-610034": {
+        "-504277": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:23"
         },
-        "-634009": {
+        "-521295": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:24"
         },
-        "-663854": {
+        "-542265": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:25"
         },
-        "-671826": {
+        "-568107": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:26"
         },
-        "-687824": {
-            "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:26"
-        },
-        "-707720": {
+        "-591734": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:27"
         },
-        "-727583": {
+        "-617381": {
+            "metaheuristic": "MultipleBestImprovement",
+            "execution_time": "00:00:28"
+        },
+        "-643519": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:29"
         },
-        "-744678": {
-            "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:29"
-        },
-        "-767705": {
+        "-664264": {
             "metaheuristic": "MultipleBestImprovement",
             "execution_time": "00:00:30"
         }
     },
     "solutions": [
         {
-            "id": -3682,
+            "id": -3770,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -221,7 +197,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -17094,
+            "id": -17197,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -284,7 +260,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -31810,
+            "id": -31925,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -347,7 +323,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -50278,
+            "id": -50407,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -410,7 +386,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -69477,
+            "id": -69620,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -473,7 +449,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -87091,
+            "id": -87244,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -536,7 +512,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -114354,
+            "id": -114515,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -599,7 +575,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -128589,
+            "id": -128763,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -662,7 +638,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -145203,
+            "id": -145389,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -674,11 +650,11 @@
                     "worker": 3,
                     "tasks": [
                         1,
-                        24,
-                        26,
                         23,
                         5,
+                        26,
                         22,
+                        24,
                         8,
                         9,
                         19,
@@ -725,7 +701,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -168339,
+            "id": -168537,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -737,11 +713,11 @@
                     "worker": 3,
                     "tasks": [
                         1,
-                        24,
-                        26,
                         23,
                         5,
+                        26,
                         22,
+                        24,
                         8,
                         9,
                         19,
@@ -788,7 +764,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -191254,
+            "id": -193531,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -801,9 +777,9 @@
                     "tasks": [
                         1,
                         24,
-                        26,
                         23,
                         5,
+                        26,
                         8,
                         9,
                         19,
@@ -851,7 +827,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -221179,
+            "id": -221663,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -864,8 +840,8 @@
                     "tasks": [
                         1,
                         4,
-                        26,
                         23,
+                        5,
                         24,
                         8,
                         9,
@@ -877,7 +853,7 @@
                     "station": 2,
                     "worker": 4,
                     "tasks": [
-                        5,
+                        26,
                         3,
                         10,
                         2,
@@ -890,11 +866,11 @@
                     "station": 3,
                     "worker": 2,
                     "tasks": [
-                        27,
                         12,
                         13,
                         16,
                         14,
+                        27,
                         11,
                         18,
                         25
@@ -914,7 +890,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -253925,
+            "id": -252947,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -927,71 +903,8 @@
                     "tasks": [
                         1,
                         4,
-                        26,
                         23,
-                        24,
-                        8,
-                        9,
-                        19,
-                        20
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
                         5,
-                        3,
-                        10,
-                        2,
-                        6,
-                        7,
-                        17
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 2,
-                    "tasks": [
-                        18,
-                        12,
-                        13,
-                        16,
-                        14,
-                        11,
-                        25
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 1,
-                    "tasks": [
-                        27,
-                        15,
-                        22,
-                        21,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -282194,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 106,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 3,
-                    "tasks": [
-                        1,
-                        5,
-                        23,
-                        4,
                         24,
                         8,
                         9,
@@ -1040,188 +953,62 @@
             "unassigned_tasks": []
         },
         {
-            "id": -318742,
+            "id": -282634,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
             "number_of_stations": 4,
-            "max_cycle_time": 132,
+            "max_cycle_time": 105,
             "task_allocations_per_station": [
                 {
                     "station": 1,
                     "worker": 3,
                     "tasks": [
                         1,
-                        5,
+                        4,
+                        22,
                         23,
                         26,
-                        22,
-                        8,
+                        5,
                         19,
                         20,
-                        2
+                        8,
+                        9
                     ]
                 },
                 {
                     "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        27,
-                        3,
-                        17,
-                        4,
-                        6,
-                        7,
-                        18,
-                        9,
-                        10,
-                        12,
-                        11,
-                        15,
-                        24
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 2,
-                    "tasks": [
-                        13,
-                        16,
-                        14,
-                        25
-                    ]
-                },
-                {
-                    "station": 4,
                     "worker": 1,
                     "tasks": [
                         21,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -324664,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 116,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 3,
-                    "tasks": [
-                        5,
-                        23,
-                        26,
-                        22,
-                        8,
-                        19,
-                        20,
-                        2
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        27,
-                        3,
-                        17,
-                        4,
-                        6,
-                        7,
-                        18,
-                        9,
-                        10,
-                        12,
-                        11,
-                        15,
-                        24
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 2,
-                    "tasks": [
-                        1,
-                        13,
-                        16,
-                        14,
-                        25
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 1,
-                    "tasks": [
-                        21,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -332591,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 112,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 3,
-                    "tasks": [
-                        1,
-                        4,
-                        22,
-                        8,
-                        5,
-                        23,
-                        20,
-                        2
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        26,
-                        27,
+                        2,
                         24,
-                        3,
-                        17,
-                        6,
-                        7,
-                        18,
-                        9,
-                        10,
-                        12,
-                        11,
-                        15
+                        27
                     ]
                 },
                 {
                     "station": 3,
-                    "worker": 2,
+                    "worker": 4,
                     "tasks": [
-                        19,
+                        3,
+                        17,
+                        10,
+                        12,
                         13,
-                        16,
-                        14,
-                        25
+                        6,
+                        7
                     ]
                 },
                 {
                     "station": 4,
-                    "worker": 1,
+                    "worker": 2,
                     "tasks": [
-                        21,
+                        14,
+                        25,
+                        16,
+                        11,
+                        15,
+                        18,
                         28
                     ]
                 }
@@ -1229,12 +1016,12 @@
             "unassigned_tasks": []
         },
         {
-            "id": -351544,
+            "id": -301566,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
             "number_of_stations": 4,
-            "max_cycle_time": 111,
+            "max_cycle_time": 102,
             "task_allocations_per_station": [
                 {
                     "station": 1,
@@ -1243,48 +1030,48 @@
                         1,
                         4,
                         22,
-                        8,
-                        5,
                         23,
+                        26,
+                        5,
+                        19,
                         20,
-                        2
+                        8,
+                        9
                     ]
                 },
                 {
                     "station": 2,
-                    "worker": 4,
+                    "worker": 1,
                     "tasks": [
-                        3,
-                        26,
+                        21,
+                        2,
                         24,
-                        6,
-                        7,
-                        18,
-                        9,
-                        10,
-                        12,
-                        11,
-                        15,
-                        17
+                        27
                     ]
                 },
                 {
                     "station": 3,
-                    "worker": 2,
+                    "worker": 4,
                     "tasks": [
-                        27,
-                        19,
-                        13,
-                        16,
-                        14,
-                        25
+                        7,
+                        3,
+                        17,
+                        10,
+                        12,
+                        13
                     ]
                 },
                 {
                     "station": 4,
-                    "worker": 1,
+                    "worker": 2,
                     "tasks": [
-                        21,
+                        6,
+                        18,
+                        14,
+                        25,
+                        16,
+                        11,
+                        15,
                         28
                     ]
                 }
@@ -1292,7 +1079,259 @@
             "unassigned_tasks": []
         },
         {
-            "id": -376649,
+            "id": -319162,
+            "name": "AlwabpSolution",
+            "number_of_tasks": 28,
+            "number_of_workers": 4,
+            "number_of_stations": 4,
+            "max_cycle_time": 101,
+            "task_allocations_per_station": [
+                {
+                    "station": 1,
+                    "worker": 3,
+                    "tasks": [
+                        1,
+                        4,
+                        22,
+                        23,
+                        26,
+                        19,
+                        20,
+                        8,
+                        9
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 1,
+                    "tasks": [
+                        5,
+                        21,
+                        2,
+                        24,
+                        27
+                    ]
+                },
+                {
+                    "station": 3,
+                    "worker": 4,
+                    "tasks": [
+                        7,
+                        3,
+                        17,
+                        10,
+                        12,
+                        13
+                    ]
+                },
+                {
+                    "station": 4,
+                    "worker": 2,
+                    "tasks": [
+                        6,
+                        18,
+                        14,
+                        25,
+                        16,
+                        11,
+                        15,
+                        28
+                    ]
+                }
+            ],
+            "unassigned_tasks": []
+        },
+        {
+            "id": -343405,
+            "name": "AlwabpSolution",
+            "number_of_tasks": 28,
+            "number_of_workers": 4,
+            "number_of_stations": 4,
+            "max_cycle_time": 120,
+            "task_allocations_per_station": [
+                {
+                    "station": 1,
+                    "worker": 1,
+                    "tasks": [
+                        1,
+                        21
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 4,
+                    "tasks": [
+                        8,
+                        9,
+                        10,
+                        12,
+                        13,
+                        2
+                    ]
+                },
+                {
+                    "station": 3,
+                    "worker": 3,
+                    "tasks": [
+                        6,
+                        7,
+                        18,
+                        22,
+                        11,
+                        15,
+                        19,
+                        20,
+                        24,
+                        4
+                    ]
+                },
+                {
+                    "station": 4,
+                    "worker": 2,
+                    "tasks": [
+                        25,
+                        23,
+                        14,
+                        26,
+                        27,
+                        17,
+                        5,
+                        3,
+                        16,
+                        28
+                    ]
+                }
+            ],
+            "unassigned_tasks": []
+        },
+        {
+            "id": -358772,
+            "name": "AlwabpSolution",
+            "number_of_tasks": 28,
+            "number_of_workers": 4,
+            "number_of_stations": 4,
+            "max_cycle_time": 115,
+            "task_allocations_per_station": [
+                {
+                    "station": 1,
+                    "worker": 1,
+                    "tasks": [
+                        1,
+                        21
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 3,
+                    "tasks": [
+                        8,
+                        19,
+                        20,
+                        2
+                    ]
+                },
+                {
+                    "station": 3,
+                    "worker": 4,
+                    "tasks": [
+                        9,
+                        10,
+                        12,
+                        13,
+                        6,
+                        7,
+                        17,
+                        22,
+                        4
+                    ]
+                },
+                {
+                    "station": 4,
+                    "worker": 2,
+                    "tasks": [
+                        24,
+                        25,
+                        16,
+                        14,
+                        18,
+                        5,
+                        11,
+                        15,
+                        3,
+                        26,
+                        27,
+                        23,
+                        28
+                    ]
+                }
+            ],
+            "unassigned_tasks": []
+        },
+        {
+            "id": -369134,
+            "name": "AlwabpSolution",
+            "number_of_tasks": 28,
+            "number_of_workers": 4,
+            "number_of_stations": 4,
+            "max_cycle_time": 114,
+            "task_allocations_per_station": [
+                {
+                    "station": 1,
+                    "worker": 1,
+                    "tasks": [
+                        1,
+                        21
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 3,
+                    "tasks": [
+                        4,
+                        8,
+                        19,
+                        20,
+                        2
+                    ]
+                },
+                {
+                    "station": 3,
+                    "worker": 4,
+                    "tasks": [
+                        9,
+                        10,
+                        12,
+                        13,
+                        6,
+                        7,
+                        17,
+                        22
+                    ]
+                },
+                {
+                    "station": 4,
+                    "worker": 2,
+                    "tasks": [
+                        24,
+                        25,
+                        16,
+                        14,
+                        18,
+                        5,
+                        11,
+                        15,
+                        3,
+                        26,
+                        27,
+                        23,
+                        28
+                    ]
+                }
+            ],
+            "unassigned_tasks": []
+        },
+        {
+            "id": -384314,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -1301,53 +1340,53 @@
             "task_allocations_per_station": [
                 {
                     "station": 1,
-                    "worker": 3,
+                    "worker": 1,
                     "tasks": [
                         1,
-                        5,
-                        23,
+                        21
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 3,
+                    "tasks": [
                         4,
                         8,
+                        15,
+                        19,
                         20,
                         2
                     ]
                 },
                 {
-                    "station": 2,
+                    "station": 3,
                     "worker": 4,
                     "tasks": [
-                        3,
-                        26,
-                        24,
-                        6,
-                        7,
-                        18,
                         9,
                         10,
                         12,
-                        11,
-                        15,
-                        17
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 2,
-                    "tasks": [
-                        27,
-                        19,
                         13,
-                        16,
-                        14,
-                        25
+                        6,
+                        7,
+                        17,
+                        22
                     ]
                 },
                 {
                     "station": 4,
-                    "worker": 1,
+                    "worker": 2,
                     "tasks": [
-                        22,
-                        21,
+                        26,
+                        27,
+                        23,
+                        16,
+                        18,
+                        5,
+                        11,
+                        3,
+                        24,
+                        25,
+                        14,
                         28
                     ]
                 }
@@ -1355,7 +1394,133 @@
             "unassigned_tasks": []
         },
         {
-            "id": -416974,
+            "id": -405800,
+            "name": "AlwabpSolution",
+            "number_of_tasks": 28,
+            "number_of_workers": 4,
+            "number_of_stations": 4,
+            "max_cycle_time": 109,
+            "task_allocations_per_station": [
+                {
+                    "station": 1,
+                    "worker": 1,
+                    "tasks": [
+                        1,
+                        22,
+                        21
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 3,
+                    "tasks": [
+                        4,
+                        8,
+                        15,
+                        19,
+                        20,
+                        2
+                    ]
+                },
+                {
+                    "station": 3,
+                    "worker": 4,
+                    "tasks": [
+                        9,
+                        10,
+                        12,
+                        13,
+                        6,
+                        7,
+                        17
+                    ]
+                },
+                {
+                    "station": 4,
+                    "worker": 2,
+                    "tasks": [
+                        26,
+                        27,
+                        23,
+                        16,
+                        18,
+                        5,
+                        11,
+                        3,
+                        24,
+                        25,
+                        14,
+                        28
+                    ]
+                }
+            ],
+            "unassigned_tasks": []
+        },
+        {
+            "id": -425686,
+            "name": "AlwabpSolution",
+            "number_of_tasks": 28,
+            "number_of_workers": 4,
+            "number_of_stations": 4,
+            "max_cycle_time": 109,
+            "task_allocations_per_station": [
+                {
+                    "station": 1,
+                    "worker": 1,
+                    "tasks": [
+                        1,
+                        22,
+                        21
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 3,
+                    "tasks": [
+                        4,
+                        8,
+                        15,
+                        19,
+                        20,
+                        2
+                    ]
+                },
+                {
+                    "station": 3,
+                    "worker": 4,
+                    "tasks": [
+                        3,
+                        9,
+                        10,
+                        12,
+                        13,
+                        6,
+                        7,
+                        17
+                    ]
+                },
+                {
+                    "station": 4,
+                    "worker": 2,
+                    "tasks": [
+                        26,
+                        27,
+                        23,
+                        16,
+                        18,
+                        5,
+                        11,
+                        24,
+                        25,
+                        14,
+                        28
+                    ]
+                }
+            ],
+            "unassigned_tasks": []
+        },
+        {
+            "id": -453205,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -1364,242 +1529,53 @@
             "task_allocations_per_station": [
                 {
                     "station": 1,
-                    "worker": 3,
+                    "worker": 1,
                     "tasks": [
                         1,
-                        5,
-                        23,
                         4,
+                        22,
+                        21
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 3,
+                    "tasks": [
                         8,
+                        15,
+                        19,
                         20,
                         2
                     ]
                 },
                 {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        19,
-                        22,
-                        3,
-                        26,
-                        17,
-                        6,
-                        18,
-                        9,
-                        10,
-                        12,
-                        11,
-                        15
-                    ]
-                },
-                {
                     "station": 3,
-                    "worker": 2,
-                    "tasks": [
-                        24,
-                        25,
-                        27,
-                        13,
-                        16,
-                        14
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 1,
-                    "tasks": [
-                        7,
-                        21,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -452361,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 106,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 3,
-                    "tasks": [
-                        1,
-                        5,
-                        23,
-                        4,
-                        8,
-                        20,
-                        2
-                    ]
-                },
-                {
-                    "station": 2,
                     "worker": 4,
                     "tasks": [
-                        19,
-                        22,
                         3,
-                        26,
-                        27,
-                        17,
-                        6,
-                        18,
-                        9,
-                        10,
-                        12,
-                        11,
-                        15
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 2,
-                    "tasks": [
-                        24,
-                        25,
-                        13,
-                        16,
-                        14
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 1,
-                    "tasks": [
-                        7,
-                        21,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -480539,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 110,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 3,
-                    "tasks": [
-                        2,
-                        6,
-                        7,
-                        1,
-                        8
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
                         9,
                         10,
                         12,
                         13,
-                        19,
-                        17
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 1,
-                    "tasks": [
-                        22,
-                        4,
-                        18,
-                        21,
-                        20
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 2,
-                    "tasks": [
-                        5,
-                        26,
-                        27,
-                        24,
-                        25,
-                        23,
-                        11,
-                        15,
-                        14,
-                        16,
-                        3,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -491028,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 108,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 3,
-                    "tasks": [
-                        2,
                         6,
                         7,
-                        1,
-                        8,
-                        12
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        9,
-                        10,
-                        13,
-                        19,
                         17
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 1,
-                    "tasks": [
-                        22,
-                        4,
-                        18,
-                        21,
-                        20
                     ]
                 },
                 {
                     "station": 4,
                     "worker": 2,
                     "tasks": [
-                        5,
                         26,
                         27,
+                        23,
+                        16,
+                        18,
+                        5,
+                        11,
                         24,
                         25,
-                        23,
-                        11,
-                        15,
                         14,
-                        16,
-                        3,
                         28
                     ]
                 }
@@ -1607,70 +1583,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -501290,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 107,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 3,
-                    "tasks": [
-                        2,
-                        6,
-                        7,
-                        1,
-                        8,
-                        12
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        3,
-                        9,
-                        10,
-                        13,
-                        19,
-                        17
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 1,
-                    "tasks": [
-                        22,
-                        4,
-                        18,
-                        21,
-                        20
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 2,
-                    "tasks": [
-                        5,
-                        26,
-                        27,
-                        23,
-                        24,
-                        25,
-                        11,
-                        15,
-                        14,
-                        16,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -519444,
+            "id": -487387,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -1692,73 +1605,12 @@
                         8,
                         9,
                         10,
-                        11,
                         12,
                         13,
-                        2
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 3,
-                    "tasks": [
-                        4,
-                        6,
-                        7,
-                        18,
-                        22,
-                        19,
-                        20,
                         16,
-                        15,
-                        24
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 2,
-                    "tasks": [
-                        25,
-                        17,
-                        3,
-                        5,
+                        2,
                         26,
-                        27,
-                        14,
-                        23,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -536119,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 114,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 1,
-                    "tasks": [
-                        1,
-                        21
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        2
+                        27
                     ]
                 },
                 {
@@ -1766,406 +1618,26 @@
                     "worker": 3,
                     "tasks": [
                         23,
-                        4,
-                        6,
-                        7,
-                        18,
-                        22,
                         19,
                         20,
-                        16,
-                        15,
-                        24
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 2,
-                    "tasks": [
-                        25,
-                        17,
-                        3,
-                        5,
-                        26,
-                        27,
-                        14,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -552569,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 114,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 1,
-                    "tasks": [
-                        1,
-                        27,
-                        21
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        8,
-                        9,
-                        10,
-                        11,
-                        12,
-                        13,
-                        2
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 3,
-                    "tasks": [
-                        23,
-                        4,
-                        6,
-                        7,
-                        18,
-                        22,
-                        19,
-                        20,
-                        16,
-                        15,
-                        24
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 2,
-                    "tasks": [
-                        5,
-                        26,
-                        25,
-                        17,
-                        3,
-                        14,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -571704,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 113,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 1,
-                    "tasks": [
-                        1,
-                        12,
-                        27,
-                        21
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        8,
-                        9,
-                        10,
-                        11,
-                        13,
-                        2
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 3,
-                    "tasks": [
-                        23,
-                        4,
-                        6,
-                        7,
-                        18,
-                        22,
-                        19,
-                        20,
-                        16,
-                        15,
-                        24
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 2,
-                    "tasks": [
-                        5,
-                        26,
-                        25,
-                        17,
-                        3,
-                        14,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -590354,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 112,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 1,
-                    "tasks": [
-                        1,
-                        23,
-                        12,
-                        27,
-                        21
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        8,
-                        9,
-                        10,
-                        11,
-                        13,
-                        2
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 3,
-                    "tasks": [
-                        16,
-                        15,
-                        4,
-                        22,
-                        6,
-                        7,
-                        18,
-                        19,
-                        20,
-                        24
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 2,
-                    "tasks": [
-                        5,
-                        26,
-                        25,
-                        17,
-                        3,
-                        14,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -610034,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 111,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 1,
-                    "tasks": [
-                        1,
-                        23,
-                        12,
-                        27,
-                        21
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        3,
-                        8,
-                        9,
-                        10,
-                        11,
-                        13,
-                        2
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 3,
-                    "tasks": [
-                        16,
-                        15,
-                        4,
-                        22,
-                        6,
-                        7,
-                        18,
-                        19,
-                        20,
-                        24
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 2,
-                    "tasks": [
-                        5,
-                        26,
-                        25,
-                        17,
-                        14,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -634009,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 111,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 1,
-                    "tasks": [
-                        1,
-                        5,
-                        23,
-                        12,
-                        21
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        3,
-                        8,
-                        9,
-                        10,
-                        11,
-                        13,
-                        2
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 3,
-                    "tasks": [
-                        16,
-                        15,
-                        4,
-                        22,
-                        6,
-                        7,
-                        18,
-                        19,
-                        20,
-                        24
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 2,
-                    "tasks": [
-                        26,
-                        27,
-                        25,
-                        17,
-                        14,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -663854,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 115,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 3,
-                    "tasks": [
-                        1,
-                        8,
-                        2
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        6,
-                        9,
-                        10,
-                        12,
-                        13,
-                        19,
-                        17
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 1,
-                    "tasks": [
-                        22,
-                        7,
-                        20,
-                        4,
-                        21
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 2,
-                    "tasks": [
-                        26,
-                        27,
-                        3,
-                        18,
-                        23,
-                        16,
                         24,
-                        25,
+                        6,
+                        7,
+                        18,
                         11,
-                        15,
+                        4,
+                        22
+                    ]
+                },
+                {
+                    "station": 4,
+                    "worker": 2,
+                    "tasks": [
+                        25,
                         14,
+                        15,
+                        3,
+                        17,
                         5,
                         28
                     ]
@@ -2174,7 +1646,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -671826,
+            "id": -504277,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -2193,10 +1665,12 @@
                     "station": 2,
                     "worker": 4,
                     "tasks": [
+                        22,
+                        26,
+                        27,
                         8,
                         9,
                         10,
-                        11,
                         12,
                         13,
                         2
@@ -2206,93 +1680,28 @@
                     "station": 3,
                     "worker": 3,
                     "tasks": [
-                        15,
+                        23,
+                        19,
+                        20,
+                        24,
                         6,
                         7,
                         18,
-                        4,
-                        19,
-                        20,
-                        23,
-                        22,
-                        16,
-                        24
-                    ]
-                },
-                {
-                    "station": 4,
-                    "worker": 2,
-                    "tasks": [
-                        25,
-                        17,
-                        5,
-                        14,
-                        3,
-                        26,
-                        27,
-                        28
-                    ]
-                }
-            ],
-            "unassigned_tasks": []
-        },
-        {
-            "id": -687824,
-            "name": "AlwabpSolution",
-            "number_of_tasks": 28,
-            "number_of_workers": 4,
-            "number_of_stations": 4,
-            "max_cycle_time": 114,
-            "task_allocations_per_station": [
-                {
-                    "station": 1,
-                    "worker": 1,
-                    "tasks": [
-                        1,
-                        27,
-                        21
-                    ]
-                },
-                {
-                    "station": 2,
-                    "worker": 4,
-                    "tasks": [
-                        8,
-                        9,
-                        10,
                         11,
-                        12,
-                        13,
-                        2
-                    ]
-                },
-                {
-                    "station": 3,
-                    "worker": 3,
-                    "tasks": [
                         15,
-                        6,
-                        7,
-                        18,
-                        4,
-                        19,
-                        20,
-                        23,
-                        22,
-                        16,
-                        24
+                        4
                     ]
                 },
                 {
                     "station": 4,
                     "worker": 2,
                     "tasks": [
-                        5,
-                        26,
-                        25,
-                        17,
-                        14,
+                        16,
                         3,
+                        5,
+                        25,
+                        14,
+                        17,
                         28
                     ]
                 }
@@ -2300,7 +1709,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -707720,
+            "id": -521295,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -2312,8 +1721,6 @@
                     "worker": 1,
                     "tasks": [
                         1,
-                        12,
-                        27,
                         21
                     ]
                 },
@@ -2321,10 +1728,13 @@
                     "station": 2,
                     "worker": 4,
                     "tasks": [
+                        3,
+                        22,
+                        26,
                         8,
                         9,
                         10,
-                        11,
+                        12,
                         13,
                         2
                     ]
@@ -2333,29 +1743,28 @@
                     "station": 3,
                     "worker": 3,
                     "tasks": [
-                        15,
+                        23,
+                        19,
+                        20,
+                        24,
                         6,
                         7,
                         18,
-                        4,
-                        19,
-                        20,
-                        23,
-                        22,
-                        16,
-                        24
+                        11,
+                        15,
+                        4
                     ]
                 },
                 {
                     "station": 4,
                     "worker": 2,
                     "tasks": [
+                        27,
                         5,
-                        26,
+                        16,
                         25,
-                        17,
                         14,
-                        3,
+                        17,
                         28
                     ]
                 }
@@ -2363,7 +1772,7 @@
             "unassigned_tasks": []
         },
         {
-            "id": -727583,
+            "id": -542265,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -2374,10 +1783,8 @@
                     "station": 1,
                     "worker": 1,
                     "tasks": [
+                        18,
                         1,
-                        23,
-                        12,
-                        27,
                         21
                     ]
                 },
@@ -2385,10 +1792,13 @@
                     "station": 2,
                     "worker": 4,
                     "tasks": [
+                        3,
+                        22,
+                        26,
                         8,
                         9,
                         10,
-                        11,
+                        12,
                         13,
                         2
                     ]
@@ -2397,28 +1807,27 @@
                     "station": 3,
                     "worker": 3,
                     "tasks": [
-                        15,
-                        4,
+                        23,
                         6,
                         7,
-                        18,
-                        22,
-                        16,
+                        4,
                         19,
                         20,
-                        24
+                        24,
+                        11,
+                        15
                     ]
                 },
                 {
                     "station": 4,
                     "worker": 2,
                     "tasks": [
+                        27,
                         5,
-                        26,
+                        16,
                         25,
-                        17,
                         14,
-                        3,
+                        17,
                         28
                     ]
                 }
@@ -2426,7 +1835,70 @@
             "unassigned_tasks": []
         },
         {
-            "id": -744678,
+            "id": -568107,
+            "name": "AlwabpSolution",
+            "number_of_tasks": 28,
+            "number_of_workers": 4,
+            "number_of_stations": 4,
+            "max_cycle_time": 112,
+            "task_allocations_per_station": [
+                {
+                    "station": 1,
+                    "worker": 1,
+                    "tasks": [
+                        18,
+                        1,
+                        21
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 4,
+                    "tasks": [
+                        3,
+                        22,
+                        26,
+                        8,
+                        9,
+                        10,
+                        12,
+                        13,
+                        2
+                    ]
+                },
+                {
+                    "station": 3,
+                    "worker": 3,
+                    "tasks": [
+                        5,
+                        23,
+                        6,
+                        7,
+                        4,
+                        19,
+                        20,
+                        24,
+                        11,
+                        15
+                    ]
+                },
+                {
+                    "station": 4,
+                    "worker": 2,
+                    "tasks": [
+                        16,
+                        27,
+                        25,
+                        14,
+                        17,
+                        28
+                    ]
+                }
+            ],
+            "unassigned_tasks": []
+        },
+        {
+            "id": -591734,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
@@ -2437,10 +1909,9 @@
                     "station": 1,
                     "worker": 1,
                     "tasks": [
+                        18,
                         1,
-                        23,
-                        12,
-                        27,
+                        22,
                         21
                     ]
                 },
@@ -2448,11 +1919,12 @@
                     "station": 2,
                     "worker": 4,
                     "tasks": [
+                        26,
                         3,
                         8,
                         9,
                         10,
-                        11,
+                        12,
                         13,
                         2
                     ]
@@ -2461,27 +1933,27 @@
                     "station": 3,
                     "worker": 3,
                     "tasks": [
-                        15,
-                        4,
+                        5,
+                        23,
                         6,
                         7,
-                        18,
-                        22,
-                        16,
+                        4,
                         19,
                         20,
-                        24
+                        24,
+                        11,
+                        15
                     ]
                 },
                 {
                     "station": 4,
                     "worker": 2,
                     "tasks": [
-                        5,
-                        26,
+                        16,
+                        27,
                         25,
-                        17,
                         14,
+                        17,
                         28
                     ]
                 }
@@ -2489,21 +1961,21 @@
             "unassigned_tasks": []
         },
         {
-            "id": -767705,
+            "id": -617381,
             "name": "AlwabpSolution",
             "number_of_tasks": 28,
             "number_of_workers": 4,
             "number_of_stations": 4,
-            "max_cycle_time": 111,
+            "max_cycle_time": 109,
             "task_allocations_per_station": [
                 {
                     "station": 1,
                     "worker": 1,
                     "tasks": [
+                        18,
                         1,
-                        5,
-                        23,
-                        12,
+                        27,
+                        22,
                         21
                     ]
                 },
@@ -2511,11 +1983,12 @@
                     "station": 2,
                     "worker": 4,
                     "tasks": [
+                        26,
                         3,
                         8,
                         9,
                         10,
-                        11,
+                        12,
                         13,
                         2
                     ]
@@ -2524,27 +1997,152 @@
                     "station": 3,
                     "worker": 3,
                     "tasks": [
-                        16,
-                        15,
-                        4,
+                        5,
+                        23,
                         6,
                         7,
-                        18,
-                        22,
+                        4,
                         19,
                         20,
-                        24
+                        24,
+                        11,
+                        15
                     ]
                 },
                 {
                     "station": 4,
                     "worker": 2,
                     "tasks": [
-                        26,
-                        27,
+                        16,
                         25,
-                        17,
                         14,
+                        17,
+                        28
+                    ]
+                }
+            ],
+            "unassigned_tasks": []
+        },
+        {
+            "id": -643519,
+            "name": "AlwabpSolution",
+            "number_of_tasks": 28,
+            "number_of_workers": 4,
+            "number_of_stations": 4,
+            "max_cycle_time": 108,
+            "task_allocations_per_station": [
+                {
+                    "station": 1,
+                    "worker": 1,
+                    "tasks": [
+                        1,
+                        24,
+                        21
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 3,
+                    "tasks": [
+                        8,
+                        2,
+                        19,
+                        20
+                    ]
+                },
+                {
+                    "station": 3,
+                    "worker": 4,
+                    "tasks": [
+                        9,
+                        10,
+                        12,
+                        13,
+                        26,
+                        6,
+                        4,
+                        17,
+                        22
+                    ]
+                },
+                {
+                    "station": 4,
+                    "worker": 2,
+                    "tasks": [
+                        27,
+                        3,
+                        16,
+                        14,
+                        7,
+                        18,
+                        11,
+                        15,
+                        5,
+                        25,
+                        23,
+                        28
+                    ]
+                }
+            ],
+            "unassigned_tasks": []
+        },
+        {
+            "id": -664264,
+            "name": "AlwabpSolution",
+            "number_of_tasks": 28,
+            "number_of_workers": 4,
+            "number_of_stations": 4,
+            "max_cycle_time": 108,
+            "task_allocations_per_station": [
+                {
+                    "station": 1,
+                    "worker": 1,
+                    "tasks": [
+                        1,
+                        24,
+                        21
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 3,
+                    "tasks": [
+                        8,
+                        2,
+                        19,
+                        20
+                    ]
+                },
+                {
+                    "station": 3,
+                    "worker": 4,
+                    "tasks": [
+                        9,
+                        10,
+                        15,
+                        12,
+                        13,
+                        26,
+                        6,
+                        4,
+                        17,
+                        22
+                    ]
+                },
+                {
+                    "station": 4,
+                    "worker": 2,
+                    "tasks": [
+                        27,
+                        3,
+                        16,
+                        14,
+                        7,
+                        18,
+                        11,
+                        5,
+                        25,
+                        23,
                         28
                     ]
                 }

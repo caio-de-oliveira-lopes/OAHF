@@ -123,7 +123,6 @@ class GRC(MetaHeuristic):
                             if self.acceptance_criteria.accept(
                                 best_eval, curr_eval, curr_sol
                             ):
-                                move.report_apply_improvement(curr_eval, best_eval)
                                 best_eval = curr_eval
                                 ns.accept_movement()
                                 break

@@ -1,18 +1,20 @@
+import copy
 from typing import Optional
 
-from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Movement import Movement
 
+
 class AlwabpInsertionMovement(Movement):
+    __slots__ = ("task", "worker", "station", "override_cost")
+
     def __init__(
         self,
         task: Optional[int],
         worker: Optional[int],
         station: Optional[int],
         solution: "AlwabpSolution",
-        report: EfficiencyReport,
     ):
-        super().__init__(solution, report)
+        super().__init__(solution)
 
         from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
@@ -23,11 +25,7 @@ class AlwabpInsertionMovement(Movement):
         self.override_cost: Optional[float] = None
 
     def get_cost(self) -> float:
-        if self.override_cost is not None:
-            return self.override_cost
-
-        # Placeholder cost calculation logic, should be updated with ALWABP-specific logic
-        return -1.0
+        return self.override_cost if self.override_cost is not None else -1.0
 
     def apply(self) -> bool:
         if self.task and self.station:
@@ -51,6 +49,44 @@ class AlwabpInsertionMovement(Movement):
     def __str__(self) -> str:
         return f"AlwabpInsertionMove(Task: {self.task}, Worker: {self.worker}, Station: {self.station})"
 
+    def __deepcopy__(self, memo: dict) -> "AlwabpInsertionMovement":
+        """
+        Creates a deep copy of the AlwabpInsertionMovement instance.
+
+        Args:
+            memo (dict): Dictionary to store copied objects to prevent redundant copies.
+
+        Returns:
+            AlwabpInsertionMovement: A deep-copied instance of the movement.
+        """
+        cls = self.__class__
+        copied_movement = cls.__new__(
+            cls
+        )  # Create a new instance without calling __init__
+
+        # Manually copy attributes (minimizing deep copy overhead)
+        copied_movement.task = self.task
+        copied_movement.worker = self.worker
+        copied_movement.station = self.station
+
+        # Deep copy only when necessary
+        copied_movement.solution = self.solution
+        copied_movement.override_cost = self.override_cost
+
+        return copied_movement
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, AlwabpInsertionMovement):
+            return False
+        return (
+            self.task == other.task
+            and self.worker == other.worker
+            and self.station == other.station
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.task, self.worker, self.station))
+
     def copy(
         self, new_solution: Optional["AlwabpSolution"] = None
     ) -> "AlwabpInsertionMovement":
@@ -65,49 +101,8 @@ class AlwabpInsertionMovement(Movement):
             AlwabpInsertionMovement: A new instance of AlwabpInsertionMovement with the same attributes,
             but optionally associated with a new solution.
         """
-        # Use the provided solution or retain the current one
-        solution_to_use = new_solution if new_solution else self.solution
+        new_move = copy.deepcopy(self)
+        if new_solution:
+            new_move.solution = new_solution
 
-        # Create a new instance of AlwabpInsertionMovement
-        copied_movement = AlwabpInsertionMovement(
-            task=self.task,
-            worker=self.worker,
-            station=self.station,
-            solution=solution_to_use,
-            report=self.report,
-        )
-
-        # Copy additional attributes if needed
-        copied_movement.override_cost = self.override_cost
-
-        return copied_movement
-
-    def __eq__(self, other: object) -> bool:
-        """
-        Checks equality between two AlwabpInsertionMovement instances.
-        Equality is based on task, worker, station, and solution reference.
-
-        Args:
-            other (object): Another object to compare.
-
-        Returns:
-            bool: True if the objects are equal, False otherwise.
-        """
-        if not isinstance(other, AlwabpInsertionMovement):
-            return False
-
-        return (
-            self.task == other.task
-            and self.worker == other.worker
-            and self.station == other.station
-        )
-
-    def __hash__(self) -> int:
-        """
-        Returns a hash value for the AlwabpInsertionMovement instance.
-        The hash is based on task, worker, station, and solution reference.
-
-        Returns:
-            int: Hash value for the instance.
-        """
-        return hash((self.task, self.worker, self.station))
+        return new_move

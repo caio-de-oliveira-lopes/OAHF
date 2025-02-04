@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from oahf.Base.EfficiencyReport import EfficiencyReport
 from oahf.Base.Entity import Entity
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Solution import Solution
@@ -9,9 +8,8 @@ from oahf.Logger.LogManager import LogManager
 
 
 class Movement(Entity, ABC):
-    def __init__(self, solution: "Solution", report: "EfficiencyReport"):
+    def __init__(self, solution: "Solution"):
         super().__init__()
-        self.report: EfficiencyReport = report
         self.solution: Solution = solution
         self._tabu_counter_over_iterations: float = 0.25
 
@@ -58,7 +56,6 @@ class Movement(Entity, ABC):
 
     def apply_operation(self) -> bool:
         """Wrapper method to apply the movement and report the outcome."""
-        self.report.report_apply_start()
         result = False
 
         try:
@@ -67,17 +64,7 @@ class Movement(Entity, ABC):
             LogManager.invalid_action("apply movement", type(self).__name__, ex)
             raise
 
-        if result:
-            self.report.report_apply_end()
-        else:
-            self.report.report_apply_failed()
         return result
-
-    def report_apply_improvement(
-        self, new_evaluation: "Evaluation", old_evaluation: "Evaluation"
-    ):
-        """Report an improvement when the movement is applied."""
-        self.report.report_apply_improvement(new_evaluation, old_evaluation)
 
     @abstractmethod
     def unapply(self) -> bool:
@@ -86,7 +73,6 @@ class Movement(Entity, ABC):
 
     def unapply_operation(self, evaluation: Optional["Evaluation"]) -> bool:
         """Wrapper method to unapply the movement and report the outcome."""
-        self.report.report_unapply_start(evaluation)
         result = False
 
         try:
@@ -95,7 +81,6 @@ class Movement(Entity, ABC):
             LogManager.invalid_action("unapply movement", type(self).__name__, ex)
             raise
 
-        self.report.report_unapply_end()
         return result
 
     def set_unapply_inconsistent(self):
@@ -119,7 +104,7 @@ class Movement(Entity, ABC):
         solution_to_use = new_solution if new_solution else self.solution
 
         # Create a new instance of the same type
-        new_instance = type(self)(solution=solution_to_use, report=self.report)
+        new_instance = type(self)(solution=solution_to_use)
 
         # Copy any additional attributes if needed (in case of subclass extensions)
         for attr in vars(self):

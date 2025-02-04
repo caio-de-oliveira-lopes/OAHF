@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>oahf</Name>
     <RootNamespace>oahf</RootNamespace>
-    <InterpreterId>CondaEnv|CondaEnv|oahf</InterpreterId>
+    <InterpreterId>Global|PythonCore|3.9</InterpreterId>
     <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
     <IsWindowsApplication>False</IsWindowsApplication>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
@@ -43,7 +43,6 @@
     <Compile Include="oahf\Base\Constraint.py" />
     <Compile Include="oahf\Base\ConstraintEvaluation.py" />
     <Compile Include="oahf\Base\CrossOver.py" />
-    <Compile Include="oahf\Base\EfficiencyReport.py" />
     <Compile Include="oahf\Base\Entity.py" />
     <Compile Include="oahf\Base\Evaluation.py" />
     <Compile Include="oahf\Base\Evaluator.py" />
@@ -136,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|oahf" />
+    <InterpreterReference Include="Global|PythonCore|3.9" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

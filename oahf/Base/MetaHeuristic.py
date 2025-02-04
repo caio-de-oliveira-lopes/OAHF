@@ -1,9 +1,8 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional
 
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
-from oahf.Base.EfficiencyReport import Event
 from oahf.Base.Entity import Entity
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Evaluator import Evaluator
@@ -13,24 +12,6 @@ from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.ImplementedBase.ListPool import ListPool
 from oahf.Logger.LogManager import LogManager
-
-
-class MetaHeuristicReport:
-    def __init__(self, name: str, report: List[Tuple[float, "Event"]] = []):
-        self.name: str = name
-        self.report: List[Tuple[float, "Event"]] = report
-        self.reports: List["MetaHeuristicReport"] = []
-        self.start_time: int = 0
-        self.end_time: int = 0
-
-
-class SolutionReport:
-    def __init__(self):
-        self.best_solutions: List[Tuple[str, float]] = []
-        self.current_solutions: List[Tuple[str, float]] = []
-        self.name: str = ""
-        self.start_time: int = 0
-        self.end_time: int = 0
 
 
 class MetaHeuristic(Entity, ABC):
@@ -60,49 +41,9 @@ class MetaHeuristic(Entity, ABC):
         self.origin_pool: Optional[Pool] = origin_pool
         self.destination_pool: Optional[Pool] = destination_pool
         self.parent_metaheuristic: Optional["MetaHeuristic"] = None
-        self.solution_reports: SolutionReport = SolutionReport()
         self.log_solutions: bool = False
         self.start_time: int = 0
         self.end_time: int = 0
-
-    def get_efficiency_reports(self) -> Optional[List[Tuple[type, str]]]:
-        if self.neighborhood_selection is None:
-            return None
-        else:
-            return [
-                (type(x), x.get_efficiency_report())
-                for x in self.neighborhood_selection.get_all()
-            ]
-
-    def get_efficiency_reports_to_json(self) -> MetaHeuristicReport:
-        report = MetaHeuristicReport(self.__class__.__name__)
-        report.start_time = self.start_time
-        report.end_time = self.end_time
-
-        if self.neighborhood_selection is None:
-            report.reports = [
-                x.get_efficiency_reports_to_json() for x in self.meta_heuristics_used
-            ]
-        else:
-            report.reports = [
-                MetaHeuristicReport(y.__class__.__name__, y.get_efficiency_to_json())
-                for y in self.neighborhood_selection.get_all()
-            ]
-
-        return report
-
-    def print_efficiency_reports(self):
-        if self.neighborhood_selection is None:
-            print(f"MetaHeuristic: {self.__class__}")
-            print("------------")
-            for meta in self.meta_heuristics_used:
-                meta.print_efficiency_reports()
-                print("------------")
-        else:
-            reports = self.get_efficiency_reports()
-            if reports:
-                for r in reports:
-                    print(f"{r[0]} {r[1]}")
 
     @abstractmethod
     def run(self, sol: Solution) -> Solution:
@@ -148,29 +89,8 @@ class MetaHeuristic(Entity, ABC):
     def set_stop_criteria_report(self, perc_counter: float):
         self.stop_criteria.set_progress_report(perc_counter)
 
-    def log_best_solution(self, eval: "Evaluation"):
-        if self.log_solutions:
-            self.solution_reports.best_solutions.append(
-                (self.stop_criteria.current_status(), eval.get_objective_function())
-            )
-
-    def log_current_solution(self, eval: "Evaluation"):
-        if self.log_solutions:
-            self.solution_reports.current_solutions.append(
-                (self.stop_criteria.current_status(), eval.get_objective_function())
-            )
-
-    def get_solution_reports(self) -> SolutionReport:
-        self.solution_reports.name = self.__class__.__name__
-        self.solution_reports.start_time = self.start_time
-        self.solution_reports.end_time = self.end_time
-        return self.solution_reports
-
     def set_log_solution(self):
         self.log_solutions = True
-
-    # def stop_on_evaluations(self, ev: "Evaluation") -> bool:
-    #    return self.stop_on_evaluations([ev])
 
     def stop_on_evaluations(self, evs: Iterable["Evaluation"]) -> bool:
         if evs:
