@@ -51,24 +51,30 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.enumerator = self.all_moves()
         return True
     
-    def compute_task_priority(self, task: int) -> float:
+    def compute_tasks_priority(self) -> Dict[int, float]:
         """Computes task priority based on the selected weight type, using the priority matrix if available."""
         if self.solution:
             if not self.priority_matrix:
-                return self.solution.get_max_positional_weight_list(self.max_positional_weight_type)[task - 1]
-        
+                return self.solution.get_max_positional_weight_dict(self.max_positional_weight_type)
+            
+            return {task: self.get_task_priority_from_matrix(task) for task in self.solution.tasks}
+        else:
+            raise ValueError("No solution object was associated with this neighborhood search.")
+    
+    def get_task_priority_from_matrix(self, task: int) -> float:
+        if self.solution and self.priority_matrix:
             workers_priorities = [self.priority_matrix[w][task - 1] for w in range(len(self.priority_matrix))]
         
             if self.max_positional_weight_type == MaxPositionalWeightType.MIN:
                 min_predecessor_value = min(
-                    [self.compute_task_priority(pred) for pred in self.solution.all_task_precedences[self.graph_orientation][task]],
+                    [self.get_task_priority_from_matrix(pred) for pred in self.solution.all_task_precedences[self.graph_orientation][task]],
                     default=0
                 )
                 return min(workers_priorities) + min_predecessor_value
 
             elif self.max_positional_weight_type == MaxPositionalWeightType.MAX:
                 max_predecessor_value = max(
-                    [self.compute_task_priority(pred) for pred in self.solution.all_task_precedences[self.graph_orientation][task]],
+                    [self.get_task_priority_from_matrix(pred) for pred in self.solution.all_task_precedences[self.graph_orientation][task]],
                     default=0
                 )
                 return max(workers_priorities) + max_predecessor_value
@@ -98,16 +104,16 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             worker_moves: Dict[int, MultipleMovement] = {}
 
             # Determine the task list based on positional weights and greediness
-            max_positional_weight_list = [self.compute_task_priority(task) for task in self.solution.tasks]
-            c_min = min(max_positional_weight_list)
-            c_max = max(max_positional_weight_list)
+            max_positional_weight_dict = self.compute_tasks_priority()
+            c_min = min(max_positional_weight_dict.values())
+            c_max = max(max_positional_weight_dict.values())
             threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
 
             # Filter tasks within the threshold
             lcr = [
                 task
                 for task in self.solution.unassigned_tasks
-                if max_positional_weight_list[task - 1] <= threshold_value
+                if max_positional_weight_dict[task] <= threshold_value
             ]
             available_tasks = self.solution.get_available_tasks_to_assign_to_station(
                 self.station, lcr

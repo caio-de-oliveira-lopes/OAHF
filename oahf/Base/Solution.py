@@ -69,7 +69,7 @@ class Solution(Entity, ABC):
         )
 
     @abstractmethod
-    def validade_aspects(self) -> bool:
+    def validate_aspects(self) -> bool:
         """
         Validates specific aspects of the solution.
 

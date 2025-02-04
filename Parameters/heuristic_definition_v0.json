@@ -3,7 +3,9 @@
 		"alwabp_evaluator": {
 			"stop_on_first": "true",
 			"constraints": {
-				"max_cycle_time": {}
+				"max_cycle_time": {},
+				"precedence": {},
+				"worker_task": {}
 			}
 		}
 	},

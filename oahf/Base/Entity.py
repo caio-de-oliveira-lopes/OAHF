@@ -19,8 +19,7 @@ class Entity(ABC):
         # Increment the class-level counter for the ID
         with Entity._lock:
             if entity_id is None:
-                Entity._instance_counter -= 1
-                self.__id = Entity._instance_counter
+                self.get_new_id()
             else:
                 self.__id = entity_id
 
@@ -32,6 +31,10 @@ class Entity(ABC):
 
         self.output_id = self.id
 
+    def get_new_id(self) -> None:
+        Entity._instance_counter -= 1
+        self.__id = Entity._instance_counter
+        
     @property
     def id(self) -> int:
         """Getter for the entity ID."""

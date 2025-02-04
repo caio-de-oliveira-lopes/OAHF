@@ -97,7 +97,7 @@ class TaskSwapNS(Neighborhood):
         pairs_already_created = PairStore()  # Tracks processed workstation pairs.
         if self.solution:
             for ws1 in self.solution.stations:
-                tasks_on_ws1 = list(self.solution.station_tasks_assignment[ws1])
+                tasks_on_ws1 = tuple(self.solution.station_tasks_assignment[ws1])
 
                 # Avoid redundant swaps by skipping already processed station pairs.
                 other_stations = [
@@ -108,7 +108,7 @@ class TaskSwapNS(Neighborhood):
 
                 for ws2 in other_stations:
                     pairs_already_created.add_pair(ws1, ws2)
-                    tasks_on_ws2 = list(self.solution.station_tasks_assignment[ws2])
+                    tasks_on_ws2 = tuple(self.solution.station_tasks_assignment[ws2])
 
                     # Create a single reusable copy of the solution for this pair.
                     solution_copy = self.solution.copy()

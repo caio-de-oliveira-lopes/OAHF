@@ -14,6 +14,13 @@ from oahf.Utils import EnumUtil
 class GraphOrientation(Enum):
     FORWARD = auto()
     BACKWARD = auto()
+    
+    @classmethod
+    def reverse(cls, graph_orientation: "GraphOrientation") -> "GraphOrientation":
+        if graph_orientation == GraphOrientation.FORWARD:
+            return GraphOrientation.BACKWARD
+        else:
+            return GraphOrientation.FORWARD
 
 
 class MaxPositionalWeightType(Enum):
@@ -120,6 +127,8 @@ class AlwabpSolution(Solution):
             if attr in self.__dict__:
                 setattr(result, attr, self.__dict__[attr])
 
+        result.get_new_id()
+
         # --- Copy attributes from Solution and AlwabpSolution ---
         # For immutable or "safe" objects, we can assign directly.
         result.print_solution_updates = self.print_solution_updates
@@ -171,16 +180,16 @@ class AlwabpSolution(Solution):
         """
         return copy.deepcopy(self)
 
-    def validade_aspects(self) -> bool:
+    def validate_aspects(self) -> bool:
         if self.cycle_time_limit and (
             len(self.unassigned_tasks) > 0 or len(self._unassigned_workers) > 0
         ):
             self.cycle_time_limit = self.cycle_time_limit + 1
             self.reset()
             return False
-        else:
-            self.narrow_bounds()
-        return super().validade_aspects()
+        #else:
+            #self.narrow_bounds()
+        return super().validate_aspects()
 
     def narrow_bounds(self) -> None:
         self.cycle_time_limit = self.get_max_cycle_time()
@@ -207,6 +216,7 @@ class AlwabpSolution(Solution):
     def process_graph_data(self) -> None:
         self._update_tasks_executed_by_worker()
         self._fill_all_task_precedences()
+        self._update_bounded_task_execution_times(499)
         self._calculate_max_positional_weights()
 
     def _update_tasks_executed_by_worker(self) -> None:
@@ -230,8 +240,8 @@ class AlwabpSolution(Solution):
         else:
             print(f"Starting with cycle time limit as {str(value)}.")
         self._cycle_time_limit = value
-        self._update_bounded_task_execution_times()
-        self._calculate_max_positional_weights()
+        #self._update_bounded_task_execution_times()
+        #self._calculate_max_positional_weights()
 
     @property
     def default_graph_orientation(self) -> GraphOrientation:
@@ -287,17 +297,18 @@ class AlwabpSolution(Solution):
     def fix_solution(self) -> None:
         self.default_graph_orientation = GraphOrientation.FORWARD
         self.order_solution_tasks()
+        self.narrow_bounds()
 
-    def _update_bounded_task_execution_times(self) -> None:
+    def _update_bounded_task_execution_times(self, cycle_time: Optional[float]) -> None:
         self._bounded_task_execution_times = copy.deepcopy(self._task_execution_times)
 
-        if self._cycle_time_limit:
+        if cycle_time:
             for task in self.tasks:
                 float_array = np.array(
                     self._bounded_task_execution_times[task]
                 )  # Convert the list to a NumPy array for vectorized operations
                 float_array[float_array == np.inf] = (
-                    self._cycle_time_limit + 1
+                    cycle_time + 1
                 )  # Replace float('inf')
                 self._bounded_task_execution_times[task] = float_array.tolist()
 
@@ -884,7 +895,7 @@ class AlwabpSolution(Solution):
                 )
                 return False
         except Exception as e:
-            LogManager.invalid_action("add task to worker", self.name, e)
+            LogManager.invalid_action("add task to station", self.name, e)
             return False
 
     def remove_task_from_station(self, task: int, station: int) -> bool:
@@ -918,7 +929,7 @@ class AlwabpSolution(Solution):
                 )
                 return False
         except Exception as e:
-            LogManager.invalid_action("remove task from worker", self.name, e)
+            LogManager.invalid_action("remove task from station", self.name, e)
             return False
 
     def find_station_for_task(self, task: int) -> Optional[int]:
@@ -1012,13 +1023,16 @@ class AlwabpSolution(Solution):
         ):
             return False
 
-        for preceding_task in self.all_task_precedences[self.default_graph_orientation][
-            task
-        ]:
+        for preceding_task in self.all_task_precedences[self.default_graph_orientation][task]:
             another_station = self.find_station_for_task(preceding_task)
             if not another_station or another_station > station:
                 return False
-
+            
+        for sucessor_task in self.all_task_precedences[GraphOrientation.reverse(self.default_graph_orientation)][task]:
+            another_station = self.find_station_for_task(sucessor_task)
+            if another_station and another_station < station:
+                return False
+            
         return True
 
     def get_task_execution_time(self, task: int, worker: Optional[int] = None) -> float:
@@ -1162,9 +1176,9 @@ class AlwabpSolution(Solution):
         # If the weight is not set, it is assumed to be -1 (indicating an error or absence of value).
         return self.max_positional_weight[variation][task]
 
-    def get_max_positional_weight_list(
+    def get_max_positional_weight_dict(
         self, variation: MaxPositionalWeightType
-    ) -> List[float]:
+    ) -> Dict[int, float]:
         """
         Retrieve the maximum positional weight for a given variation.
 
@@ -1177,7 +1191,7 @@ class AlwabpSolution(Solution):
         """
         # Attempt to retrieve the positional weight from the max_positional_weight dictionary.
         # If the weight is not set, it is assumed to be -1 (indicating an error or absence of value).
-        return list(self.max_positional_weight[variation].values())
+        return self.max_positional_weight[variation]
 
     def get_min_restricted_lower_bound(self) -> List[int]:
         """

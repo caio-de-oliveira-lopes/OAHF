@@ -53,7 +53,7 @@ class ListPool(Pool):
         return self.solutions
 
     @classmethod
-    def from_dict(cls, heuristic_parser: "HeuristicParser", data: dict) -> "ListPool":
+    def from_dict(cls, heuristic_parser: "HeuristicParser", data: dict, base_solution: Solution) -> "ListPool":
         """
         Creates an instance of the ListPool class from a dictionary.
 
@@ -73,7 +73,7 @@ class ListPool(Pool):
 
         # Populate the solutions list
         solutions = data.get("solutions", [])
-        parsed_solutions = [Solution.from_dict(sol) for sol in solutions]
+        parsed_solutions = [type(base_solution).from_dict(sol, base_solution) for sol in solutions]
 
         instance = ListPool(parsed_solutions, heuristic_parser_key=data.get("id"))
 

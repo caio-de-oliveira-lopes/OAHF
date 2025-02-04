@@ -99,7 +99,7 @@ class GRASP(MetaHeuristic):
             )
 
             curr_sol = curr_pool.get_best(self.evaluator)
-            if not curr_sol or not curr_sol.validade_aspects():
+            if not curr_sol or not curr_sol.validate_aspects():
                 continue
 
             curr_pool = local_search.run_operation(

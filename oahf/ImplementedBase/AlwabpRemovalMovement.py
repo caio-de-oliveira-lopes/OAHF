@@ -64,6 +64,8 @@ class AlwabpRemovalMovement(Movement):
             cls
         )  # Create a new instance without calling __init__
 
+        copied_movement.get_new_id()
+        
         # Manually copy attributes (minimizing deep copy overhead)
         copied_movement.task = self.task
         copied_movement.worker = self.worker

@@ -144,19 +144,19 @@ class WorkerSwapReconstructNS(Neighborhood):
                             # Validate and process the reconstructed solution.
                             if (
                                 isinstance(reconstructed_solution, AlwabpSolution)
-                                and reconstructed_solution.validade_aspects()
+                                and reconstructed_solution.validate_aspects()
                             ):
                                 break
 
                             # After validade aspects, if solution is not according, it`ll be reset (since reconstructed_solution was rejected)
-                            solution_copy.validade_aspects()
+                            solution_copy.validate_aspects()
                             # This move will restore the workers allocations to it`s previous state
                             restore_assignment.apply()
                             curr_eval = self.evaluator.evaluate(solution_copy)
 
                         if (
                             isinstance(reconstructed_solution, AlwabpSolution)
-                            and reconstructed_solution.validade_aspects()
+                            and reconstructed_solution.validate_aspects()
                         ):
                             # Generate insertion movements for reconstruction.
                             reconstruction_moves = [
