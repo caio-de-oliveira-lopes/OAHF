@@ -1,3 +1,4 @@
+from collections import deque
 from typing import Dict, Iterator, List, Optional
 
 from oahf.Base.Movement import Movement
@@ -135,31 +136,34 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                 for task in self.solution.unassigned_tasks
                 if max_positional_weight_dict[task] <= threshold_value
             ]
-            available_tasks = self.solution.get_available_tasks_to_assign_to_station(
-                self.station, lcr
-            )
-            ordered_chosen_tasks = []
 
             # Generate movements for tasks that are still available
-            while available_tasks:
-                filtered_lcr = [task for task in lcr if task in available_tasks]
+            lcr_set = set(lcr)  # Convert to set for faster lookup
+            lcr_queue = deque(lcr)  # Using deque for efficient removals
+            ordered_chosen_tasks = []
+
+            while available_tasks := set(
+                self.solution.get_available_tasks_to_assign_to_station(
+                    self.station, lcr_set
+                )
+            ):
+                filtered_lcr = [task for task in lcr_queue if task in available_tasks]
 
                 if not filtered_lcr:
                     break
 
-                # Randomly select a task using thread-specific randomization
-                task = filtered_lcr[
-                    ThreadManager.get_next(self.thread_id, 0, len(filtered_lcr) - 1)
-                ]
+                # Select a task (randomly but efficiently)
+                task_index = ThreadManager.get_next(
+                    self.thread_id, 0, len(filtered_lcr) - 1
+                )
+                task = filtered_lcr[task_index]
                 ordered_chosen_tasks.append(task)
 
                 # Update lists after each move
-                lcr.remove(task)
-                available_tasks = (
-                    self.solution.get_available_tasks_to_assign_to_station(
-                        self.station, lcr
-                    )
-                )
+                lcr_set.remove(task)
+                lcr_queue.remove(
+                    task
+                )  # `deque.remove()` is still `O(n)`, but avoids full list reconstruction
 
             if not ordered_chosen_tasks:
                 return iter([])  # Return an empty iterator if no moves are generated

@@ -1,6 +1,6 @@
 import copy
 from enum import Enum, auto
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
 
@@ -962,7 +962,7 @@ class AlwabpSolution(Solution):
     def get_available_tasks_to_assign_to_station(
         self,
         station: int,
-        override_unassigned_tasks: List[int] = [],
+        override_unassigned_tasks: Iterable[int] = [],
     ) -> List[int]:
         """
         Finds the available tasks that can be assigned to the given station, considering task precedences.
