@@ -116,6 +116,9 @@ class AlwabpSolution(Solution):
 
         self.print_solution_updates: bool = False
 
+        self._first_unassigned_station: Optional[int] = 1
+        self._last_station: int = number_of_stations
+
     def __deepcopy__(self, memo):
         cls = self.__class__
         result = cls.__new__(cls)
@@ -171,6 +174,8 @@ class AlwabpSolution(Solution):
 
         result._cycle_time_limit = self._cycle_time_limit
         result._default_graph_orientation = self._default_graph_orientation
+        result._first_unassigned_station = self._first_unassigned_station
+        result._last_station = self._last_station
 
         return result
 
@@ -212,6 +217,7 @@ class AlwabpSolution(Solution):
         self.station_cycle_time_memo: Dict[int, float] = {
             station: 0.0 for station in self.stations
         }
+        self._first_unassigned_station = 1
 
     def process_graph_data(self) -> None:
         self._update_tasks_executed_by_worker()
@@ -520,7 +526,7 @@ class AlwabpSolution(Solution):
         Returns:
             float: The maximum cycle time among all stations.
         """
-        return max(self.calculate_cycle_time(station) for station in self.stations)
+        return max(self.station_cycle_time_memo.values())
 
     def get_min_cycle_time(self) -> float:
         """
@@ -529,7 +535,7 @@ class AlwabpSolution(Solution):
         Returns:
             float: The minimum cycle time among all stations.
         """
-        return min(self.calculate_cycle_time(station) for station in self.stations)
+        return min(self.station_cycle_time_memo.values())
 
     def get_idle_time(self) -> float:
         """
@@ -541,7 +547,7 @@ class AlwabpSolution(Solution):
         """
         return self.get_max_cycle_time() - self.get_min_cycle_time()
 
-    def solution_diff(self, other: "AlwabpSolution") -> float:
+    def solution_diff(self, other: "Solution") -> float:
         """
         Calculates the difference between this solution and another based on idle time.
 
@@ -558,37 +564,6 @@ class AlwabpSolution(Solution):
         idle_time_other = other.get_idle_time()
 
         return idle_time_self - idle_time_other
-
-    def _update_unassigned_workers(self) -> None:
-        """
-        Retrieves a list of workers that have not been assigned any tasks.
-
-        Returns:
-            List[int]: A list of worker IDs who are currently unassigned.
-        """
-        unassigned_workers = []
-        for worker in self.workers:
-            if not self.station_worker_assignment.values():
-                unassigned_workers.append(worker)
-
-        self._unassigned_workers = unassigned_workers
-
-    def _update_unassigned_tasks(self) -> None:
-        """
-        Retrieves a list of tasks that have not been assigned to any worker.
-
-        Returns:
-            List[int]: A list of task IDs that are currently unassigned.
-        """
-        assigned_tasks = set(
-            task
-            for station_tasks in self.station_tasks_assignment.values()
-            for task in station_tasks
-        )
-
-        self._unassigned_tasks = [
-            task for task in self.tasks if task not in assigned_tasks
-        ]
 
     def add_precedence(
         self,
@@ -888,6 +863,11 @@ class AlwabpSolution(Solution):
                     task, worker
                 )
 
+                if self._first_unassigned_station == station:
+                    self._first_unassigned_station = (
+                        None if station >= self._last_station else station + 1
+                    )
+
                 return True
             else:
                 LogManager.invalid_action(
@@ -921,6 +901,12 @@ class AlwabpSolution(Solution):
                 self.station_cycle_time_memo[station] -= self.get_task_execution_time(
                     task, worker
                 )
+
+                if not self.station_tasks_assignment[station] and (
+                    self._first_unassigned_station is None
+                    or station < self._first_unassigned_station
+                ):
+                    self._first_unassigned_station = station
 
                 return True
             else:
@@ -1265,10 +1251,7 @@ class AlwabpSolution(Solution):
             Optional[int]: The station key where no task is assigned (None)
             or None if all are assigned.
         """
-        for station, tasks in self.station_tasks_assignment.items():
-            if len(tasks) == 0:
-                return station
-        return None  # Return None if no unassigned station is found
+        return self._first_unassigned_station
 
     def station_would_be_feasible(self, station: int, worker: int) -> bool:
         """
