@@ -23,6 +23,7 @@ class AlwabpInsertionMovement(Movement):
         self.worker: Optional[int] = worker
         self.station: Optional[int] = station
         self.override_cost: Optional[float] = None
+        self._hash = None
 
     def get_cost(self) -> float:
         return self.override_cost if self.override_cost is not None else -1.0
@@ -74,6 +75,7 @@ class AlwabpInsertionMovement(Movement):
         # Deep copy only when necessary
         copied_movement.solution = self.solution
         copied_movement.override_cost = self.override_cost
+        copied_movement._hash = self._hash
 
         return copied_movement
 
@@ -87,7 +89,10 @@ class AlwabpInsertionMovement(Movement):
         )
 
     def __hash__(self) -> int:
-        return hash((self.task, self.worker, self.station))
+        if self._hash is None:
+            self._hash = hash((self.task, self.worker, self.station))
+
+        return self._hash
 
     def copy(
         self, new_solution: Optional["AlwabpSolution"] = None

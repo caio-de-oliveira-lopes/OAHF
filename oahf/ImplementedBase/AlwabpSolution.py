@@ -112,12 +112,13 @@ class AlwabpSolution(Solution):
         self.station_cycle_time_memo: Dict[int, float] = {
             station: 0.0 for station in self.stations
         }
+
         self._default_graph_orientation: GraphOrientation = GraphOrientation.FORWARD
-
         self.print_solution_updates: bool = False
-
         self._first_unassigned_station: Optional[int] = 1
-        self._last_station: int = number_of_stations
+        self._number_of_tasks: int = number_of_tasks
+        self._number_of_workers: int = number_of_workers
+        self._number_of_stations: int = number_of_stations
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -175,7 +176,9 @@ class AlwabpSolution(Solution):
         result._cycle_time_limit = self._cycle_time_limit
         result._default_graph_orientation = self._default_graph_orientation
         result._first_unassigned_station = self._first_unassigned_station
-        result._last_station = self._last_station
+        result._number_of_tasks = self._number_of_tasks
+        result._number_of_workers = self._number_of_workers
+        result._number_of_stations = self._number_of_stations
 
         return result
 
@@ -187,7 +190,7 @@ class AlwabpSolution(Solution):
 
     def validate_aspects(self) -> bool:
         if self.cycle_time_limit and (
-            len(self.unassigned_tasks) > 0 or len(self._unassigned_workers) > 0
+            self.unassigned_tasks or self._unassigned_workers
         ):
             self.cycle_time_limit = self.cycle_time_limit + 1
             self.reset()
@@ -265,40 +268,48 @@ class AlwabpSolution(Solution):
         """
         Reverses the assignments of tasks and cycle times between stations in the solution.
         """
-        num_stations: int = len(self.stations)
+        num_stations = self._number_of_stations
+        half_stations = num_stations // 2
 
-        for i in range(1, int(num_stations / 2) + 1):
-            # Swap tasks between station i and its mirror counterpart
+        # Swap tasks, workers, and cycle times in a single loop
+        for i in range(1, half_stations + 1):
+            mirror_idx = num_stations - i + 1
+
+            # Swap tasks
             (
                 self.station_tasks_assignment[i],
-                self.station_tasks_assignment[num_stations - i + 1],
+                self.station_tasks_assignment[mirror_idx],
             ) = (
-                self.station_tasks_assignment[num_stations - i + 1],
+                self.station_tasks_assignment[mirror_idx],
                 self.station_tasks_assignment[i],
             )
 
-            # Swap workers between station i and its mirror counterpart
+            # Swap workers
             (
                 self.station_worker_assignment[i],
-                self.station_worker_assignment[num_stations - i + 1],
+                self.station_worker_assignment[mirror_idx],
             ) = (
-                self.station_worker_assignment[num_stations - i + 1],
+                self.station_worker_assignment[mirror_idx],
                 self.station_worker_assignment[i],
             )
 
-            # Swap cycle times between station i and its mirror counterpart
+            # Swap cycle times
             (
                 self.station_cycle_time_memo[i],
-                self.station_cycle_time_memo[num_stations - i + 1],
+                self.station_cycle_time_memo[mirror_idx],
             ) = (
-                self.station_cycle_time_memo[num_stations - i + 1],
+                self.station_cycle_time_memo[mirror_idx],
                 self.station_cycle_time_memo[i],
             )
 
-        for station in self.stations:
-            worker = self.station_worker_assignment[station]
+        # Update worker-to-station assignments
+        for station, worker in self.station_worker_assignment.items():
             if worker is not None:
                 self.worker_station_assignment[worker] = station
+
+        for station, tasks in self.station_tasks_assignment.items():
+            # Directly map all tasks to the station in one go
+            self.task_station_assignment.update({task: station for task in tasks})
 
     def fix_solution(self) -> None:
         self.default_graph_orientation = GraphOrientation.FORWARD
@@ -338,12 +349,12 @@ class AlwabpSolution(Solution):
         """
         if task_number not in self.tasks:
             raise ValueError(
-                f"Task number {task_number} is invalid. It must be between 1 and {len(self.tasks)}."
+                f"Task number {task_number} is invalid. It must be between 1 and {self._number_of_tasks}."
             )
 
-        if len(execution_times) != len(self.workers):
+        if len(execution_times) != self._number_of_workers:
             raise ValueError(
-                f"Execution times must be provided for all {len(self.workers)} workers."
+                f"Execution times must be provided for all {self._number_of_workers} workers."
             )
 
         # Set the execution times for the task
@@ -388,9 +399,9 @@ class AlwabpSolution(Solution):
         result = [Util.line()]
         result.append("ALWABP Solution:")
         result.append(f"ID: {self.id}")
-        result.append(f"Number of Tasks: {len(self.tasks)}")
-        result.append(f"Number of Workers: {len(self.workers)}")
-        result.append(f"Number of Stations: {len(self.stations)}")
+        result.append(f"Number of Tasks: {self._number_of_tasks}")
+        result.append(f"Number of Workers: {self._number_of_workers}")
+        result.append(f"Number of Stations: {self._number_of_stations}")
         result.append(f"Max Cycle Time: {str(int(self.get_max_cycle_time()))}")
         result.append("Task Allocations (per station):")
 
@@ -403,7 +414,7 @@ class AlwabpSolution(Solution):
 
         unassigned_tasks = (
             ", ".join(map(str, self.unassigned_tasks))
-            if len(self.unassigned_tasks) > 0
+            if self.unassigned_tasks
             else "[]"
         )
         result.append(f"Unassigned Tasks: {unassigned_tasks}")
@@ -422,13 +433,13 @@ class AlwabpSolution(Solution):
 
         solution_dict.update(
             {
-                "number_of_tasks": len(self.tasks),
-                "number_of_workers": len(self.workers),
-                "number_of_stations": len(self.stations),
+                "number_of_tasks": self._number_of_tasks,
+                "number_of_workers": self._number_of_workers,
+                "number_of_stations": self._number_of_stations,
                 "max_cycle_time": int(self.get_max_cycle_time()),
                 "task_allocations_per_station": [],
                 "unassigned_tasks": (
-                    self.unassigned_tasks if len(self.unassigned_tasks) > 0 else []
+                    self.unassigned_tasks if self.unassigned_tasks else []
                 ),
             }
         )
@@ -865,7 +876,7 @@ class AlwabpSolution(Solution):
 
                 if self._first_unassigned_station == station:
                     self._first_unassigned_station = (
-                        None if station >= self._last_station else station + 1
+                        None if station >= self._number_of_stations else station + 1
                     )
 
                 return True
@@ -972,9 +983,9 @@ class AlwabpSolution(Solution):
         )
 
         for unassigned_task in unassigned_tasks:
-            task_precendes = self.all_task_precedences[self.default_graph_orientation][
-                unassigned_task
-            ]
+            task_precendes = self.immediate_task_precedences[
+                self.default_graph_orientation
+            ][unassigned_task]
             can_allocate = True
             for preceding_task in task_precendes:
                 if preceding_task in unassigned_tasks or (
@@ -1016,9 +1027,8 @@ class AlwabpSolution(Solution):
             if not another_station or another_station > station:
                 return False
 
-        for sucessor_task in self.all_task_precedences[
-            GraphOrientation.reverse(self.default_graph_orientation)
-        ][task]:
+        reversed_graph = GraphOrientation.reverse(self.default_graph_orientation)
+        for sucessor_task in self.all_task_precedences[reversed_graph][task]:
             another_station = self.find_station_for_task(sucessor_task)
             if another_station and another_station < station:
                 return False
@@ -1049,7 +1059,7 @@ class AlwabpSolution(Solution):
 
         if workers:
             # Consider only task times for the specified workers' indices
-            task_times = [task_times[worker - 1] for worker in sorted(workers)]
+            return max(task_times[worker - 1] for worker in workers)
 
         return max(task_times)
 
@@ -1071,7 +1081,7 @@ class AlwabpSolution(Solution):
 
         if workers:
             # Consider only task times for the specified workers' indices
-            task_times = [task_times[worker - 1] for worker in sorted(workers)]
+            return min(task_times[worker - 1] for worker in workers)
 
         return min(task_times)
 
@@ -1092,11 +1102,15 @@ class AlwabpSolution(Solution):
         task_times = self._bounded_task_execution_times[task]
 
         if workers:
-            # Consider only task times for the specified workers' indices
-            task_times = [task_times[worker - 1] for worker in sorted(workers)]
+            # Use a generator expression to sum task times without creating an intermediate list
+            total_time = sum(task_times[worker - 1] for worker in workers)
+            number_of_workers = len(workers)
+        else:
+            # If no specific workers, consider all workers
+            total_time = sum(task_times)
+            number_of_workers = self._number_of_workers
 
-        number_of_workers = max(1, len(task_times))
-        return sum(task_times) / number_of_workers
+        return total_time / max(1, number_of_workers)
 
     def __get_func_for_max_positional_weight(
         self, positional_weight_type: MaxPositionalWeightType
@@ -1357,7 +1371,7 @@ class AlwabpSolution(Solution):
             if cycle_time == max_cycle_time:
                 critical_stations.append(station)
 
-        if len(critical_stations) == len(self.stations):
+        if len(critical_stations) == self._number_of_stations:
             return []
 
         return critical_stations

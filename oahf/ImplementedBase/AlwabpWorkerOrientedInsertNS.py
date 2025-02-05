@@ -19,7 +19,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self,
         max_positional_weight_type: MaxPositionalWeightType,
         graph_orientation: GraphOrientation,
-        greediness: float = 0,        
+        greediness: float = 0,
         priority_matrix: Optional[List[List[int]]] = None,
         stop_criteria: Optional[StopCriteria] = None,
     ):
@@ -32,7 +32,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.max_positional_weight_type = max_positional_weight_type
         self.graph_orientation = graph_orientation
         self.station: Optional[int] = None
-        self.greediness: float = greediness        
+        self.greediness: float = greediness
         self.priority_matrix = priority_matrix
 
     def build_neighborhood(self, thread_id: int, solution: AlwabpSolution) -> bool:
@@ -50,32 +50,52 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.thread_id = thread_id
         self.enumerator = self.all_moves()
         return True
-    
+
     def compute_tasks_priority(self) -> Dict[int, float]:
         """Computes task priority based on the selected weight type, using the priority matrix if available."""
         if self.solution:
             if not self.priority_matrix:
-                return self.solution.get_max_positional_weight_dict(self.max_positional_weight_type)
-            
-            return {task: self.get_task_priority_from_matrix(task) for task in self.solution.tasks}
+                return self.solution.get_max_positional_weight_dict(
+                    self.max_positional_weight_type
+                )
+
+            return {
+                task: self.get_task_priority_from_matrix(task)
+                for task in self.solution.tasks
+            }
         else:
-            raise ValueError("No solution object was associated with this neighborhood search.")
-    
+            raise ValueError(
+                "No solution object was associated with this neighborhood search."
+            )
+
     def get_task_priority_from_matrix(self, task: int) -> float:
         if self.solution and self.priority_matrix:
-            workers_priorities = [self.priority_matrix[w][task - 1] for w in range(len(self.priority_matrix))]
-        
+            workers_priorities = [
+                self.priority_matrix[w][task - 1]
+                for w in range(len(self.priority_matrix))
+            ]
+
             if self.max_positional_weight_type == MaxPositionalWeightType.MIN:
                 min_predecessor_value = min(
-                    [self.get_task_priority_from_matrix(pred) for pred in self.solution.all_task_precedences[self.graph_orientation][task]],
-                    default=0
+                    [
+                        self.get_task_priority_from_matrix(pred)
+                        for pred in self.solution.all_task_precedences[
+                            self.graph_orientation
+                        ][task]
+                    ],
+                    default=0,
                 )
                 return min(workers_priorities) + min_predecessor_value
 
             elif self.max_positional_weight_type == MaxPositionalWeightType.MAX:
                 max_predecessor_value = max(
-                    [self.get_task_priority_from_matrix(pred) for pred in self.solution.all_task_precedences[self.graph_orientation][task]],
-                    default=0
+                    [
+                        self.get_task_priority_from_matrix(pred)
+                        for pred in self.solution.all_task_precedences[
+                            self.graph_orientation
+                        ][task]
+                    ],
+                    default=0,
                 )
                 return max(workers_priorities) + max_predecessor_value
 
@@ -181,7 +201,6 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
                 if moves_executed_on_copy:
                     move = construction_composition.copy(self.solution)
-
                     worker_moves[unassigned_worker] = move
 
                     # Calculate cost for the movement

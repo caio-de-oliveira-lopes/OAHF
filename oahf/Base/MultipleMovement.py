@@ -14,6 +14,8 @@ class MultipleMovement(Movement):
         super().__init__(solution)
         self.movements: Sequence[Movement] = movements
         self.override_cost: Optional[float] = override_cost
+        # Cache the hash of movements to avoid recomputation
+        self._movements_hash: Optional[int] = None
 
     def get_cost(self) -> float:
         """Calculate the total cost of all movements or return the overridden cost if specified."""
@@ -65,6 +67,7 @@ class MultipleMovement(Movement):
             movements=copied_movements,
             override_cost=self.override_cost,
         )
+        copied_multiple_movement._movements_hash = self._movements_hash
 
         return copied_multiple_movement
 
@@ -85,16 +88,14 @@ class MultipleMovement(Movement):
             and self.movements == other.movements
         )
 
-    def __hash__(self) -> int:
-        """
-        Generate a hash for the MultipleMovement instance.
-
-        Returns:
-            int: The hash value.
-        """
+    def _compute_movements_hash(self) -> int:
+        """Helper method to compute the hash of the movements."""
         return hash(
-            (
-                self.override_cost,
-                tuple(self.movements),
-            )
-        )
+            tuple(self.movements)
+        )  # Or use another hashing method for the list.
+
+    def __hash__(self) -> int:
+        if self._movements_hash is None:
+            self._movements_hash = self._compute_movements_hash()
+
+        return hash((self.override_cost, self._movements_hash))

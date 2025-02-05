@@ -124,7 +124,6 @@ class GRC(MetaHeuristic):
                                 best_eval, curr_eval, curr_sol
                             ):
                                 best_eval = curr_eval
-                                ns.accept_movement()
                                 break
                             else:
                                 move.unapply_operation(curr_eval)

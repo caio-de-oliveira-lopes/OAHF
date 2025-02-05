@@ -57,32 +57,30 @@ class PrecedenceConstraint(Constraint):
 
         violation_count = 0
 
+        # Ensure that the solution is of the correct type
         if not isinstance(solution, AlwabpSolution):
             return violation_count
 
-        # Map each allocated task to its station
-        task_station_map = {
-            task: station
-            for station, tasks in solution.station_tasks_assignment.items()
-            for task in tasks
-        }
+        # Cache values that do not change during the loop
+        precedence_graph = solution.immediate_task_precedences[
+            solution.default_graph_orientation
+        ]
+        task_station_assignment = solution.task_station_assignment
 
         # Iterate through all stations
         for station, tasks in solution.station_tasks_assignment.items():
             for task in tasks:
                 # Retrieve all tasks that must precede this task
-                precedences = solution.all_task_precedences[
-                    solution.default_graph_orientation
-                ].get(task, [])
+                precedences = precedence_graph.get(task, [])
 
                 # Check if any precedent task has been allocated in a later station
                 for preceding_task in precedences:
-                    if preceding_task in task_station_map:
-                        preceding_task_station = task_station_map[preceding_task]
+                    # Fetch the station where the preceding task is allocated
+                    preceding_task_station = task_station_assignment.get(preceding_task)
 
-                        # Penalize only if the precedent task is in a later station
-                        if preceding_task_station > station:
-                            violation_count += 1
+                    # Penalize only if the precedent task is in a later station
+                    if preceding_task_station and preceding_task_station > station:
+                        violation_count += 1
 
         return violation_count
 
