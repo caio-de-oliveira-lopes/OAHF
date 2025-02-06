@@ -1,4 +1,5 @@
-﻿import json
+﻿import gc
+import json
 import time
 from pathlib import Path
 from typing import Dict, List, Optional, Union
@@ -140,14 +141,24 @@ class HeuristicParser:
         # Record the start time
         start_time = time.time()
         Util.set_start_timestamp(start_time)
+        last_mh = None
 
         for mh in self.ordered_metaheuristics:
+            if mh.name != last_mh:
+                print(Util.line())
+                Util.logger().info(f"Running {mh.name}.")
+                print(Util.line())
+                last_mh = mh.name
             origin_pool = (
                 mh.origin_pool
                 if mh.origin_pool is not None
                 else ListPool([initial_sol], None, evaluator)
             )
+
             mh.run_operation(origin_pool, mh.destination_pool)
+
+            # Use garbage collector
+            gc.collect()
 
         print(Util.line())
         Util.logger().info(

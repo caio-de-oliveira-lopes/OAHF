@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>oahf</Name>
     <RootNamespace>oahf</RootNamespace>
-    <InterpreterId>CondaEnv|CondaEnv|oahf</InterpreterId>
+    <InterpreterId>Global|PythonCore|3.9</InterpreterId>
     <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
     <IsWindowsApplication>False</IsWindowsApplication>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
@@ -132,6 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="oahf\Logger\LogMessages.resx" />
+    <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|oahf" />

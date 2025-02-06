@@ -13,7 +13,9 @@ from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Commons.ProblemData import ProblemData
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution, GraphOrientation
-from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import AlwaysAcceptAcceptanceCriteria
+from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
+    AlwaysAcceptAcceptanceCriteria,
+)
 from oahf.ImplementedBase.JobRotationAlwabpEvaluator import JobRotationAlwabpEvaluator
 from oahf.ImplementedBase.JobRotationAlwabpSolution import JobRotationAlwabpSolution
 from oahf.ImplementedBase.ListPool import ListPool
@@ -96,6 +98,7 @@ class JobRotationLPSelector(MetaHeuristic):
                 grb_model.setParam(
                     "MIPGap", 1e-6
                 )  # Set a very small MIP gap for high precision
+                grb_model.setParam("OutputFlag", 0)
 
                 # Decision variables
                 solution = {}

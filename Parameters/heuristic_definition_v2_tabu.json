@@ -337,7 +337,7 @@
 		{
 			"id": 12,
 			"name": "list_selection",
-			"neighborhood_ids": [ 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ],
+			"neighborhood_ids": [ 6, 8, 10, 11, 12, 7, 9, 13, 14, 15 ],
 			"parameters": {
 				"circular": "true"
 			}
@@ -345,7 +345,7 @@
 		{
 			"id": 13,
 			"name": "list_selection",
-			"neighborhood_ids": [ 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 ],
+			"neighborhood_ids": [ 6, 8, 10, 11, 12, 16, 7, 9, 13, 14, 15, 17 ],
 			"parameters": {
 				"circular": "false"
 			}
@@ -369,7 +369,7 @@
 		{
 			"id": 16,
 			"name": "list_selection",
-			"neighborhood_ids": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 ],
+			"neighborhood_ids": [ 0, 1, 2, 6, 8, 10, 11, 12, 16, 3, 4, 5, 7, 9, 13, 14, 15, 17 ],
 			"parameters": {
 				"circular": "false"
 			}

@@ -1,11 +1,13 @@
 import copy
 from enum import Enum, auto
-from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
+from typing import Callable, Dict, FrozenSet, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
 
 from oahf.Base.Movement import Movement
+from oahf.Base.MultipleMovement import MultipleMovement
 from oahf.Base.Solution import Solution
+from oahf.ImplementedBase import AlwabpRemovalMovement
 from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils import EnumUtil
@@ -52,12 +54,14 @@ class AlwabpSolution(Solution):
         "print_solution_updates",
         "name",
     )
+    _available_tasks_to_assign_to_station_memo: Dict[
+        int, Dict[int, Dict[FrozenSet[int], List[int]]]
+    ] = {}
 
     def __init__(
         self, number_of_tasks: int, number_of_workers: int, number_of_stations: int
     ) -> None:
         super().__init__()  # Calls Entity.__init__ via Solution
-        self.name = "AlwabpSolution"
 
         # You may consider converting these to tuples if they are never mutated:
         self.tasks: Tuple[int, ...] = tuple(range(1, number_of_tasks + 1))
@@ -119,6 +123,7 @@ class AlwabpSolution(Solution):
         self._number_of_tasks: int = number_of_tasks
         self._number_of_workers: int = number_of_workers
         self._number_of_stations: int = number_of_stations
+        self._hash_memo: Optional[int] = None
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -179,6 +184,7 @@ class AlwabpSolution(Solution):
         result._number_of_tasks = self._number_of_tasks
         result._number_of_workers = self._number_of_workers
         result._number_of_stations = self._number_of_stations
+        result._hash_memo = self._hash_memo
 
         return result
 
@@ -221,6 +227,7 @@ class AlwabpSolution(Solution):
             station: 0.0 for station in self.stations
         }
         self._first_unassigned_station = 1
+        self._hash_memo = None
 
     def process_graph_data(self) -> None:
         self._update_tasks_executed_by_worker()
@@ -366,6 +373,7 @@ class AlwabpSolution(Solution):
     def merge_solutions(self, solutions: List["AlwabpSolution"]) -> "AlwabpSolution":
         raise NotImplementedError("Merging is not supported for this problem.")
 
+    @property
     def solution_hash(self) -> int:
         """
         Generates a hash for the solution based on assignments.
@@ -373,19 +381,22 @@ class AlwabpSolution(Solution):
         Returns:
             int: The hash value of the solution.
         """
-        return hash(
-            (
-                frozenset(
-                    (station, tuple(tasks))
-                    for station, tasks in self.station_tasks_assignment.items()
-                ),
-                frozenset(
-                    (station, worker)
-                    for station, worker in self.station_worker_assignment.items()
-                ),
-                self.default_graph_orientation,
+        if not self._hash_memo:
+            self._hash_memo = hash(
+                (
+                    frozenset(
+                        (station, tuple(tasks))
+                        for station, tasks in self.station_tasks_assignment.items()
+                    ),
+                    frozenset(
+                        (station, worker)
+                        for station, worker in self.station_worker_assignment.items()
+                    ),
+                    self.default_graph_orientation,
+                )
             )
-        )
+
+        return self._hash_memo
 
     def __str__(self) -> str:
         """
@@ -811,6 +822,7 @@ class AlwabpSolution(Solution):
                 if recalculate_cycle_time:
                     self.calculate_cycle_time(station, True)
 
+                self._hash_memo = None
                 return True
             else:
                 LogManager.invalid_action(
@@ -843,6 +855,7 @@ class AlwabpSolution(Solution):
                 if recalculate_cycle_time:
                     self.calculate_cycle_time(station, True)
 
+                self._hash_memo = None
                 return True
             else:
                 LogManager.invalid_action(
@@ -880,6 +893,7 @@ class AlwabpSolution(Solution):
                         None if station >= self._number_of_stations else station + 1
                     )
 
+                self._hash_memo = None
                 return True
             else:
                 LogManager.invalid_action(
@@ -920,6 +934,7 @@ class AlwabpSolution(Solution):
                 ):
                     self._first_unassigned_station = station
 
+                self._hash_memo = None
                 return True
             else:
                 LogManager.invalid_action(
@@ -969,35 +984,46 @@ class AlwabpSolution(Solution):
         Finds the available tasks that can be assigned to the given station, considering task precedences.
 
         Args:
-            station (int): The upper station ID to which precence tasks are could have been assigned.
-            graph_orientation (GraphOrientation): represent the state of the precedence graph.
-            override_unassigned_tasks (List[int]): list of unassigned tasks to be used for simulations.
+            station (int): The upper station ID to which precedence tasks could have been assigned.
+            override_unassigned_tasks (Iterable[int]): A list of unassigned tasks to be used for simulations.
 
         Returns:
             List[int]: A list of available tasks that can be assigned to the specified station.
         """
-        available_tasks_to_assign: List[int] = []
-        unassigned_tasks = set(
+        sol_hash = hash(self)
+        unassigned_tasks = frozenset(
             override_unassigned_tasks
             if override_unassigned_tasks
             else self._unassigned_tasks
         )
 
+        # Ensure the memoization structure exists
+        memo = AlwabpSolution._available_tasks_to_assign_to_station_memo
+        if sol_hash not in memo:
+            memo[sol_hash] = {}
+        if station not in memo[sol_hash]:
+            memo[sol_hash][station] = {}
+        if unassigned_tasks in memo[sol_hash][station]:
+            return memo[sol_hash][station][unassigned_tasks]  # Return cached result
+
+        available_tasks_to_assign: List[int] = []
+
+        # Compute available tasks
         for unassigned_task in unassigned_tasks:
-            task_precendes = self.immediate_task_precedences[
+            task_precedences = self.immediate_task_precedences[
                 self.default_graph_orientation
-            ][unassigned_task]
-            can_allocate = True
-            for preceding_task in task_precendes:
-                if preceding_task in unassigned_tasks or (
-                    (another_station := self.find_station_for_task(preceding_task))
-                    and another_station > station
-                ):
-                    can_allocate = False
-                    break
+            ].get(unassigned_task, [])
+            can_allocate = all(
+                preceding_task not in unassigned_tasks
+                and (self.find_station_for_task(preceding_task) or 0) <= station
+                for preceding_task in task_precedences
+            )
+
             if can_allocate:
                 available_tasks_to_assign.append(unassigned_task)
 
+        # Store result in memoization dictionary
+        memo[sol_hash][station][unassigned_tasks] = available_tasks_to_assign
         return available_tasks_to_assign
 
     def can_task_be_assigned_to(
@@ -1607,3 +1633,51 @@ class AlwabpSolution(Solution):
     def reset_intensification_diversification_structures(cls) -> None:
         cls._task_station_frequency = {}
         cls._worker_station_frequency = {}
+
+    def find_move_to(self, other_solution: "AlwabpSolution") -> Movement:
+        """
+        Computes the necessary movements to transform the current solution into another solution
+        by identifying differences in task and worker assignments and generating corresponding
+        removal and insertion movements.
+
+        Optimizations:
+        - Uses `get` to avoid potential KeyError when accessing dictionary values.
+        - Reduces dictionary lookups by storing values in local variables.
+        - Minimizes redundant attribute access by setting `default_graph_orientation` once.
+        - Uses list comprehension for better performance in appending moves.
+
+        Parameters:
+        - other_solution (AlwabpSolution): The target solution to transform into.
+
+        Returns:
+        - MultipleMovement: A collection of movements needed to transition to `other_solution`.
+        """
+
+        # Ensure the same task precedence graph for accurate comparison
+        other_solution.default_graph_orientation = self.default_graph_orientation
+
+        moves = []
+
+        # Identify necessary movements for task assignments
+        for task, s1 in self.task_station_assignment.items():
+            s2 = other_solution.task_station_assignment.get(task)
+            if s1 != s2:
+                moves.extend(
+                    [
+                        AlwabpRemovalMovement(task, None, s1, self),
+                        AlwabpInsertionMovement(task, None, s2, self),
+                    ]
+                )
+
+        # Identify necessary movements for worker assignments
+        for worker, s1 in self.worker_station_assignment.items():
+            s2 = other_solution.worker_station_assignment.get(worker)
+            if s1 != s2:
+                moves.extend(
+                    [
+                        AlwabpRemovalMovement(None, worker, s1, self),
+                        AlwabpInsertionMovement(None, worker, s2, self),
+                    ]
+                )
+
+        return MultipleMovement(self, moves)

@@ -45,6 +45,7 @@ class Solution(Entity, ABC):
             "Abstract Method: must be implemented by child classes."
         )
 
+    @property
     @abstractmethod
     def solution_hash(self) -> int:
         """Generates a hash for the solution.
@@ -129,7 +130,7 @@ class Solution(Entity, ABC):
             bool: True if objects have the same type and hash.
         """
         if isinstance(obj, self.__class__):
-            return self.solution_hash() == obj.solution_hash()
+            return self.solution_hash == obj.solution_hash
         return False
 
     def set_print_solution_updates(self, print_solution_updates: bool) -> None:
@@ -222,4 +223,19 @@ class Solution(Entity, ABC):
         Returns:
             int: The hash value of the solution.
         """
-        return self.solution_hash()
+        return self.solution_hash
+
+    def find_move_to(self, other_solution: "Solution") -> "Movement":
+        """
+        Computes the necessary movements to transform the current solution into another solution
+        by identifying differences.
+
+        Parameters:
+        - other_solution (Solution): The target solution to transform into.
+
+        Returns:
+        - Movement: The movement needed to transition to `other_solution`.
+        """
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )

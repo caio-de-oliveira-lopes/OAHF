@@ -1,3 +1,8 @@
+import collections
+import gc
+
+from tqdm import tqdm
+
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
@@ -70,6 +75,10 @@ class TabuSearch(MetaHeuristic):
         self.diversification_ns = diversification_ns.copy()
         self.intensification_ls = intensification_ls
         self.diversification_ls = diversification_ls
+        self.use_progress_bar = (
+            isinstance(stop_criteria, StopTimeIterationCriteria)
+            and stop_criteria.max_iterations is not None
+        )
 
     def copy(self, thread: int) -> "MetaHeuristic":
         """Creates a copy of the current TabuSearch instance."""
@@ -104,7 +113,20 @@ class TabuSearch(MetaHeuristic):
         counter = 0
         intensification = True
 
+        pbar = None
+        if self.use_progress_bar:
+            max_iterations = self.stop_criteria.max_iterations  # type: ignore
+            pbar = tqdm(
+                total=max_iterations,
+                desc="Tabu Search Progress",
+                position=0,
+                leave=True,
+            )
+
         while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]):  # type: ignore
+            if curr_sol is None:
+                break
+
             if counter % self.neighborhood_selection.num_neighborhoods() == 0:  # type: ignore
                 best_eval.update_penalties()
                 curr_eval.reevaluate()
@@ -138,18 +160,10 @@ class TabuSearch(MetaHeuristic):
                                     curr_sol
                                 )
 
-                            if (
-                                best_move_eval is not None
-                                and self.acceptance_criteria.accept(
-                                    best_move_eval, curr_eval, curr_sol
-                                )
-                            ) or (best_move_eval is None):
-                                if (
-                                    not curr_eval.infeasible()
-                                    and not curr_eval.has_penalty()
-                                    and move in self.tabu_list
+                            if move in self.tabu_list:
+                                if self.acceptance_criteria.accept(
+                                    best_eval, curr_eval, curr_sol
                                 ):
-
                                     best_improv = BestImprovement(
                                         self.thread_id,
                                         NoStopCriteria(),
@@ -158,36 +172,47 @@ class TabuSearch(MetaHeuristic):
                                         self.second_level_ns,
                                     )
 
+                                    previous_curr_sol = curr_sol
                                     curr_sol = best_improv.run(curr_sol)
                                     curr_eval = self.evaluator.evaluate(curr_sol)
 
-                                    # In order to update the penalties in the evaluation, we need to evaluate it again
-                                    best_eval.reevaluate()
-
-                                    if self.acceptance_criteria.accept(
-                                        best_eval, curr_eval, curr_sol
+                                    if (
+                                        not curr_eval.infeasible()
+                                        and not curr_eval.has_penalty()
+                                        and self.acceptance_criteria.accept(
+                                            best_eval, curr_eval, curr_sol
+                                        )
+                                        and not curr_sol == best_sol
                                     ):
-                                        best_move_eval = curr_eval
-                                        best_move = move
-                                        move.unapply_operation(curr_eval)
+                                        best_sol = curr_sol.copy()
+                                        best_eval = curr_eval
+                                        best_move = None
+                                        best_move_eval = None
                                         break
-                                else:
-                                    best_move_eval = curr_eval
-                                    best_move = move
+                                    else:
+                                        curr_sol = previous_curr_sol
+
+                            elif (
+                                best_move_eval is not None
+                                and self.acceptance_criteria.accept(
+                                    best_move_eval, curr_eval, curr_sol
+                                )
+                            ) or (best_move_eval is None):
+                                best_move_eval = curr_eval
+                                best_move = move
 
                             move.unapply_operation(curr_eval)
 
                     self.stop_criteria.increment_counter()
                     self.intensification_criteria.increment_counter()
 
-                    print(f"Iteracao da Busca Tabu {self.stop_criteria.counter}")  # type: ignore
+                    # Use progress bar if max iterations is configured
+                    if pbar:
+                        pbar.update(1)
 
                     if best_move:
                         best_move.apply_operation()
                         curr_eval = self.evaluator.evaluate(curr_sol)
-
-                        # In order to update the penalties in the evaluation, we need to evaluate it again
-                        best_eval.reevaluate()
 
                         # Update best solution if necessary
                         if (
@@ -196,8 +221,9 @@ class TabuSearch(MetaHeuristic):
                             and self.acceptance_criteria.accept(
                                 best_eval, curr_eval, curr_sol
                             )
+                            and not curr_sol == best_sol
                         ):
-                            best_sol = curr_sol.copy()
+                            curr_sol = best_sol.copy()
                             best_eval = curr_eval
 
                         # Add move to tabu list and enforce tabu tenure
@@ -207,9 +233,12 @@ class TabuSearch(MetaHeuristic):
                         self.tabu_list.decrement_and_clean()
 
                     # Apply intensification or diversification strategy
-
                     if self.intensification_criteria.stop():
 
+                        # Use garbage collector
+                        gc.collect()
+
+                        # Reseting the criteria
                         self.intensification_criteria.reset()
 
                         selected_ns = (
@@ -251,9 +280,6 @@ class TabuSearch(MetaHeuristic):
                         curr_sol = pool.get_best(self.evaluator)
                         curr_eval = self.evaluator.evaluate(curr_sol)
 
-                        # In order to update the penalties in the evaluation, we need to evaluate it again
-                        best_eval.reevaluate()
-
                         # Update best solution if necessary
                         if (
                             curr_sol
@@ -262,23 +288,26 @@ class TabuSearch(MetaHeuristic):
                             and self.acceptance_criteria.accept(
                                 best_eval, curr_eval, curr_sol
                             )
+                            and not curr_sol == best_sol
                         ):
-                            best_sol = curr_sol.copy()
+                            curr_sol = best_sol.copy()
                             best_eval = curr_eval
 
-                    curr_sol = best_sol.copy()
-
-                if self.log_solutions:
-                    self.log_best_solution(best_eval)
+                    if not curr_sol == best_sol:
+                        curr_sol = best_sol.copy()
 
                 ns.allow_infeasible_movements = False
 
             except Exception as ex:
                 LogManager.something_went_wrong(self.__class__.__name__, ex)
-                curr_sol = best_sol.copy()
+                if not curr_sol == best_sol:
+                    curr_sol = best_sol.copy()
                 ns.allow_infeasible_movements = False
 
         type(best_sol).reset_intensification_diversification_structures()
+
+        if pbar:
+            pbar.close()
 
         return best_sol
 
@@ -297,7 +326,7 @@ class TabuSearch(MetaHeuristic):
     class TabuTenure:
         def __init__(self):
             # Dictionary to store elements and their counters
-            self.elements = {}
+            self.elements = collections.defaultdict(int)
 
         def add_element(self, element, iterations):
             """
@@ -310,15 +339,7 @@ class TabuSearch(MetaHeuristic):
             """
             Decrements all counters and removes elements with a counter of zero.
             """
-            to_remove = []
-            for element in self.elements:
-                self.elements[element] -= 1  # Decrement the counter
-                if self.elements[element] <= 0:
-                    to_remove.append(element)  # Mark for removal
-
-            # Remove elements with zero counters
-            for element in to_remove:
-                del self.elements[element]
+            self.elements = {e: c - 1 for e, c in self.elements.items() if c > 1}
 
         def get_elements(self):
             """

@@ -56,7 +56,7 @@ class PrecedenceConstraint(Constraint):
             int: The total number of precedence violations.
         """
 
-        sol_hash = solution.solution_hash()
+        sol_hash = solution.solution_hash
         memo = PrecedenceConstraint._precedence_violations_memo
 
         # Return cached result if already computed

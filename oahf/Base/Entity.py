@@ -25,7 +25,7 @@ class Entity(ABC):
 
         # Set the name to the class name if not provided
         if name is None:
-            self.__name = self.__class__.__name__.upper()
+            self.__name = self.__class__.__name__
         else:
             self.__name = name
 
@@ -34,7 +34,7 @@ class Entity(ABC):
     def get_new_id(self) -> None:
         Entity._instance_counter -= 1
         self.__id = Entity._instance_counter
-        
+
     @property
     def id(self) -> int:
         """Getter for the entity ID."""

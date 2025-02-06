@@ -52,7 +52,7 @@ class WorkerTaskConstraint(Constraint):
         Returns:
             int: The total number of worker-task violations.
         """
-        sol_hash = solution.solution_hash()
+        sol_hash = solution.solution_hash
         memo = WorkerTaskConstraint._worker_task_violations_memo
 
         # Return cached result if already computed
