@@ -1,7 +1,7 @@
 {
     "id": 0,
     "name": "ListPool",
-    "pool_size": 38,
+    "pool_size": 39,
     "solution_info": {
         "-3996": {
             "metaheuristic": "MultipleBestImprovement",
@@ -33,11 +33,11 @@
         },
         "-140354": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:02"
+            "execution_time": "00:00:01"
         },
         "-154214": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:02"
+            "execution_time": "00:00:01"
         },
         "-167519": {
             "metaheuristic": "MultipleBestImprovement",
@@ -49,11 +49,11 @@
         },
         "-199029": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:03"
+            "execution_time": "00:00:02"
         },
         "-215029": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:03"
+            "execution_time": "00:00:02"
         },
         "-245034": {
             "metaheuristic": "MultipleBestImprovement",
@@ -69,19 +69,19 @@
         },
         "-291783": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:04"
+            "execution_time": "00:00:03"
         },
         "-315123": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:04"
+            "execution_time": "00:00:03"
         },
         "-341927": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:04"
+            "execution_time": "00:00:03"
         },
         "-366467": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:04"
+            "execution_time": "00:00:03"
         },
         "-396521": {
             "metaheuristic": "MultipleBestImprovement",
@@ -89,19 +89,19 @@
         },
         "-407777": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:05"
+            "execution_time": "00:00:04"
         },
         "-423335": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:05"
+            "execution_time": "00:00:04"
         },
         "-439859": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:05"
+            "execution_time": "00:00:04"
         },
         "-456334": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:05"
+            "execution_time": "00:00:04"
         },
         "-474748": {
             "metaheuristic": "MultipleBestImprovement",
@@ -109,31 +109,31 @@
         },
         "-500248": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:06"
+            "execution_time": "00:00:05"
         },
         "-531304": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:06"
+            "execution_time": "00:00:05"
         },
         "-570100": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:06"
+            "execution_time": "00:00:05"
         },
         "-590090": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:07"
+            "execution_time": "00:00:06"
         },
         "-612414": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:07"
+            "execution_time": "00:00:06"
         },
         "-639064": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:07"
+            "execution_time": "00:00:06"
         },
         "-653571": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:07"
+            "execution_time": "00:00:06"
         },
         "-668536": {
             "metaheuristic": "MultipleBestImprovement",
@@ -141,19 +141,23 @@
         },
         "-690770": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:08"
+            "execution_time": "00:00:07"
         },
         "-713139": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:08"
+            "execution_time": "00:00:07"
         },
         "-738371": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:08"
+            "execution_time": "00:00:07"
         },
         "-761537": {
             "metaheuristic": "MultipleBestImprovement",
-            "execution_time": "00:00:09"
+            "execution_time": "00:00:08"
+        },
+        "-789454": {
+            "metaheuristic": "MultipleBestImprovement",
+            "execution_time": "00:00:08"
         }
     },
     "solutions": [
@@ -2545,6 +2549,69 @@
                         14,
                         25,
                         27,
+                        28
+                    ]
+                }
+            ],
+            "unassigned_tasks": []
+        },
+        {
+            "id": -789454,
+            "name": "AlwabpSolution",
+            "number_of_tasks": 28,
+            "number_of_workers": 4,
+            "number_of_stations": 4,
+            "max_cycle_time": 97,
+            "task_allocations_per_station": [
+                {
+                    "station": 1,
+                    "worker": 3,
+                    "tasks": [
+                        1,
+                        5,
+                        22,
+                        4,
+                        19,
+                        20,
+                        8,
+                        9
+                    ]
+                },
+                {
+                    "station": 2,
+                    "worker": 1,
+                    "tasks": [
+                        24,
+                        21,
+                        2
+                    ]
+                },
+                {
+                    "station": 3,
+                    "worker": 4,
+                    "tasks": [
+                        23,
+                        26,
+                        10,
+                        11,
+                        12,
+                        13,
+                        17,
+                        6
+                    ]
+                },
+                {
+                    "station": 4,
+                    "worker": 2,
+                    "tasks": [
+                        3,
+                        27,
+                        15,
+                        16,
+                        7,
+                        18,
+                        14,
+                        25,
                         28
                     ]
                 }

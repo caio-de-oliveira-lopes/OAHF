@@ -1,10 +1,14 @@
+from typing import Dict
+
 from oahf.Base.Constraint import Constraint
 from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
 from oahf.Base.Solution import Solution
+from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
 
 class WorkerTaskConstraint(Constraint):
     _penalty = 60.0  # Default penalty value; can be adjusted.
+    _worker_task_violations_memo: Dict[int, int] = {}
 
     def evaluate(self, solution: "Solution") -> "ConstraintEvaluation":
         """
@@ -12,8 +16,6 @@ class WorkerTaskConstraint(Constraint):
         :param solution: A Solution object (AlwabpSolution).
         :return: A ConstraintEvaluation object.
         """
-        from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
-
         if isinstance(solution, AlwabpSolution):
             number_of_violations = self.count_worker_task_violations(solution)
             penalty = WorkerTaskConstraint._penalty * number_of_violations
@@ -50,28 +52,32 @@ class WorkerTaskConstraint(Constraint):
         Returns:
             int: The total number of worker-task violations.
         """
-        from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
+        sol_hash = solution.solution_hash()
+        memo = WorkerTaskConstraint._worker_task_violations_memo
+
+        # Return cached result if already computed
+        if (cached_result := memo.get(sol_hash)) is not None:
+            return cached_result
 
         violation_count = 0
-
-        if not isinstance(solution, AlwabpSolution):
-            return violation_count
+        station_worker_assignment = solution.station_worker_assignment
+        task_executable_by_worker = solution.tasks_executed_by_worker
+        station_tasks_assignment = solution.station_tasks_assignment
 
         # Iterate through all stations
-        for station, tasks in solution.station_tasks_assignment.items():
-            # Get the worker assigned to the current station
-            worker = solution.station_worker_assignment.get(station)
+        for station, tasks in station_tasks_assignment.items():
+            worker = station_worker_assignment.get(station)
 
             if worker is not None:
-                # Retrieve tasks executable by the worker
-                executable_tasks = solution.tasks_executed_by_worker[worker]
+                executable_tasks = task_executable_by_worker[worker]
 
-                # Check each task in the current station
-                for task in tasks:
-                    # Count as a violation if the worker cannot execute the task
-                    if task not in executable_tasks:
-                        violation_count += 1
+                # Use set difference for faster violation counting
+                violation_count += sum(
+                    1 for task in tasks if task not in executable_tasks
+                )
 
+        # Store result in memoization dictionary
+        memo[sol_hash] = violation_count
         return violation_count
 
     def infeasible_evaluation(self, penalty: float = 0) -> "ConstraintEvaluation":

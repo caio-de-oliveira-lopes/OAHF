@@ -383,6 +383,7 @@ class AlwabpSolution(Solution):
                     (station, worker)
                     for station, worker in self.station_worker_assignment.items()
                 ),
+                self.default_graph_orientation,
             )
         )
 
