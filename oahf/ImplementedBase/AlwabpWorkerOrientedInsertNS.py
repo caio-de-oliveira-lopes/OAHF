@@ -53,57 +53,52 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         return True
 
     def compute_tasks_priority(self) -> Dict[int, float]:
-        """Computes task priority based on the selected weight type, using the priority matrix if available."""
-        if self.solution:
-            if not self.priority_matrix:
-                return self.solution.get_max_positional_weight_dict(
-                    self.max_positional_weight_type
-                )
-
-            return {
-                task: self.get_task_priority_from_matrix(task)
-                for task in self.solution.tasks
-            }
-        else:
+        """Computes task priority based on the selected weight type, then updates with precedence values."""
+        if not self.solution:
             raise ValueError(
                 "No solution object was associated with this neighborhood search."
             )
 
-    def get_task_priority_from_matrix(self, task: int) -> float:
-        if self.solution and self.priority_matrix:
-            workers_priorities = [
-                self.priority_matrix[w][task - 1]
-                for w in range(len(self.priority_matrix))
-            ]
+        if not self.priority_matrix:
+            return self.solution.get_max_positional_weight_dict(
+                self.max_positional_weight_type
+            )
 
-            if self.max_positional_weight_type == MaxPositionalWeightType.MIN:
-                min_predecessor_value = min(
-                    [
-                        self.get_task_priority_from_matrix(pred)
-                        for pred in self.solution.all_task_precedences[
-                            self.graph_orientation
-                        ][task]
-                    ],
-                    default=0,
-                )
-                return min(workers_priorities) + min_predecessor_value
+        # Step 1: Compute initial priorities without precedences
+        task_priorities = {
+            task: self.get_task_priority_without_precedences(task)
+            for task in self.solution.tasks
+        }
 
-            elif self.max_positional_weight_type == MaxPositionalWeightType.MAX:
-                max_predecessor_value = max(
-                    [
-                        self.get_task_priority_from_matrix(pred)
-                        for pred in self.solution.all_task_precedences[
-                            self.graph_orientation
-                        ][task]
-                    ],
-                    default=0,
-                )
-                return max(workers_priorities) + max_predecessor_value
+        # Step 2: Add precedence values in a second pass
+        for task in self.solution.tasks:
+            precedences = self.solution.all_task_precedences[
+                self.graph_orientation
+            ].get(task, [])
+            task_priorities[task] += sum(task_priorities[pred] for pred in precedences)
 
-            elif self.max_positional_weight_type == MaxPositionalWeightType.AVERAGE:
-                return sum(workers_priorities) / len(workers_priorities)
+        return task_priorities
 
-        return 0  # Fallback case
+    def get_task_priority_without_precedences(self, task: int) -> float:
+        """Computes the priority of a task based on worker priorities only, without precedences."""
+        if not self.solution or not self.priority_matrix:
+            return 0.0
+
+        workers_priorities = [
+            self.priority_matrix[w][task - 1]
+            for w in range(self.solution._number_of_workers)
+        ]
+
+        if self.max_positional_weight_type == MaxPositionalWeightType.MIN:
+            return min(workers_priorities)
+
+        if self.max_positional_weight_type == MaxPositionalWeightType.MAX:
+            return max(workers_priorities)
+
+        if self.max_positional_weight_type == MaxPositionalWeightType.AVERAGE:
+            return sum(workers_priorities) / self.solution._number_of_workers
+
+        raise ValueError("Invalid max positional weight type.")
 
     def get_move(self) -> Optional[Movement]:
         """Retrieves the next available movement in the neighborhood search."""
