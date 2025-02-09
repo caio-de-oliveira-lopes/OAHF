@@ -3,8 +3,6 @@ from typing import Iterable, List, Optional
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
-from oahf.Utils.Util import Util
-
 
 class StopNoImprovement(StopTimeIterationCriteria):
     def __init__(
