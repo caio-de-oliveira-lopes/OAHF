@@ -145,6 +145,13 @@ class AlwabpSolution(Solution):
         result.tasks = self.tasks
         result.workers = self.workers
         result.stations = self.stations
+        result._cycle_time_limit = self._cycle_time_limit
+        result._default_graph_orientation = self._default_graph_orientation
+        result._first_unassigned_station = self._first_unassigned_station
+        result._number_of_tasks = self._number_of_tasks
+        result._number_of_workers = self._number_of_workers
+        result._number_of_stations = self._number_of_stations
+        result._hash_memo = self._hash_memo
 
         # For dictionaries whose values are mutable lists, use shallow copies.
         result._task_execution_times = {
@@ -177,14 +184,6 @@ class AlwabpSolution(Solution):
             k: v.copy() for k, v in self.max_positional_weight.items()
         }
         result.station_cycle_time_memo = self.station_cycle_time_memo.copy()
-
-        result._cycle_time_limit = self._cycle_time_limit
-        result._default_graph_orientation = self._default_graph_orientation
-        result._first_unassigned_station = self._first_unassigned_station
-        result._number_of_tasks = self._number_of_tasks
-        result._number_of_workers = self._number_of_workers
-        result._number_of_stations = self._number_of_stations
-        result._hash_memo = self._hash_memo
 
         return result
 
@@ -970,61 +969,6 @@ class AlwabpSolution(Solution):
             or None if the worker is not allocated to any station.
         """
         return self.worker_station_assignment[worker]
-
-    def get_available_tasks_to_assign_to_worker(self, worker: int) -> List[int]:
-        station = self.find_station_for_worker(worker)
-        return self.get_available_tasks_to_assign_to_station(station) if station else []
-
-    def get_available_tasks_to_assign_to_station(
-        self,
-        station: int,
-        override_unassigned_tasks: Iterable[int] = [],
-    ) -> List[int]:
-        """
-        Finds the available tasks that can be assigned to the given station, considering task precedences.
-
-        Args:
-            station (int): The upper station ID to which precedence tasks could have been assigned.
-            override_unassigned_tasks (Iterable[int]): A list of unassigned tasks to be used for simulations.
-
-        Returns:
-            List[int]: A list of available tasks that can be assigned to the specified station.
-        """
-        sol_hash = hash(self)
-        unassigned_tasks = frozenset(
-            override_unassigned_tasks
-            if override_unassigned_tasks
-            else self._unassigned_tasks
-        )
-
-        # Ensure the memoization structure exists
-        memo = AlwabpSolution._available_tasks_to_assign_to_station_memo
-        if sol_hash not in memo:
-            memo[sol_hash] = {}
-        if station not in memo[sol_hash]:
-            memo[sol_hash][station] = {}
-        if unassigned_tasks in memo[sol_hash][station]:
-            return memo[sol_hash][station][unassigned_tasks]  # Return cached result
-
-        available_tasks_to_assign: List[int] = []
-
-        # Compute available tasks
-        for unassigned_task in unassigned_tasks:
-            task_precedences = self.immediate_task_precedences[
-                self.default_graph_orientation
-            ].get(unassigned_task, [])
-            can_allocate = all(
-                preceding_task not in unassigned_tasks
-                and (self.find_station_for_task(preceding_task) or 0) <= station
-                for preceding_task in task_precedences
-            )
-
-            if can_allocate:
-                available_tasks_to_assign.append(unassigned_task)
-
-        # Store result in memoization dictionary
-        memo[sol_hash][station][unassigned_tasks] = available_tasks_to_assign
-        return available_tasks_to_assign
 
     def can_task_be_assigned_to(
         self, task: int, station: int, worker: Optional[int] = None

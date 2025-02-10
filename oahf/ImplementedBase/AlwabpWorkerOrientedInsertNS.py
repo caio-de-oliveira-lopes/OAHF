@@ -41,6 +41,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
         solution.default_graph_orientation = self.graph_orientation
 
+        rebuild = self.solution != solution
         self.solution = solution
         self.station = solution.get_first_unassigned_station()
 
@@ -49,6 +50,14 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
         self.cost_function = solution.get_worker_min_rlb
         self.thread_id = thread_id
+
+        if rebuild:
+            # Determine the task list based on positional weights and greediness
+            self.max_positional_weight_dict = self.compute_tasks_priority()
+            c_min = min(self.max_positional_weight_dict.values())
+            c_max = max(self.max_positional_weight_dict.values())
+            self.threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
+
         self.enumerator = self.all_moves()
         return True
 
@@ -119,49 +128,80 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         if self.solution and self.station:
             worker_moves: Dict[int, MultipleMovement] = {}
 
-            # Determine the task list based on positional weights and greediness
-            max_positional_weight_dict = self.compute_tasks_priority()
-            c_min = min(max_positional_weight_dict.values())
-            c_max = max(max_positional_weight_dict.values())
-            threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
-
             # Filter tasks within the threshold
             lcr = [
                 task
                 for task in self.solution.unassigned_tasks
-                if max_positional_weight_dict[task] <= threshold_value
+                if self.max_positional_weight_dict[task] <= self.threshold_value
             ]
 
-            # Generate movements for tasks that are still available
-            lcr_set = set(lcr)  # Convert to set for faster lookup
-            lcr_queue = deque(lcr)  # Using deque for efficient removals
-            ordered_chosen_tasks = []
+            # Set up data structures for incremental update
+            lcr_set = set(lcr)  # For quick membership tests and removals
+            lcr_queue = deque(lcr)  # To preserve original ordering for filtering
+            ordered_chosen_tasks = (
+                []
+            )  # Will hold the tasks in the order they are chosen
 
-            while available_tasks := set(
-                self.solution.get_available_tasks_to_assign_to_station(
-                    self.station, lcr_set
+            # Precompute the immediate precedences for the current orientation
+            immediate_precedences = self.solution.immediate_task_precedences[
+                self.graph_orientation
+            ]
+
+            # Build a mapping of each task to the number of its unsatisfied prerequisites.
+            # We count a prerequisite as "unsatisfied" if it is still in the solution unassigned tasks.
+            unsatisfied_counts = {}
+            for task in lcr_set:
+                prerequisites = immediate_precedences.get(task, [])
+                unsatisfied_counts[task] = sum(
+                    1 for p in prerequisites if p in self.solution.unassigned_tasks
                 )
-            ):
-                filtered_lcr = [task for task in lcr_queue if task in available_tasks]
 
+            # Build a reverse mapping: for each task, which tasks (from lcr_set) depend on it.
+            dependents = {}
+            for task in lcr_set:
+                for p in immediate_precedences.get(task, []):
+                    # Only consider prerequisites that are also in lcr_set
+                    if p in lcr_set:
+                        dependents.setdefault(p, set()).add(task)
+
+            # Initialize the set of available tasks: tasks whose unsatisfied count is zero.
+            available_tasks = {
+                task for task, count in unsatisfied_counts.items() if count == 0
+            }
+
+            # 3. Incrementally select tasks using the available_tasks set
+            while available_tasks:
+                # Filter lcr_queue to maintain the original order among tasks that are available.
+                filtered_lcr = [task for task in lcr_queue if task in available_tasks]
                 if not filtered_lcr:
                     break
 
-                # Select a task (randomly but efficiently)
+                # Select a task randomly (using your ThreadManager) among the available ones.
                 task_index = ThreadManager.get_next(
                     self.thread_id, 0, len(filtered_lcr) - 1
                 )
-                task = filtered_lcr[task_index]
-                ordered_chosen_tasks.append(task)
+                chosen_task = filtered_lcr[task_index]
+                ordered_chosen_tasks.append(chosen_task)
 
-                # Update lists after each move
-                lcr_set.remove(task)
-                lcr_queue.remove(
-                    task
-                )  # `deque.remove()` is still `O(n)`, but avoids full list reconstruction
+                # Remove the chosen task from our data structures.
+                available_tasks.remove(chosen_task)
+                lcr_set.remove(chosen_task)
+                try:
+                    lcr_queue.remove(chosen_task)
+                except ValueError:
+                    pass  # Task already removed
 
+                # For every task that depends on the chosen task, decrement its unsatisfied count.
+                # If a count reaches zero, it becomes available.
+                for dependent in dependents.get(chosen_task, set()):
+                    if dependent in lcr_set:
+                        unsatisfied_counts[dependent] -= 1
+                        if unsatisfied_counts[dependent] == 0:
+                            available_tasks.add(dependent)
+
+            # 4. If no tasks were chosen, return an empty iterator.
             if not ordered_chosen_tasks:
-                return iter([])  # Return an empty iterator if no moves are generated
+                return iter([])
 
             # Neighborhood will prioritize keeping workers at their respective stations
             worker_assigned_to_station = self.solution.station_worker_assignment[

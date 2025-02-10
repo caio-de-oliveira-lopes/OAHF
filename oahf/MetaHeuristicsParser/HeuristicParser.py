@@ -142,19 +142,27 @@ class HeuristicParser:
         start_time = time.time()
         Util.set_start_timestamp(start_time)
         last_mh = None
+        first = True
 
         for mh in self.ordered_metaheuristics:
-            if mh.name != last_mh:
+            changed_mh = mh.name != last_mh
+            if changed_mh:
+                if not first:
+                    Util.logger().info(
+                        f"Ending execution at {Util.get_duration_from_start_timestamp()}"
+                    )
                 print(Util.line())
-                Util.logger().info(f"Running {mh.name}.")
-                print(Util.line())
+                Util.logger().info(
+                    f"Started {mh.name} at {Util.get_duration_from_start_timestamp()}"
+                )
+                first = False
                 last_mh = mh.name
+
             origin_pool = (
                 mh.origin_pool
                 if mh.origin_pool is not None
                 else ListPool([initial_sol], None, evaluator)
             )
-
             mh.run_operation(origin_pool, mh.destination_pool)
 
             # Use garbage collector
