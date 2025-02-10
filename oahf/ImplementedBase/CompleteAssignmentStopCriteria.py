@@ -1,6 +1,5 @@
 from typing import Iterable
 
-from oahf.Base.Evaluation import Evaluation
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.ImplementedBase import AlwabpEvaluation
 

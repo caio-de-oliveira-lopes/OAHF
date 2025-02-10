@@ -18,7 +18,6 @@ from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
 from oahf.Logger.LogManager import LogManager
 from oahf.MetaHeuristics.BestImprovement import BestImprovement
-from oahf.MetaHeuristics.MultipleBestImprovement import MultipleBestImprovement
 from oahf.MetaHeuristics.Pertubation import Pertubation
 from oahf.MetaHeuristics.PerturbationDrivenLocalSearch import (
     PerturbationDrivenLocalSearch,
@@ -186,6 +185,10 @@ class TabuSearch(MetaHeuristic):
                                     ):
                                         best_sol = curr_sol.copy()
                                         best_eval = curr_eval
+                                        
+                                        if self.destination_pool:
+                                            self.destination_pool.add_solution(best_sol)
+                                            
                                         best_move = None
                                         best_move_eval = None
                                         break
@@ -225,6 +228,9 @@ class TabuSearch(MetaHeuristic):
                         ):
                             curr_sol = best_sol.copy()
                             best_eval = curr_eval
+                            
+                            if self.destination_pool:
+                                self.destination_pool.add_solution(best_sol)
 
                         # Add move to tabu list and enforce tabu tenure
                         self.tabu_list.add_element(
@@ -292,6 +298,9 @@ class TabuSearch(MetaHeuristic):
                         ):
                             curr_sol = best_sol.copy()
                             best_eval = curr_eval
+                            
+                            if self.destination_pool:
+                                self.destination_pool.add_solution(best_sol)
 
                     if not curr_sol == best_sol:
                         curr_sol = best_sol.copy()

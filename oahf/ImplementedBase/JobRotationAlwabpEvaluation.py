@@ -2,8 +2,6 @@ from typing import Iterable
 
 from oahf.Base.ConstraintEvaluation import ConstraintEvaluation
 from oahf.Base.Evaluation import Evaluation
-from oahf.ImplementedBase.JobRotationAlwabpSolution import JobRotationAlwabpSolution
-
 
 class JobRotationAlwabpEvaluation(Evaluation):
     def __init__(

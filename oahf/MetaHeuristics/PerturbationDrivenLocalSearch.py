@@ -1,13 +1,9 @@
-from typing import Optional
-
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
-from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Logger.LogManager import LogManager
-from oahf.MetaHeuristics.BestImprovement import BestImprovement
 from oahf.MetaHeuristics.Pertubation import Pertubation
 
 

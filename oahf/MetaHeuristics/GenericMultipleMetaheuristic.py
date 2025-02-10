@@ -1,5 +1,5 @@
 import time
-from typing import Iterable, List, Optional
+from typing import List, Optional
 
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
@@ -8,7 +8,6 @@ from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.ThreadManager import ThreadManager
 from oahf.Logger.LogManager import LogManager
-from oahf.Utils.Util import Util
 
 
 class GenericMultipleMetaheuristic(MetaHeuristic):

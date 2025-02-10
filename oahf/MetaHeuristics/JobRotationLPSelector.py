@@ -1,16 +1,12 @@
-import sys
 from pathlib import Path
 from typing import Optional
 
 import gurobipy as gp
 from gurobipy import GRB
 
-from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
-from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
-from oahf.Base.StopCriteria import StopCriteria
 from oahf.Commons.ProblemData import ProblemData
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution, GraphOrientation
 from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
