@@ -133,6 +133,13 @@ class AlwabpSolution(Solution):
         self._number_of_stations: int = number_of_stations
         self._hash_memo: Optional[int] = None
 
+        self._empty_sol_hash: Dict[GraphOrientation, int] = {
+            GraphOrientation.FORWARD: hash(self)
+        }
+        self.default_graph_orientation = GraphOrientation.BACKWARD
+        self._empty_sol_hash[GraphOrientation.BACKWARD] = hash(self)
+        self.default_graph_orientation = GraphOrientation.FORWARD
+
     def __deepcopy__(self, memo):
         cls = self.__class__
         result = cls.__new__(cls)
@@ -164,6 +171,7 @@ class AlwabpSolution(Solution):
         result.tasks_executed_by_worker = self.tasks_executed_by_worker
         result.all_task_precedences = self.all_task_precedences
         result.max_positional_weight = self.max_positional_weight
+        result._empty_sol_hash = self._empty_sol_hash
 
         # Normal copy
         result.station_worker_assignment = self.station_worker_assignment.copy()
@@ -225,7 +233,7 @@ class AlwabpSolution(Solution):
             station: 0.0 for station in self.stations
         }
         self._first_unassigned_station = 1
-        self._hash_memo = None
+        self._hash_memo = self._empty_sol_hash[self.default_graph_orientation]
 
     def process_graph_data(self) -> None:
         self._update_tasks_executed_by_worker()
@@ -321,6 +329,7 @@ class AlwabpSolution(Solution):
         if reversed_hash := AlwabpSolution._hash_reverse_map.get(old_hash):
             self._hash_memo = reversed_hash
         else:
+            self._hash_memo = None
             AlwabpSolution._hash_reverse_map[old_hash] = hash(self)
             AlwabpSolution._hash_reverse_map[hash(self)] = old_hash
 
@@ -391,7 +400,11 @@ class AlwabpSolution(Solution):
             self._hash_memo = hash(
                 (
                     frozenset(
-                        (station, tuple(tasks), self.station_worker_assignment[station])
+                        (
+                            station,
+                            frozenset(tasks),
+                            self.station_worker_assignment[station],
+                        )
                         for station, tasks in self.station_tasks_assignment.items()
                     ),
                     self.default_graph_orientation,
