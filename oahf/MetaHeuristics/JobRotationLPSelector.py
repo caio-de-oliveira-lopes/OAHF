@@ -184,9 +184,12 @@ class JobRotationLPSelector(MetaHeuristic):
                         solve_seconds,
                     )
                 else:
-                    raise Exception(
-                        f"Gurobi failed to solve the problem. Status: {grb_model.status}"
+                    LogManager.something_went_wrong(
+                        self.name,
+                        f"Gurobi failed to solve the problem. Status: {grb_model.status}",
                     )
+                    grb_model.dispose()  # Dispose the model when done
+                    return ListPool()
 
                 # Instantiate JobRotationAlwabpSolution
                 job_rotation_solution = JobRotationAlwabpSolution(

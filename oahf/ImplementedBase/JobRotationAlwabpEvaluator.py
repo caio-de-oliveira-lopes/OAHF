@@ -22,7 +22,7 @@ class JobRotationAlwabpEvaluator(Evaluator):
         :param sol: A Solution object to evaluate.
         :return: An Evaluation object.
         """
-        if sol:
+        if isinstance(sol, JobRotationAlwabpSolution):
             return JobRotationAlwabpEvaluation(
                 (constraint.evaluate(sol) for constraint in self._constraints),
                 sol.calculate_total_distinct_tasks(),

@@ -24,14 +24,11 @@ class AlwabpInsertionMovement(Movement):
         self.station: Optional[int] = station
         self.override_cost: Optional[float] = None
         self._hash = None
-        self._sol_hash: Optional[int] = None
 
     def get_cost(self) -> float:
         return self.override_cost if self.override_cost is not None else -1.0
 
     def apply(self) -> bool:
-        self._sol_hash = hash(self.solution)
-
         if self.task and self.station:
             return self.solution.add_task_to_station(self.task, self.station)
 
@@ -48,7 +45,6 @@ class AlwabpInsertionMovement(Movement):
         if self.worker and self.station:
             return self.solution.remove_worker_from_station(self.worker, self.station)
 
-        self.solution._hash_memo = self._sol_hash
         return True
 
     def __str__(self) -> str:

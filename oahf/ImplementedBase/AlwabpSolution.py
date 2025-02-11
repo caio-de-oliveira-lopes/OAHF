@@ -54,9 +54,17 @@ class AlwabpSolution(Solution):
         "print_solution_updates",
         "name",
     )
-    _available_tasks_to_assign_to_station_memo: Dict[
-        int, Dict[int, Dict[FrozenSet[int], List[int]]]
-    ] = {}
+
+    # key is one hash that, once solution is reversed, the value hash is valid
+    _hash_reverse_map: Dict[int, int] = {}
+
+    # key = tuple(solution_hash, station, task), value is the new hash
+    _hash_task_insertion_map: Dict[tuple[int, int, int], int] = {}
+    _hash_task_removal_map: Dict[tuple[int, int, int], int] = {}
+
+    # key = tuple(solution_hash, station, worker), value is the new hash
+    _hash_worker_insertion_map: Dict[tuple[int, int, int], int] = {}
+    _hash_worker_removal_map: Dict[tuple[int, int, int], int] = {}
 
     def __init__(
         self, number_of_tasks: int, number_of_workers: int, number_of_stations: int
@@ -152,6 +160,18 @@ class AlwabpSolution(Solution):
         result._number_of_workers = self._number_of_workers
         result._number_of_stations = self._number_of_stations
         result._hash_memo = self._hash_memo
+        result.immediate_task_precedences = self.immediate_task_precedences
+        result.tasks_executed_by_worker = self.tasks_executed_by_worker
+        result.all_task_precedences = self.all_task_precedences
+        result.max_positional_weight = self.max_positional_weight
+
+        # Normal copy
+        result.station_worker_assignment = self.station_worker_assignment.copy()
+        result.worker_station_assignment = self.worker_station_assignment.copy()
+        result.task_station_assignment = self.task_station_assignment.copy()
+        result._unassigned_workers = self._unassigned_workers.copy()
+        result._unassigned_tasks = self._unassigned_tasks.copy()
+        result.station_cycle_time_memo = self.station_cycle_time_memo.copy()
 
         # For dictionaries whose values are mutable lists, use shallow copies.
         result._task_execution_times = {
@@ -160,30 +180,9 @@ class AlwabpSolution(Solution):
         result._bounded_task_execution_times = {
             k: v.copy() for k, v in self._bounded_task_execution_times.items()
         }
-
-        result.station_worker_assignment = self.station_worker_assignment.copy()
-        result.worker_station_assignment = self.worker_station_assignment.copy()
         result.station_tasks_assignment = {
             k: v.copy() for k, v in self.station_tasks_assignment.items()
         }
-        result.task_station_assignment = self.task_station_assignment.copy()
-        result._unassigned_workers = self._unassigned_workers.copy()
-        result._unassigned_tasks = self._unassigned_tasks.copy()
-
-        # For nested dictionaries, perform a shallow copy of the inner lists.
-        result.immediate_task_precedences = {
-            orientation: {task: lst.copy() for task, lst in inner.items()}
-            for orientation, inner in self.immediate_task_precedences.items()
-        }
-        result.tasks_executed_by_worker = self.tasks_executed_by_worker
-        result.all_task_precedences = {
-            orientation: {task: lst.copy() for task, lst in inner.items()}
-            for orientation, inner in self.all_task_precedences.items()
-        }
-        result.max_positional_weight = {
-            k: v.copy() for k, v in self.max_positional_weight.items()
-        }
-        result.station_cycle_time_memo = self.station_cycle_time_memo.copy()
 
         return result
 
@@ -267,10 +266,11 @@ class AlwabpSolution(Solution):
         if self._default_graph_orientation == graph_orientation:
             return
 
+        old_hash = hash(self)
         self._default_graph_orientation = graph_orientation
-        self._reverse_solution()
+        self._reverse_solution(old_hash)
 
-    def _reverse_solution(self) -> None:
+    def _reverse_solution(self, old_hash: int) -> None:
         """
         Reverses the assignments of tasks and cycle times between stations in the solution.
         """
@@ -316,6 +316,13 @@ class AlwabpSolution(Solution):
         for station, tasks in self.station_tasks_assignment.items():
             # Directly map all tasks to the station in one go
             self.task_station_assignment.update({task: station for task in tasks})
+
+        # Storing reverse hashmap, to avoid recalculating hash after reverting the solution
+        if reversed_hash := AlwabpSolution._hash_reverse_map.get(old_hash):
+            self._hash_memo = reversed_hash
+        else:
+            AlwabpSolution._hash_reverse_map[old_hash] = hash(self)
+            AlwabpSolution._hash_reverse_map[hash(self)] = old_hash
 
     def fix_solution(self) -> None:
         self.default_graph_orientation = GraphOrientation.FORWARD
@@ -384,12 +391,8 @@ class AlwabpSolution(Solution):
             self._hash_memo = hash(
                 (
                     frozenset(
-                        (station, tuple(tasks))
+                        (station, tuple(tasks), self.station_worker_assignment[station])
                         for station, tasks in self.station_tasks_assignment.items()
-                    ),
-                    frozenset(
-                        (station, worker)
-                        for station, worker in self.station_worker_assignment.items()
                     ),
                     self.default_graph_orientation,
                 )
@@ -814,6 +817,8 @@ class AlwabpSolution(Solution):
         """
         try:
             if self.station_worker_assignment.get(station) != worker:
+                sol_hash = hash(self)
+
                 self.station_worker_assignment[station] = worker
                 self.worker_station_assignment[worker] = station
                 self.unassigned_workers.remove(worker)
@@ -821,7 +826,16 @@ class AlwabpSolution(Solution):
                 if recalculate_cycle_time:
                     self.calculate_cycle_time(station, True)
 
-                self._hash_memo = None
+                key = (sol_hash, station, worker)
+                if new_hash := AlwabpSolution._hash_worker_insertion_map.get(key):
+                    self._hash_memo = new_hash
+                else:
+                    self._hash_memo = None
+                    new_hash = hash(self)
+                    reverse_key = (new_hash, station, worker)
+                    AlwabpSolution._hash_worker_insertion_map[key] = new_hash
+                    AlwabpSolution._hash_worker_removal_map[reverse_key] = sol_hash
+
                 return True
             else:
                 LogManager.invalid_action(
@@ -847,6 +861,8 @@ class AlwabpSolution(Solution):
         """
         try:
             if self.station_worker_assignment.get(station) == worker:
+                sol_hash = hash(self)
+
                 self.station_worker_assignment[station] = None
                 self.worker_station_assignment[worker] = None
                 self.unassigned_workers.append(worker)
@@ -854,7 +870,16 @@ class AlwabpSolution(Solution):
                 if recalculate_cycle_time:
                     self.calculate_cycle_time(station, True)
 
-                self._hash_memo = None
+                key = (sol_hash, station, worker)
+                if new_hash := AlwabpSolution._hash_worker_removal_map.get(key):
+                    self._hash_memo = new_hash
+                else:
+                    self._hash_memo = None
+                    new_hash = hash(self)
+                    reverse_key = (new_hash, station, worker)
+                    AlwabpSolution._hash_worker_removal_map[key] = new_hash
+                    AlwabpSolution._hash_worker_insertion_map[reverse_key] = sol_hash
+
                 return True
             else:
                 LogManager.invalid_action(
@@ -878,6 +903,8 @@ class AlwabpSolution(Solution):
         """
         try:
             if task not in self.station_tasks_assignment.get(station, []):
+                sol_hash = hash(self)
+
                 self.station_tasks_assignment[station].append(task)
                 self.task_station_assignment[task] = station
                 self._unassigned_tasks.remove(task)
@@ -892,7 +919,16 @@ class AlwabpSolution(Solution):
                         None if station >= self._number_of_stations else station + 1
                     )
 
-                self._hash_memo = None
+                key = (sol_hash, station, task)
+                if new_hash := AlwabpSolution._hash_task_insertion_map.get(key):
+                    self._hash_memo = new_hash
+                else:
+                    self._hash_memo = None
+                    new_hash = hash(self)
+                    reverse_key = (new_hash, station, task)
+                    AlwabpSolution._hash_task_insertion_map[key] = new_hash
+                    AlwabpSolution._hash_task_removal_map[reverse_key] = sol_hash
+
                 return True
             else:
                 LogManager.invalid_action(
@@ -916,6 +952,8 @@ class AlwabpSolution(Solution):
         """
         try:
             if task in self.station_tasks_assignment.get(station, []):
+                sol_hash = hash(self)
+
                 self.station_tasks_assignment[station].remove(
                     task
                 )  # Remove the task from the station's list
@@ -933,7 +971,16 @@ class AlwabpSolution(Solution):
                 ):
                     self._first_unassigned_station = station
 
-                self._hash_memo = None
+                key = (sol_hash, station, task)
+                if new_hash := AlwabpSolution._hash_task_removal_map.get(key):
+                    self._hash_memo = new_hash
+                else:
+                    self._hash_memo = None
+                    new_hash = hash(self)
+                    reverse_key = (new_hash, station, task)
+                    AlwabpSolution._hash_task_removal_map[key] = new_hash
+                    AlwabpSolution._hash_task_insertion_map[reverse_key] = sol_hash
+
                 return True
             else:
                 LogManager.invalid_action(

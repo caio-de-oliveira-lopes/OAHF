@@ -181,7 +181,12 @@ class HeuristicParser:
             )
             if final_pool.count() == 0:
                 for pool in list(self.solution_pools.values()):
-                    final_pool.add_solution(pool.get_best())
+                    if not final_pool.evaluator or (
+                        pool.evaluator
+                        and pool.evaluator.get_solution_type()
+                        == final_pool.evaluator.get_solution_type()
+                    ):
+                        final_pool.add_solution(pool.get_best())
 
             return final_pool.get_best()
 
