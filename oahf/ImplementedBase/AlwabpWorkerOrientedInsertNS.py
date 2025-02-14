@@ -10,7 +10,7 @@ from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
 from oahf.ImplementedBase.AlwabpSolution import (
     AlwabpSolution,
     GraphOrientation,
-    MaxPositionalWeightType,
+    TaskOrderingRule,
 )
 from oahf.Logger.LogManager import LogManager
 
@@ -18,7 +18,7 @@ from oahf.Logger.LogManager import LogManager
 class AlwabpWorkerOrientedInsertNS(Neighborhood):
     def __init__(
         self,
-        max_positional_weight_type: MaxPositionalWeightType,
+        task_ordering_rule: TaskOrderingRule,
         graph_orientation: GraphOrientation,
         greediness: float = 0,
         priority_matrix: Optional[List[List[int]]] = None,
@@ -30,7 +30,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.solution: Optional[AlwabpSolution] = None
         self.thread_id: int = 0
         self.cost_function = None
-        self.max_positional_weight_type = max_positional_weight_type
+        self.task_ordering_rule = task_ordering_rule
         self.graph_orientation = graph_orientation
         self.station: Optional[int] = None
         self.greediness: float = greediness
@@ -52,10 +52,10 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.thread_id = thread_id
 
         if rebuild:
-            # Determine the task list based on positional weights and greediness
-            self.max_positional_weight_dict = self.compute_tasks_priority()
-            c_min = min(self.max_positional_weight_dict.values())
-            c_max = max(self.max_positional_weight_dict.values())
+            # Determine the task list based on task ordering and greediness
+            self.task_ordering_rule_dict = self.compute_tasks_priority()
+            c_min = min(self.task_ordering_rule_dict.values())
+            c_max = max(self.task_ordering_rule_dict.values())
             self.threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
 
         self.enumerator = self.all_moves()
@@ -69,8 +69,8 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             )
 
         if not self.priority_matrix:
-            return self.solution.get_max_positional_weight_dict(
-                self.max_positional_weight_type
+            return self.solution.get_task_ordering_rules_dict(
+                self.task_ordering_rule
             )
 
         # Step 1: Compute initial priorities without precedences
@@ -98,16 +98,16 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             for w in range(self.solution._number_of_workers)
         ]
 
-        if self.max_positional_weight_type == MaxPositionalWeightType.MIN:
+        if self.task_ordering_rule == TaskOrderingRule.MAX_PW_MINUS:
             return min(workers_priorities)
 
-        if self.max_positional_weight_type == MaxPositionalWeightType.MAX:
+        if self.task_ordering_rule == TaskOrderingRule.MAX_PW_PLUS:
             return max(workers_priorities)
 
-        if self.max_positional_weight_type == MaxPositionalWeightType.AVERAGE:
+        if self.task_ordering_rule == TaskOrderingRule.MAX_PW_AVERAGE:
             return sum(workers_priorities) / self.solution._number_of_workers
 
-        raise ValueError("Invalid max positional weight type.")
+        raise ValueError("Invalid task ordering rule.")
 
     def get_move(self) -> Optional[Movement]:
         """Retrieves the next available movement in the neighborhood search."""
@@ -132,7 +132,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             lcr = [
                 task
                 for task in self.solution.unassigned_tasks
-                if self.max_positional_weight_dict[task] <= self.threshold_value
+                if self.task_ordering_rule_dict[task] <= self.threshold_value
             ]
 
             # Set up data structures for incremental update
@@ -273,7 +273,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
     def copy(self) -> "AlwabpWorkerOrientedInsertNS":
         """Creates a copy of the current neighborhood search with the same settings."""
         return AlwabpWorkerOrientedInsertNS(
-            self.max_positional_weight_type,
+            self.task_ordering_rule,
             self.graph_orientation,
             self.greediness,
             self.priority_matrix,

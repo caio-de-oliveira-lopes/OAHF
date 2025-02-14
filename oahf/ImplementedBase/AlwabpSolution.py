@@ -25,11 +25,23 @@ class GraphOrientation(Enum):
             return GraphOrientation.FORWARD
 
 
-class MaxPositionalWeightType(Enum):
-    MAX = auto()
-    MIN = auto()
-    AVERAGE = auto()
-
+class TaskOrderingRule(Enum):
+    MAX_F = auto()
+    MAX_IF = auto()    
+    MAX_TIME_MINUS = auto()
+    MAX_TIME_PLUS = auto()
+    MAX_TIME_AVERAGE = auto()
+    MIN_TIME_MINUS = auto()
+    MIN_TIME_PLUS = auto()
+    MIN_TIME_AVERAGE = auto()
+    MAX_PW_PLUS = auto()
+    MAX_PW_MINUS = auto()
+    MAX_PW_AVERAGE = auto()
+    MIN_D = auto()
+    MIN_R = auto()
+    MAX_F_TIME = auto()
+    MAX_IF_TIME = auto()
+    MIN_RANK = auto()
 
 class AlwabpSolution(Solution):
     __slots__ = (
@@ -47,7 +59,7 @@ class AlwabpSolution(Solution):
         "immediate_task_precedences",
         "tasks_executed_by_worker",
         "all_task_precedences",
-        "max_positional_weight",
+        "task_ordering_rules",
         "station_cycle_time_memo",
         "_cycle_time_limit",
         "_default_graph_orientation",
@@ -116,9 +128,9 @@ class AlwabpSolution(Solution):
             for graph_orientation in EnumUtil.get_values(GraphOrientation)
         }
 
-        self.max_positional_weight: Dict[MaxPositionalWeightType, Dict[int, float]] = {  # type: ignore
+        self.task_ordering_rules: Dict[TaskOrderingRule, Dict[int, float]] = {  # type: ignore
             weight_type: {task: -1 for task in self.tasks}
-            for weight_type in EnumUtil.get_values(MaxPositionalWeightType)
+            for weight_type in EnumUtil.get_values(TaskOrderingRule)
         }
 
         self.station_cycle_time_memo: Dict[int, float] = {
@@ -170,7 +182,7 @@ class AlwabpSolution(Solution):
         result.immediate_task_precedences = self.immediate_task_precedences
         result.tasks_executed_by_worker = self.tasks_executed_by_worker
         result.all_task_precedences = self.all_task_precedences
-        result.max_positional_weight = self.max_positional_weight
+        result.task_ordering_rules = self.task_ordering_rules
         result._empty_sol_hash = self._empty_sol_hash
 
         # Normal copy
@@ -239,7 +251,7 @@ class AlwabpSolution(Solution):
         self._update_tasks_executed_by_worker()
         self._fill_all_task_precedences()
         self._update_bounded_task_execution_times(499)
-        self._calculate_max_positional_weights()
+        self._calculate_task_ordering_rules()
 
     def _update_tasks_executed_by_worker(self) -> None:
         self.tasks_executed_by_worker = {
@@ -263,7 +275,7 @@ class AlwabpSolution(Solution):
             print(f"Starting with cycle time limit as {str(value)}.")
         self._cycle_time_limit = value
         # self._update_bounded_task_execution_times()
-        # self._calculate_max_positional_weights()
+        # self._calculate_task_ordering_rules()
 
     @property
     def default_graph_orientation(self) -> GraphOrientation:
@@ -1073,7 +1085,7 @@ class AlwabpSolution(Solution):
             return max(self._bounded_task_execution_times[task])
 
     def max_task_execution_time(
-        self, task: int, workers: Optional[List[int]] = None
+        self, task: int, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None,
     ) -> float:
         """
         Calculates the maximum execution time for a task, considering only the workers specified.
@@ -1086,7 +1098,10 @@ class AlwabpSolution(Solution):
         Returns:
             float: The maximum task execution time among the specified workers.
         """
-        task_times = self._bounded_task_execution_times[task]
+        if custom_dict is None:
+            task_times = self._bounded_task_execution_times[task]
+        else:
+            task_times = custom_dict[task]
 
         if workers:
             # Consider only task times for the specified workers' indices
@@ -1095,7 +1110,7 @@ class AlwabpSolution(Solution):
         return max(task_times)
 
     def min_task_execution_time(
-        self, task: int, workers: Optional[List[int]] = None
+        self, task: int, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None, 
     ) -> float:
         """
         Calculates the minimum execution time for a task, considering only the workers specified.
@@ -1108,8 +1123,11 @@ class AlwabpSolution(Solution):
         Returns:
             float: The minimum task execution time among the specified workers.
         """
-        task_times = self._bounded_task_execution_times[task]
-
+        if custom_dict is None:
+            task_times = self._bounded_task_execution_times[task]
+        else:
+            task_times = custom_dict[task]
+            
         if workers:
             # Consider only task times for the specified workers' indices
             return min(task_times[worker - 1] for worker in workers)
@@ -1117,7 +1135,7 @@ class AlwabpSolution(Solution):
         return min(task_times)
 
     def average_task_execution_time(
-        self, task: int, workers: Optional[List[int]] = None
+        self, task: int, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None
     ) -> float:
         """
         Calculates the average execution time for a task, considering only the workers specified.
@@ -1130,8 +1148,11 @@ class AlwabpSolution(Solution):
         Returns:
             float: The average task execution time among the specified workers.
         """
-        task_times = self._bounded_task_execution_times[task]
-
+        if custom_dict is None:
+            task_times = self._bounded_task_execution_times[task]
+        else:
+            task_times = custom_dict[task]
+            
         if workers:
             # Use a generator expression to sum task times without creating an intermediate list
             total_time = sum(task_times[worker - 1] for worker in workers)
@@ -1143,90 +1164,145 @@ class AlwabpSolution(Solution):
 
         return total_time / max(1, number_of_workers)
 
-    def __get_func_for_max_positional_weight(
-        self, positional_weight_type: MaxPositionalWeightType
-    ) -> Callable[[int], float]:
+    def number_all_task_precedences(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> int:
+        if custom_dict is None:
+            custom_dict = self.all_task_precedences[self.default_graph_orientation]
+            
+        return len(custom_dict[task])    
+    
+    def number_immediate_task_precedences(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> int:
+        if custom_dict is None:
+            custom_dict = self.immediate_task_precedences[self.default_graph_orientation]
+            
+        return len(custom_dict[task])
+
+    def decreasing_number_all_task_precedences(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> int:
+        return -self.number_all_task_precedences(task, custom_dict)
+    
+    def decresing_number_immediate_task_precedences(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> int:
+        return -self.number_immediate_task_precedences(task, custom_dict)
+    
+    def decreasing_min_task_time(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return -self.min_task_execution_time(task, custom_dict)
+    
+    def decreasing_max_task_time(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return -self.max_task_execution_time(task, custom_dict)
+    
+    def decreasing_average_task_time(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return -self.average_task_execution_time(task, custom_dict)
+    
+    def __get_func_for_task_ordering_rules(
+        self, task_ordering_rule: TaskOrderingRule
+    ) -> Callable[[int, Optional[Dict[int, List[int]]]], float]:
         """
-        Retrieve the appropriate function for calculating the maximum positional weight
+        Retrieve the appropriate function for calculating the task ordering rule
         based on the specified type.
 
         Args:
-            positional_weight_type (MaxPositionalWeightType):
-            The type of positional weight to determine the appropriate function.
+            task_ordering_rule (TaskOrderingRules):
+            The type task ordering rule to determine the appropriate function.
 
         Returns:
             Callable[[int], float]: A function that takes an integer (task) as input and
-            returns a float representing the corresponding positional weight.
+            returns a float representing the corresponding task ordering weight.
         """
-        if positional_weight_type == MaxPositionalWeightType.MAX:
-            return self.max_task_execution_time
-        elif positional_weight_type == MaxPositionalWeightType.MIN:
+        if task_ordering_rule == TaskOrderingRule.MAX_F:
+            return self.decreasing_number_all_task_precedences
+        elif task_ordering_rule == TaskOrderingRule.MAX_IF:
+            return self.decresing_number_immediate_task_precedences
+        elif task_ordering_rule == TaskOrderingRule.MAX_TIME_MINUS:
+            return self.decreasing_min_task_time
+        elif task_ordering_rule == TaskOrderingRule.MAX_TIME_PLUS:
+            return self.decreasing_max_task_time
+        elif task_ordering_rule == TaskOrderingRule.MAX_TIME_AVERAGE:
+            return self.decreasing_average_task_time
+        elif task_ordering_rule == TaskOrderingRule.MIN_TIME_MINUS:
             return self.min_task_execution_time
-        else:
+        elif task_ordering_rule == TaskOrderingRule.MIN_TIME_PLUS:
+            return self.max_task_execution_time
+        elif task_ordering_rule == TaskOrderingRule.MIN_TIME_AVERAGE:
             return self.average_task_execution_time
+        elif task_ordering_rule == TaskOrderingRule.MAX_PW_MINUS:
+            return a
+        elif task_ordering_rule == TaskOrderingRule.MAX_PW_PLUS:
+            return a
+        elif task_ordering_rule == TaskOrderingRule.MAX_PW_AVERAGE:
+            return a
+        elif task_ordering_rule == TaskOrderingRule.MIN_D:
+            return a
+        elif task_ordering_rule == TaskOrderingRule.MIN_R:
+            return a
+        elif task_ordering_rule == TaskOrderingRule.MAX_F_TIME:
+            return a
+        elif task_ordering_rule == TaskOrderingRule.MAX_IF_TIME:
+            return a
+        elif task_ordering_rule == TaskOrderingRule.MIN_RANK:
+            return a
+        else:
+            raise ValueError("Task Ordering Rule must be one of the listed possibilities.")
 
-    def _calculate_max_positional_weights(self) -> None:
+    def _calculate_task_ordering_rules(self) -> None:
         """
-        Calculate and store the maximum positional weights for each task based on
-        the different types of positional weights (MAX, MIN, AVERAGE).
+        Calculate and store the maximum task ordering weights for each task based on
+        the different types of task ordering weights (MAX, MIN, AVERAGE).
 
         This method iterates over all tasks and retrieves the appropriate function
-        for calculating positional weights. It then applies this function to each task
-        and stores the result in the `max_positional_weight` attribute.
+        for calculating task ordering weights. It then applies this function to each task
+        and stores the result in the `task_ordering_rules` attribute.
 
         Returns:
             None: This method does not return a value but modifies the state of the
-            object by updating the `max_positional_weight` attribute.
+            object by updating the `task_ordering_rules` attribute.
         """
         for task in self.tasks:
-            for positional_weight_type in EnumUtil.get_values(MaxPositionalWeightType):
-                # Check if positional_weight_type is of the right type
-                if isinstance(positional_weight_type, MaxPositionalWeightType):
-                    # Get the function for the current positional weight type
-                    weight_function = self.__get_func_for_max_positional_weight(
-                        positional_weight_type
+            for task_ordering_rule in EnumUtil.get_values(TaskOrderingRule):
+                # Check if task_ordering_rule is of the right type
+                if isinstance(task_ordering_rule, TaskOrderingRule):
+                    # Get the function for the current task ordering weight type
+                    weight_function = self.__get_func_for_task_ordering_rules(
+                        task_ordering_rule
                     )
                     # Call the returned function with `task` as the argument
-                    self.max_positional_weight[positional_weight_type][task] = (
-                        weight_function(task)
+                    self.task_ordering_rules[task_ordering_rule][task] = (
+                        weight_function(task, None)
                     )
 
-    def get_max_positional_weight_value(
-        self, task: int, variation: MaxPositionalWeightType
+    def get_task_ordering_rules_value(
+        self, task: int, variation: TaskOrderingRule
     ) -> float:
         """
-        Retrieve the maximum positional weight for a given task and variation.
+        Retrieve the maximum task ordering weight for a given task and variation.
 
         Args:
-            task (int): The identifier of the task for which the positional weight is to be retrieved.
-            variation (MaxPositionalWeightType): The type of positional weight variation
+            task (int): The identifier of the task for which the task ordering weight is to be retrieved.
+            variation (TaskOrderingRules): The type of task ordering weight variation
             (e.g., MAX, MIN, AVERAGE) to be used in the lookup.
 
         Returns:
-            float: The maximum positional weight associated with the specified task and variation.
-            Returns -1 if no positional weight is correctly found or set for the given task
+            float: The maximum task ordering weight associated with the specified task and variation.
+            Returns -1 if no task ordering weight is correctly found or set for the given task
             and variation.
         """
-        # Attempt to retrieve the positional weight from the max_positional_weight dictionary.
+        # Attempt to retrieve the task ordering weight from the task_ordering_rules dictionary.
         # If the weight is not set, it is assumed to be -1 (indicating an error or absence of value).
-        return self.max_positional_weight[variation][task]
+        return self.task_ordering_rules[variation][task]
 
-    def get_max_positional_weight_dict(
-        self, variation: MaxPositionalWeightType
+    def get_task_ordering_rules_dict(
+        self, variation: TaskOrderingRule
     ) -> Dict[int, float]:
         """
-        Retrieve the maximum positional weight for a given variation.
+        Retrieve the maximum task ordering weight for a given variation.
 
         Args:
-            variation (MaxPositionalWeightType): The type of positional weight variation
+            variation (TaskOrderingRules): The type of task ordering weight variation
             (e.g., MAX, MIN, AVERAGE) to be used in the lookup.
 
         Returns:
-            List[float]: The list of maximum positional weights associated with the specified variation.
+            List[float]: The list of maximum task ordering weights associated with the specified variation.
         """
-        # Attempt to retrieve the positional weight from the max_positional_weight dictionary.
+        # Attempt to retrieve the task ordering weight from the task ordering dictionary.
         # If the weight is not set, it is assumed to be -1 (indicating an error or absence of value).
-        return self.max_positional_weight[variation]
+        return self.task_ordering_rules[variation]
 
     def get_min_restricted_lower_bound(self) -> List[int]:
         """
@@ -1282,7 +1358,7 @@ class AlwabpSolution(Solution):
         # for that task considering the other unassigned workers
         for task in pending_assignable_tasks:
             amount_of_time += int(
-                self.min_task_execution_time(task, unassigned_workers)
+                self.min_task_execution_time(task, workers=unassigned_workers)
             )
 
         # Return the total amount of time divided by the number of remaining unassigned workers

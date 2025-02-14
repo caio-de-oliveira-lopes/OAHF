@@ -18,7 +18,7 @@ from oahf.Commons.ProblemData import ProblemData
 from oahf.ImplementedBase.AlwabpEvaluator import AlwabpEvaluator
 from oahf.ImplementedBase.AlwabpSolution import (
     GraphOrientation,
-    MaxPositionalWeightType,
+    TaskOrderingRule,
 )
 from oahf.ImplementedBase.AlwabpTaskDiversificationNS import AlwabpTaskDiversificationNS
 from oahf.ImplementedBase.AlwabpTaskIntensificationNS import AlwabpTaskIntensificationNS
@@ -231,9 +231,9 @@ class HeuristicParser:
 
             for n in self.definition["neighborhoods"]:
                 if n["name"].lower() == "alwabp_worker_oriented_insert":
-                    pw = MaxPositionalWeightType(
+                    pw = TaskOrderingRule(
                         EnumUtil.get_enum_from_string(
-                            MaxPositionalWeightType, n["parameters"]["pw"]
+                            TaskOrderingRule, n["parameters"]["pw"]
                         )
                     )
                     graph_orientation = GraphOrientation(
