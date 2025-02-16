@@ -128,8 +128,8 @@ class AlwabpSolution(Solution):
             for graph_orientation in EnumUtil.get_values(GraphOrientation)
         }
 
-        self.task_ordering_rules: Dict[TaskOrderingRule, Dict[int, float]] = {  # type: ignore
-            weight_type: {task: -1 for task in self.tasks}
+        self.task_ordering_rules: Dict[TaskOrderingRule, Dict[int, tuple[float, ...]]] = {  # type: ignore
+            weight_type: {task: (-1.0,) * number_of_workers for task in self.tasks}
             for weight_type in EnumUtil.get_values(TaskOrderingRule)
         }
 
@@ -151,6 +151,11 @@ class AlwabpSolution(Solution):
         self.default_graph_orientation = GraphOrientation.BACKWARD
         self._empty_sol_hash[GraphOrientation.BACKWARD] = hash(self)
         self.default_graph_orientation = GraphOrientation.FORWARD
+        self._best_worker_for_task: Dict[int, int] = {task: 0 for task in self.tasks}
+        self._workers_ranks: Dict[int, Dict[int, int]] = {
+            task: {worker: 0 for worker in self.workers}
+            for task in self.tasks
+        }
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -184,6 +189,8 @@ class AlwabpSolution(Solution):
         result.all_task_precedences = self.all_task_precedences
         result.task_ordering_rules = self.task_ordering_rules
         result._empty_sol_hash = self._empty_sol_hash
+        result._best_worker_for_task = self._best_worker_for_task
+        result._workers_ranks = self._workers_ranks
 
         # Normal copy
         result.station_worker_assignment = self.station_worker_assignment.copy()
@@ -251,7 +258,62 @@ class AlwabpSolution(Solution):
         self._update_tasks_executed_by_worker()
         self._fill_all_task_precedences()
         self._update_bounded_task_execution_times(499)
+        self._compute_best_workers_for_tasks()
+        self._compute_workers_ranks()
         self._calculate_task_ordering_rules()
+        
+    def _compute_workers_ranks(
+        self, 
+        priority_matrix: Optional[Dict[int, List[int]]] = None, 
+        task: Optional[int] = None, 
+        worker: Optional[int] = None
+    ) -> Dict[int, Dict[int, int]]:
+        task_times_dict = priority_matrix or self._bounded_task_execution_times
+    
+        # Determine where to store the results
+        if priority_matrix:
+            result_storage: Dict[int, Dict[int, int]] = {
+                t: {w: 0 for w in self.workers} for t in self.tasks
+            }
+        else:
+            result_storage = self._workers_ranks
+
+        # If a specific task is provided, process only that task
+        tasks_to_process = [task] if task else task_times_dict.keys()
+    
+        for t in tasks_to_process:
+            if t not in task_times_dict:
+                continue  # Skip if the task does not exist
+
+            # Generate (execution_time, worker) pairs
+            labeled_task_order = list(zip(task_times_dict[t], self.workers))
+
+            # Sort by execution time (ascending)
+            ordered = sorted(labeled_task_order)
+
+            # If updating a specific worker, find and modify only that worker's rank
+            if worker:
+                if worker not in self.workers:
+                    continue  # Skip if the worker does not exist
+
+                # Find the new rank for the given worker
+                for rank, (_, w) in enumerate(ordered):
+                    if w == worker:
+                        result_storage.setdefault(t, {})[worker] = rank
+                        break  # Exit early once found
+            else:
+                # Update ranks for all workers in the task
+                result_storage[t] = {w: rank for rank, (_, w) in enumerate(ordered)}
+
+        return result_storage
+
+    def _compute_best_workers_for_tasks(self) -> None:
+        # For each task, find the worker with the smallest execution time.
+        # We use enumerate with start=1 so that the worker ids are 1-indexed.
+        self._best_worker_for_task = {
+            task: min(enumerate(times, start=1), key=lambda pair: pair[1])[0]
+            for task, times in self._bounded_task_execution_times.items()
+        }
 
     def _update_tasks_executed_by_worker(self) -> None:
         self.tasks_executed_by_worker = {
@@ -1078,14 +1140,23 @@ class AlwabpSolution(Solution):
 
         return True
 
-    def get_task_execution_time(self, task: int, worker: Optional[int] = None) -> float:
-        if worker and task in self.tasks_executed_by_worker[worker]:
-            return self._task_execution_times[task][worker - 1]
+    def get_task_execution_time(self, task: int, worker: Optional[int] = None, custom_dict: Optional[Dict[int, List[int]]] = None) -> float:
+        if not custom_dict:
+            if worker and task in self.tasks_executed_by_worker[worker]:
+                return self._task_execution_times[task][worker - 1]
+            else:
+                return max(self._bounded_task_execution_times[task])
         else:
-            return max(self._bounded_task_execution_times[task])
+            if worker:
+                return custom_dict[task][worker - 1]
+            else:
+                return max(custom_dict[task])
 
+    def get_best_worker_for_task(self, task: int) -> int:
+        return self._best_worker_for_task[task]
+    
     def max_task_execution_time(
-        self, task: int, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None,
+        self, task: int, worker: Optional[int] = None, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None,
     ) -> float:
         """
         Calculates the maximum execution time for a task, considering only the workers specified.
@@ -1098,10 +1169,7 @@ class AlwabpSolution(Solution):
         Returns:
             float: The maximum task execution time among the specified workers.
         """
-        if custom_dict is None:
-            task_times = self._bounded_task_execution_times[task]
-        else:
-            task_times = custom_dict[task]
+        task_times = custom_dict[task] if custom_dict else self._bounded_task_execution_times[task]
 
         if workers:
             # Consider only task times for the specified workers' indices
@@ -1110,7 +1178,7 @@ class AlwabpSolution(Solution):
         return max(task_times)
 
     def min_task_execution_time(
-        self, task: int, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None, 
+        self, task: int, worker: Optional[int] = None, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None, 
     ) -> float:
         """
         Calculates the minimum execution time for a task, considering only the workers specified.
@@ -1123,10 +1191,7 @@ class AlwabpSolution(Solution):
         Returns:
             float: The minimum task execution time among the specified workers.
         """
-        if custom_dict is None:
-            task_times = self._bounded_task_execution_times[task]
-        else:
-            task_times = custom_dict[task]
+        task_times = custom_dict[task] if custom_dict else self._bounded_task_execution_times[task]
             
         if workers:
             # Consider only task times for the specified workers' indices
@@ -1135,7 +1200,7 @@ class AlwabpSolution(Solution):
         return min(task_times)
 
     def average_task_execution_time(
-        self, task: int, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None
+        self, task: int, worker: Optional[int] = None, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None
     ) -> float:
         """
         Calculates the average execution time for a task, considering only the workers specified.
@@ -1148,10 +1213,7 @@ class AlwabpSolution(Solution):
         Returns:
             float: The average task execution time among the specified workers.
         """
-        if custom_dict is None:
-            task_times = self._bounded_task_execution_times[task]
-        else:
-            task_times = custom_dict[task]
+        task_times = custom_dict[task] if custom_dict else self._bounded_task_execution_times[task]
             
         if workers:
             # Use a generator expression to sum task times without creating an intermediate list
@@ -1165,35 +1227,70 @@ class AlwabpSolution(Solution):
         return total_time / max(1, number_of_workers)
 
     def number_all_task_precedences(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> int:
-        if custom_dict is None:
-            custom_dict = self.all_task_precedences[self.default_graph_orientation]
-            
-        return len(custom_dict[task])    
+        result = custom_dict or self.all_task_precedences[self.default_graph_orientation]
+        return len(result[task])    
     
     def number_immediate_task_precedences(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> int:
-        if custom_dict is None:
-            custom_dict = self.immediate_task_precedences[self.default_graph_orientation]
-            
-        return len(custom_dict[task])
+        result = custom_dict or self.immediate_task_precedences[self.default_graph_orientation]
+        return len(result[task])
 
-    def decreasing_number_all_task_precedences(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> int:
+    def decreasing_number_all_task_precedences(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> int:
         return -self.number_all_task_precedences(task, custom_dict)
     
-    def decresing_number_immediate_task_precedences(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> int:
+    def decresing_number_immediate_task_precedences(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> int:
         return -self.number_immediate_task_precedences(task, custom_dict)
     
-    def decreasing_min_task_time(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
-        return -self.min_task_execution_time(task, custom_dict)
+    def decreasing_min_task_time(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return -self.min_task_execution_time(task, custom_dict=custom_dict)
     
-    def decreasing_max_task_time(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
-        return -self.max_task_execution_time(task, custom_dict)
+    def decreasing_max_task_time(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return -self.max_task_execution_time(task, custom_dict=custom_dict)
     
-    def decreasing_average_task_time(self, task: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
-        return -self.average_task_execution_time(task, custom_dict)
+    def decreasing_average_task_time(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return -self.average_task_execution_time(task, custom_dict=custom_dict)
+    
+    def __calculate_over_task_and_precedences(self, func: Callable[[int, Optional[int], Optional[Dict[int, List[int]]]], float], task: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        precedences = self.all_task_precedences[self.default_graph_orientation][task]
+        return func(task, None, custom_dict) + sum([func(precedence, None, custom_dict) for precedence in precedences])
+    
+    def max_positional_weight_minus(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return self.__calculate_over_task_and_precedences(self.min_task_execution_time, task, custom_dict)
+    
+    def max_positional_weight_plus(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return self.__calculate_over_task_and_precedences(self.max_task_execution_time, task, custom_dict)
+    
+    def max_positional_weight_average(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return self.__calculate_over_task_and_precedences(self.average_task_execution_time, task, custom_dict)
+
+    def difference_to_best_worker(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        best_worker = self.get_best_worker_for_task(task)
+        return self.get_task_execution_time(task, worker, custom_dict) - self.get_task_execution_time(task, best_worker, custom_dict)
+
+    def ratio_to_best_worker(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        best_worker = self.get_best_worker_for_task(task)
+        return self.get_task_execution_time(task, worker, custom_dict) / (self.get_task_execution_time(task, best_worker, custom_dict) or 1)
+    
+    def ratio_of_number_all_task_precedences_over_time(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return self.number_all_task_precedences(task, custom_dict) / (self.get_task_execution_time(task, worker, custom_dict) or 1)
+    
+    def ratio_of_number_immediate_task_precedences_over_time(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return self.number_immediate_task_precedences(task, custom_dict) / (self.get_task_execution_time(task, worker, custom_dict) or 1)
+    
+    def decreasing_ratio_of_number_all_task_precedences_over_time(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return -self.ratio_of_number_all_task_precedences_over_time(task, worker, custom_dict)
+    
+    def decreasing_ratio_of_number_immediate_task_precedences_over_time(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        return -self.ratio_of_number_immediate_task_precedences_over_time(task, worker, custom_dict)
+    
+    def get_rank(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
+        if not custom_dict:
+            return self._workers_ranks[task][worker]
+        else:
+            return self._compute_workers_ranks(custom_dict, task, worker)[task][worker]
     
     def __get_func_for_task_ordering_rules(
         self, task_ordering_rule: TaskOrderingRule
-    ) -> Callable[[int, Optional[Dict[int, List[int]]]], float]:
+    ) -> Callable[[int, int, Optional[Dict[int, List[int]]]], float]:
         """
         Retrieve the appropriate function for calculating the task ordering rule
         based on the specified type.
@@ -1223,25 +1320,25 @@ class AlwabpSolution(Solution):
         elif task_ordering_rule == TaskOrderingRule.MIN_TIME_AVERAGE:
             return self.average_task_execution_time
         elif task_ordering_rule == TaskOrderingRule.MAX_PW_MINUS:
-            return a
+            return self.max_positional_weight_minus
         elif task_ordering_rule == TaskOrderingRule.MAX_PW_PLUS:
-            return a
+            return self.max_positional_weight_plus
         elif task_ordering_rule == TaskOrderingRule.MAX_PW_AVERAGE:
-            return a
+            return self.max_positional_weight_average
         elif task_ordering_rule == TaskOrderingRule.MIN_D:
-            return a
+            return self.difference_to_best_worker
         elif task_ordering_rule == TaskOrderingRule.MIN_R:
-            return a
+            return self.ratio_to_best_worker
         elif task_ordering_rule == TaskOrderingRule.MAX_F_TIME:
-            return a
+            return self.decreasing_ratio_of_number_all_task_precedences_over_time
         elif task_ordering_rule == TaskOrderingRule.MAX_IF_TIME:
-            return a
+            return self.decreasing_ratio_of_number_immediate_task_precedences_over_time
         elif task_ordering_rule == TaskOrderingRule.MIN_RANK:
-            return a
+            return self.get_rank
         else:
             raise ValueError("Task Ordering Rule must be one of the listed possibilities.")
 
-    def _calculate_task_ordering_rules(self) -> None:
+    def _calculate_task_ordering_rules(self, priority_matrix: Optional[Dict[int, List[int]]] = None) -> Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]]:
         """
         Calculate and store the maximum task ordering weights for each task based on
         the different types of task ordering weights (MAX, MIN, AVERAGE).
@@ -1254,21 +1351,26 @@ class AlwabpSolution(Solution):
             None: This method does not return a value but modifies the state of the
             object by updating the `task_ordering_rules` attribute.
         """
+        if not priority_matrix:
+            result_storage = self.task_ordering_rules
+        else:
+            result_storage: Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]] = {  # type: ignore 
+                weight_type: {task: (-1.0,) * self._number_of_workers for task in self.tasks}
+            for weight_type in EnumUtil.get_values(TaskOrderingRule)
+        }
+
         for task in self.tasks:
             for task_ordering_rule in EnumUtil.get_values(TaskOrderingRule):
-                # Check if task_ordering_rule is of the right type
                 if isinstance(task_ordering_rule, TaskOrderingRule):
-                    # Get the function for the current task ordering weight type
-                    weight_function = self.__get_func_for_task_ordering_rules(
-                        task_ordering_rule
-                    )
-                    # Call the returned function with `task` as the argument
-                    self.task_ordering_rules[task_ordering_rule][task] = (
-                        weight_function(task, None)
-                    )
+                    weight_function = self.__get_func_for_task_ordering_rules(task_ordering_rule)
+                    task_rule_dict = result_storage[task_ordering_rule]  # Store reference
+
+                    task_rule_dict[task] = tuple(map(lambda worker: weight_function(task, worker, priority_matrix), self.workers))
+
+        return result_storage
 
     def get_task_ordering_rules_value(
-        self, task: int, variation: TaskOrderingRule
+        self, task: int, worker: int, variation: TaskOrderingRule
     ) -> float:
         """
         Retrieve the maximum task ordering weight for a given task and variation.
@@ -1285,25 +1387,18 @@ class AlwabpSolution(Solution):
         """
         # Attempt to retrieve the task ordering weight from the task_ordering_rules dictionary.
         # If the weight is not set, it is assumed to be -1 (indicating an error or absence of value).
-        return self.task_ordering_rules[variation][task]
+        return self.task_ordering_rules[variation][task][worker]
 
     def get_task_ordering_rules_dict(
-        self, variation: TaskOrderingRule
-    ) -> Dict[int, float]:
-        """
-        Retrieve the maximum task ordering weight for a given variation.
-
-        Args:
-            variation (TaskOrderingRules): The type of task ordering weight variation
-            (e.g., MAX, MIN, AVERAGE) to be used in the lookup.
-
-        Returns:
-            List[float]: The list of maximum task ordering weights associated with the specified variation.
-        """
+        self, priority_matrix: Optional[Dict[int, List[int]]] = None
+    ) -> Dict[TaskOrderingRule, Dict[int, tuple[float, ...]]]:
         # Attempt to retrieve the task ordering weight from the task ordering dictionary.
         # If the weight is not set, it is assumed to be -1 (indicating an error or absence of value).
-        return self.task_ordering_rules[variation]
-
+        if not priority_matrix:
+            return self.task_ordering_rules
+        else:
+            return self._calculate_task_ordering_rules(priority_matrix)
+        
     def get_min_restricted_lower_bound(self) -> List[int]:
         """
         Orders the list of unassigned workers based on their minimum restricted lower bound (RLB).

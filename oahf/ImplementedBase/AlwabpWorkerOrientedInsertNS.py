@@ -1,5 +1,5 @@
 from collections import deque
-from typing import Dict, Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional, Tuple
 
 from oahf.Base.Movement import Movement
 from oahf.Base.MultipleMovement import MultipleMovement
@@ -21,7 +21,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         task_ordering_rule: TaskOrderingRule,
         graph_orientation: GraphOrientation,
         greediness: float = 0,
-        priority_matrix: Optional[List[List[int]]] = None,
+        priority_matrix: Optional[Dict[int, List[int]]] = None,
         stop_criteria: Optional[StopCriteria] = None,
     ):
         """Initializes the neighborhood search for ALWABP, setting configuration parameters for worker-oriented task insertion."""
@@ -36,7 +36,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.greediness: float = greediness
         self.priority_matrix = priority_matrix
 
-    def build_neighborhood(self, thread_id: int, solution: AlwabpSolution) -> bool:
+    def build_neighborhood(self, thread_id: int, solution: AlwabpSolution, task_ordering_rule_dict: Optional[Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]]] = None) -> bool:
         """Prepares the neighborhood search by initializing the solution and computing initial station assignments."""
 
         solution.default_graph_orientation = self.graph_orientation
@@ -50,64 +50,21 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
         self.cost_function = solution.get_worker_min_rlb
         self.thread_id = thread_id
-
-        if rebuild:
-            # Determine the task list based on task ordering and greediness
-            self.task_ordering_rule_dict = self.compute_tasks_priority()
-            c_min = min(self.task_ordering_rule_dict.values())
-            c_max = max(self.task_ordering_rule_dict.values())
-            self.threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
+           
+        if rebuild or task_ordering_rule_dict:
+            self.task_ordering_rule_dict = task_ordering_rule_dict[self.task_ordering_rule] if task_ordering_rule_dict else self.compute_tasks_priority()[self.task_ordering_rule]
 
         self.enumerator = self.all_moves()
         return True
 
-    def compute_tasks_priority(self) -> Dict[int, float]:
+    def compute_tasks_priority(self) -> Dict[TaskOrderingRule, Dict[int, tuple[float, ...]]]:
         """Computes task priority based on the selected weight type, then updates with precedence values."""
         if not self.solution:
             raise ValueError(
                 "No solution object was associated with this neighborhood search."
             )
 
-        if not self.priority_matrix:
-            return self.solution.get_task_ordering_rules_dict(
-                self.task_ordering_rule
-            )
-
-        # Step 1: Compute initial priorities without precedences
-        task_priorities = {
-            task: self.get_task_priority_without_precedences(task)
-            for task in self.solution.tasks
-        }
-
-        # Step 2: Add precedence values in a second pass
-        for task in self.solution.tasks:
-            precedences = self.solution.all_task_precedences[
-                self.graph_orientation
-            ].get(task, [])
-            task_priorities[task] += sum(task_priorities[pred] for pred in precedences)
-
-        return task_priorities
-
-    def get_task_priority_without_precedences(self, task: int) -> float:
-        """Computes the priority of a task based on worker priorities only, without precedences."""
-        if not self.solution or not self.priority_matrix:
-            return 0.0
-
-        workers_priorities = [
-            self.priority_matrix[w][task - 1]
-            for w in range(self.solution._number_of_workers)
-        ]
-
-        if self.task_ordering_rule == TaskOrderingRule.MAX_PW_MINUS:
-            return min(workers_priorities)
-
-        if self.task_ordering_rule == TaskOrderingRule.MAX_PW_PLUS:
-            return max(workers_priorities)
-
-        if self.task_ordering_rule == TaskOrderingRule.MAX_PW_AVERAGE:
-            return sum(workers_priorities) / self.solution._number_of_workers
-
-        raise ValueError("Invalid task ordering rule.")
+        return self.solution.get_task_ordering_rules_dict(self.priority_matrix)
 
     def get_move(self) -> Optional[Movement]:
         """Retrieves the next available movement in the neighborhood search."""
@@ -128,81 +85,6 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         if self.solution and self.station:
             worker_moves: Dict[int, MultipleMovement] = {}
 
-            # Filter tasks within the threshold
-            lcr = [
-                task
-                for task in self.solution.unassigned_tasks
-                if self.task_ordering_rule_dict[task] <= self.threshold_value
-            ]
-
-            # Set up data structures for incremental update
-            lcr_set = set(lcr)  # For quick membership tests and removals
-            lcr_queue = deque(lcr)  # To preserve original ordering for filtering
-            ordered_chosen_tasks = (
-                []
-            )  # Will hold the tasks in the order they are chosen
-
-            # Precompute the immediate precedences for the current orientation
-            immediate_precedences = self.solution.immediate_task_precedences[
-                self.graph_orientation
-            ]
-
-            # Build a mapping of each task to the number of its unsatisfied prerequisites.
-            # We count a prerequisite as "unsatisfied" if it is still in the solution unassigned tasks.
-            unsatisfied_counts = {}
-            for task in lcr_set:
-                prerequisites = immediate_precedences.get(task, [])
-                unsatisfied_counts[task] = sum(
-                    1 for p in prerequisites if p in self.solution.unassigned_tasks
-                )
-
-            # Build a reverse mapping: for each task, which tasks (from lcr_set) depend on it.
-            dependents = {}
-            for task in lcr_set:
-                for p in immediate_precedences.get(task, []):
-                    # Only consider prerequisites that are also in lcr_set
-                    if p in lcr_set:
-                        dependents.setdefault(p, set()).add(task)
-
-            # Initialize the set of available tasks: tasks whose unsatisfied count is zero.
-            available_tasks = {
-                task for task, count in unsatisfied_counts.items() if count == 0
-            }
-
-            # 3. Incrementally select tasks using the available_tasks set
-            while available_tasks:
-                # Filter lcr_queue to maintain the original order among tasks that are available.
-                filtered_lcr = [task for task in lcr_queue if task in available_tasks]
-                if not filtered_lcr:
-                    break
-
-                # Select a task randomly (using your ThreadManager) among the available ones.
-                task_index = ThreadManager.get_next(
-                    self.thread_id, 0, len(filtered_lcr) - 1
-                )
-                chosen_task = filtered_lcr[task_index]
-                ordered_chosen_tasks.append(chosen_task)
-
-                # Remove the chosen task from our data structures.
-                available_tasks.remove(chosen_task)
-                lcr_set.remove(chosen_task)
-                try:
-                    lcr_queue.remove(chosen_task)
-                except ValueError:
-                    pass  # Task already removed
-
-                # For every task that depends on the chosen task, decrement its unsatisfied count.
-                # If a count reaches zero, it becomes available.
-                for dependent in dependents.get(chosen_task, set()):
-                    if dependent in lcr_set:
-                        unsatisfied_counts[dependent] -= 1
-                        if unsatisfied_counts[dependent] == 0:
-                            available_tasks.add(dependent)
-
-            # 4. If no tasks were chosen, return an empty iterator.
-            if not ordered_chosen_tasks:
-                return iter([])
-
             # Neighborhood will prioritize keeping workers at their respective stations
             worker_assigned_to_station = self.solution.station_worker_assignment[
                 self.station
@@ -215,6 +97,87 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
             solution_copy = self.solution.copy()
             for unassigned_worker in unassigned_workers:
+                
+                worker_related_values = tuple(self.task_ordering_rule_dict[task][unassigned_worker] for task in self.task_ordering_rule_dict)
+                c_min = min(worker_related_values)
+                c_max = max(worker_related_values)
+                self.threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
+
+                # Filter tasks within the threshold
+                lcr = [
+                    task
+                    for task in self.solution.unassigned_tasks
+                    if self.task_ordering_rule_dict[task][unassigned_worker] <= self.threshold_value
+                ]
+
+                # Set up data structures for incremental update
+                lcr_set = set(lcr)  # For quick membership tests and removals
+                lcr_queue = deque(lcr)  # To preserve original ordering for filtering
+                ordered_chosen_tasks = (
+                    []
+                )  # Will hold the tasks in the order they are chosen
+
+                # Precompute the immediate precedences for the current orientation
+                immediate_precedences = self.solution.immediate_task_precedences[
+                    self.graph_orientation
+                ]
+
+                # Build a mapping of each task to the number of its unsatisfied prerequisites.
+                # We count a prerequisite as "unsatisfied" if it is still in the solution unassigned tasks.
+                unsatisfied_counts = {}
+                for task in lcr_set:
+                    prerequisites = immediate_precedences.get(task, [])
+                    unsatisfied_counts[task] = sum(
+                        1 for p in prerequisites if p in self.solution.unassigned_tasks
+                    )
+
+                # Build a reverse mapping: for each task, which tasks (from lcr_set) depend on it.
+                dependents = {}
+                for task in lcr_set:
+                    for p in immediate_precedences.get(task, []):
+                        # Only consider prerequisites that are also in lcr_set
+                        if p in lcr_set:
+                            dependents.setdefault(p, set()).add(task)
+
+                # Initialize the set of available tasks: tasks whose unsatisfied count is zero.
+                available_tasks = {
+                    task for task, count in unsatisfied_counts.items() if count == 0
+                }
+
+                # 3. Incrementally select tasks using the available_tasks set
+                while available_tasks:
+                    # Filter lcr_queue to maintain the original order among tasks that are available.
+                    filtered_lcr = [task for task in lcr_queue if task in available_tasks]
+                    if not filtered_lcr:
+                        break
+
+                    # Select a task randomly (using your ThreadManager) among the available ones.
+                    task_index = ThreadManager.get_next(
+                        self.thread_id, 0, len(filtered_lcr) - 1
+                    )
+                    chosen_task = filtered_lcr[task_index]
+                    ordered_chosen_tasks.append(chosen_task)
+
+                    # Remove the chosen task from our data structures.
+                    available_tasks.remove(chosen_task)
+                    lcr_set.remove(chosen_task)
+                    try:
+                        lcr_queue.remove(chosen_task)
+                    except ValueError:
+                        pass  # Task already removed
+
+                    # For every task that depends on the chosen task, decrement its unsatisfied count.
+                    # If a count reaches zero, it becomes available.
+                    for dependent in dependents.get(chosen_task, set()):
+                        if dependent in lcr_set:
+                            unsatisfied_counts[dependent] -= 1
+                            if unsatisfied_counts[dependent] == 0:
+                                available_tasks.add(dependent)
+
+                # 4. If no tasks were chosen, return an empty iterator.
+                if not ordered_chosen_tasks:
+                    continue
+
                 moves_executed_on_copy = []
 
                 if not worker_already_assigned:
