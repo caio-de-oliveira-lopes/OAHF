@@ -47,6 +47,7 @@ from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriter
 from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
 from oahf.ImplementedBase.PrecedenceConstraint import PrecedenceConstraint
 from oahf.ImplementedBase.RearrangeCriticalTaskNS import RearrangeCriticalTaskNS
+from oahf.ImplementedBase.StopNoImprovement import StopNoImprovement
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
 from oahf.ImplementedBase.TasksUnassignedStopCriteria import TasksUnassignedStopCriteria
 from oahf.ImplementedBase.TaskSwapNS import TaskSwapNS
@@ -231,9 +232,9 @@ class HeuristicParser:
 
             for n in self.definition["neighborhoods"]:
                 if n["name"].lower() == "alwabp_worker_oriented_insert":
-                    pw = TaskOrderingRule(
+                    task_ordering_rule = TaskOrderingRule(
                         EnumUtil.get_enum_from_string(
-                            TaskOrderingRule, n["parameters"]["pw"]
+                            TaskOrderingRule, n["parameters"]["task_ordering_rule"]
                         )
                     )
                     graph_orientation = GraphOrientation(
@@ -243,7 +244,7 @@ class HeuristicParser:
                     )
                     greediness = float(n["parameters"].get("greediness", 0.0))
                     neighborhood = AlwabpWorkerOrientedInsertNS(
-                        pw, graph_orientation, greediness
+                        task_ordering_rule, graph_orientation, greediness
                     )
                 elif n["name"].lower() == "rearrange_critical_task":
                     graph_orientation = GraphOrientation(
@@ -720,6 +721,24 @@ class HeuristicParser:
                     if (parsed := self.parse_stop_criteria(other_criteria)) is not None
                 ]
                 return MultipleStopCriteria(stop_when_any, *multiple_criterias)
+            elif "no_improvement" in criteria:                
+                iterations_no_improv = int(criteria["no_improvement"]["iterations_no_improv"])
+                seconds = (
+                    float(criteria["no_improvement"].get("seconds"))
+                    if "seconds" in criteria["no_improvement"]
+                    else None
+                )
+                iterations = (
+                    int(criteria["no_improvement"].get("iterations"))
+                    if "iterations" in criteria["no_improvement"]
+                    else None
+                )
+                perc_improv = (
+                    int(criteria["no_improvement"].get("perc_improv"))
+                    if "perc_improvement" in criteria["no_improvement"]
+                    else None
+                )                
+                return StopNoImprovement(iterations_no_improv, seconds, iterations, perc_improv)
             else:
                 raise ValueError(f"Unavailable stop criteria: {criteria}")
         except Exception as e:

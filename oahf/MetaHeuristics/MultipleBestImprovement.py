@@ -106,7 +106,5 @@ class MultipleBestImprovement(MetaHeuristic):
                     best_sol = curr_sol.copy()
                     best_eval = curr_eval
                     self.neighborhood_selection.reset(self.thread_id)
-                else:
-                    break
 
         return best_sol
