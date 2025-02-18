@@ -89,7 +89,7 @@ class Pertubation(MetaHeuristic):
                     while move is not None and not self.stop_on_evaluations(
                         [best_eval]
                     ):
-                        worked = move.apply_operation()
+                        worked = move.apply()
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)
                             if (
@@ -102,7 +102,7 @@ class Pertubation(MetaHeuristic):
                                 best_sol = curr_sol.copy()
                                 return best_sol
                             else:
-                                move.unapply_operation(curr_eval)
+                                move.unapply()
 
                         move = ns.get_move_operation()
                         self.stop_criteria.increment_counter()

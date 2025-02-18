@@ -336,14 +336,14 @@
 						"max_cycle_time": {
 							"cycle_time_limit": 500
 						}
-					}
+					},
+					"acceptance_criteria": {
+						"better": {}
+					},
+					"order_moves": "false",
+					"neighborhood_ids": [0]
 				}
-			},
-			"acceptance_criteria": {
-				"better": {}
-			},
-			"order_moves": "false",
-			"neighborhood_ids": [0]
+			}
 		},
 		{
 			"id": 37,

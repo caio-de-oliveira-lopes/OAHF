@@ -26,14 +26,14 @@ class MultipleMovement(Movement):
     def apply(self) -> bool:
         """Apply each movement and return whether all movements were successful."""
         for movement in self.movements:
-            if not movement.apply_operation():
+            if not movement.apply():
                 return False
         return True
 
     def unapply(self) -> bool:
         """Unapply each movement in reverse order and return whether all movements were successfully unapplied."""
         for movement in reversed(self.movements):
-            if not movement.unapply_operation(None):
+            if not movement.unapply():
                 return False
         return True
 

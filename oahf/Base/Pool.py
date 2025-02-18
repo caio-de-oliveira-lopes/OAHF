@@ -25,6 +25,9 @@ class Pool(Entity, ABC):
 
         # key must be the solution ID and value will be composed of keys "metaheuristic" and "execution_time":
         self._solution_info: Dict[int, Dict[str, str]] = {}
+        # Use a set to quickly test whether a solution is already present.
+        # This assumes that the Solution class correctly implements __hash__ and __eq__.
+        self._solution_set: set[Solution] = set(solutions)
 
     @abstractmethod
     def get_solution_at(self, index: int) -> Solution:
@@ -70,35 +73,29 @@ class Pool(Entity, ABC):
 
         Tracks the most recent MetaHeuristic subclass that called this method.
         """
-
+        
         from oahf.Base.MetaHeuristic import MetaHeuristic
         from oahf.Utils.Util import Util
+        
+        if solution is None or solution in self._solution_set:
+            return False
 
-        if solution and solution not in self.solutions:
-            # Get the current stack trace
-            stack = inspect.stack()
+        # Use a more efficient stack traversal (f_back) to find the MetaHeuristic caller.
+        frame = inspect.currentframe()
+        while frame:
+            instance = frame.f_locals.get("self")
+            if instance and isinstance(instance, MetaHeuristic):
+                if solution.id not in self._solution_info:
+                    self._solution_info[solution.id] = {}
+                self._solution_info[solution.id]["metaheuristic"] = type(instance).__name__
+                self._solution_info[solution.id]["execution_time"] = Util.get_duration_from_start_timestamp()
+                break
+            frame = frame.f_back
 
-            # Traverse the stack to find the first class that inherits from MetaHeuristic
-            for frame in stack:
-                # Get the instance (self) and the class associated with the frame
-                instance = frame.frame.f_locals.get("self")
-                if instance and isinstance(instance, MetaHeuristic):
-                    if solution.id not in self._solution_info:
-                        self._solution_info[solution.id] = {}
-
-                    # Store the MetaHeuristic subclass name and the current execution time
-                    self._solution_info[solution.id]["metaheuristic"] = type(
-                        instance
-                    ).__name__
-                    self._solution_info[solution.id][
-                        "execution_time"
-                    ] = Util.get_duration_from_start_timestamp()
-
-                    break
-
-            self.solutions.append(solution)
-            return True
-        return False
+        # Append solution and add it to the lookup set.
+        self.solutions.append(solution)
+        self._solution_set.add(solution)
+        return True
 
     def get_best(self, evaluator: Optional[Evaluator] = None) -> Optional[Solution]:
         """

@@ -98,16 +98,23 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             solution_copy = self.solution.copy()
             for unassigned_worker in unassigned_workers:
                 
-                worker_related_values = tuple(self.task_ordering_rule_dict[task][unassigned_worker] for task in self.task_ordering_rule_dict)
+                worker_related_values = tuple(
+                    self.task_ordering_rule_dict[task][unassigned_worker - 1] 
+                    for task in self.task_ordering_rule_dict
+                )
                 c_min = min(worker_related_values)
                 c_max = max(worker_related_values)
                 self.threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
 
-                # Filter tasks within the threshold
+                ordered_unassigned_tasks = sorted(
+                    self.solution.unassigned_tasks, 
+                    key=lambda task: worker_related_values[task - 1]
+                )
+                
                 lcr = [
                     task
-                    for task in self.solution.unassigned_tasks
-                    if self.task_ordering_rule_dict[task][unassigned_worker] <= self.threshold_value
+                    for task in ordered_unassigned_tasks
+                    if worker_related_values[task - 1] <= self.threshold_value
                 ]
 
                 # Set up data structures for incremental update

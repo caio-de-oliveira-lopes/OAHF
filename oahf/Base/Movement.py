@@ -54,34 +54,10 @@ class Movement(Entity, ABC):
         """
         pass
 
-    def apply_operation(self) -> bool:
-        """Wrapper method to apply the movement and report the outcome."""
-        result = False
-
-        try:
-            result = self.apply()
-        except Exception as ex:
-            LogManager.invalid_action("apply movement", type(self).__name__, ex)
-            raise
-
-        return result
-
     @abstractmethod
     def unapply(self) -> bool:
         """Revert the movement on the solution."""
         pass
-
-    def unapply_operation(self, evaluation: Optional["Evaluation"]) -> bool:
-        """Wrapper method to unapply the movement and report the outcome."""
-        result = False
-
-        try:
-            result = self.unapply()
-        except Exception as ex:
-            LogManager.invalid_action("unapply movement", type(self).__name__, ex)
-            raise
-
-        return result
 
     def set_unapply_inconsistent(self):
         """Indicate that the unapply operation is inconsistent."""

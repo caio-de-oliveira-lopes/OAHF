@@ -116,7 +116,7 @@ class GRC(MetaHeuristic):
 
                     while ordered_moves and not self.stop_on_evaluations([best_eval]):
                         move = ordered_moves.pop()
-                        worked = move.apply_operation()
+                        worked = move.apply()
 
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)
@@ -126,7 +126,7 @@ class GRC(MetaHeuristic):
                                 best_eval = curr_eval
                                 break
                             else:
-                                move.unapply_operation(curr_eval)
+                                move.unapply()
                         self.stop_criteria.increment_counter()
 
                 else:

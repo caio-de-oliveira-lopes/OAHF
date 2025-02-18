@@ -64,7 +64,7 @@ class FirstImprovement(MetaHeuristic):
                     while move is not None and not self.stop_on_evaluations(
                         [best_eval]
                     ):
-                        worked = move.apply_operation()
+                        worked = move.apply()
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)
                             if self.acceptance_criteria.accept(
@@ -75,7 +75,7 @@ class FirstImprovement(MetaHeuristic):
                                 self.evaluator.save_evaluation_state(best_sol)
                                 return best_sol
                             else:
-                                move.unapply_operation(curr_eval)
+                                move.unapply()
 
                         move = ns.get_move_operation()
                         self.stop_criteria.increment_counter()

@@ -103,6 +103,7 @@ class JobRotationAlwabpSolution(Solution):
         """Not implemented for JobRotationAlwabpSolution."""
         raise NotImplementedError("Merging is not supported.")
 
+    @property
     def solution_hash(self) -> int:
         """Generates a hash for the solution based on period assignments."""
         return hash(tuple(self.period_solutions))

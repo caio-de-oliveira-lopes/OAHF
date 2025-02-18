@@ -9,7 +9,7 @@ operations necessary to build, evaluate, and transform solutions.
 
 import copy
 from enum import Enum, auto
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
 
@@ -96,7 +96,7 @@ class AlwabpSolution(Solution):
         "tasks_executed_by_worker",
         "all_task_precedences",
         "task_ordering_rules",
-        "station_cycle_time_memo",
+        "_station_cycle_time_memo",
         "_cycle_time_limit",
         "_default_graph_orientation",
         "print_solution_updates",
@@ -158,8 +158,8 @@ class AlwabpSolution(Solution):
         }
 
         # Lists to track unassigned workers and tasks.
-        self._unassigned_workers: List[int] = list(self.workers)
-        self._unassigned_tasks: List[int] = list(self.tasks)
+        self._unassigned_workers: Set[int] = set(self.workers)
+        self._unassigned_tasks: Set[int] = set(self.tasks)
 
         # Initialize immediate precedences for tasks in both graph orientations.
         self.immediate_task_precedences: Dict[GraphOrientation, Dict[int, List[int]]] = { # type: ignore
@@ -185,7 +185,7 @@ class AlwabpSolution(Solution):
         }
 
         # Initialize cycle time memoization per station.
-        self.station_cycle_time_memo: Dict[int, float] = {
+        self._station_cycle_time_memo: Dict[int, float] = {
             station: 0.0 for station in self.stations
         }
 
@@ -226,7 +226,7 @@ class AlwabpSolution(Solution):
         result = cls.__new__(cls)
         memo[id(self)] = result
 
-        # Copy parent's private attributes.
+        # Copy parent private attributes.
         for attr in ("_Entity__id", "_Entity__name"):
             if attr in self.__dict__:
                 setattr(result, attr, self.__dict__[attr])
@@ -260,7 +260,7 @@ class AlwabpSolution(Solution):
         result.task_station_assignment = self.task_station_assignment.copy()
         result._unassigned_workers = self._unassigned_workers.copy()
         result._unassigned_tasks = self._unassigned_tasks.copy()
-        result.station_cycle_time_memo = self.station_cycle_time_memo.copy()
+        result._station_cycle_time_memo = self._station_cycle_time_memo.copy()
 
         # Copy lists within dictionaries.
         result._task_execution_times = {k: v.copy() for k, v in self._task_execution_times.items()}
@@ -280,11 +280,11 @@ class AlwabpSolution(Solution):
 
     def validate_aspects(self) -> bool:
         """
-        Validates the solution’s aspects.
+        Validates the solution aspects.
 
         If a cycle time limit is set and there are unassigned tasks or workers,
         the cycle time limit is incremented, the solution is reset, and False is returned.
-        Otherwise, the parent class's validate_aspects method is used.
+        Otherwise, the parent class validate_aspects method is used.
         
         Returns:
             bool: True if the solution is valid; False otherwise.
@@ -312,9 +312,9 @@ class AlwabpSolution(Solution):
         self.worker_station_assignment = {worker: None for worker in self.workers}
         self.station_tasks_assignment = {station: [] for station in self.stations}
         self.task_station_assignment = {task: None for task in self.tasks}
-        self._unassigned_workers = list(self.workers)
-        self._unassigned_tasks = list(self.tasks)
-        self.station_cycle_time_memo = {station: 0.0 for station in self.stations}
+        self._unassigned_workers = set(self.workers)
+        self._unassigned_tasks = set(self.tasks)
+        self._station_cycle_time_memo = {station: 0.0 for station in self.stations}
         self._first_unassigned_station = 1
         self._hash_memo = self._empty_sol_hash[self.default_graph_orientation]
 
@@ -343,7 +343,7 @@ class AlwabpSolution(Solution):
         Computes the ranking of workers for tasks based on execution times.
 
         For each task (or a specified task), it sorts workers by their execution times (ascending).
-        If a specific worker is provided, only that worker's rank is updated; otherwise, ranks for all workers are computed.
+        If a specific worker is provided, only that worker rank is updated; otherwise, ranks for all workers are computed.
         
         Args:
             priority_matrix (Optional[Dict[int, List[int]]]): Optional alternative matrix of execution times.
@@ -494,10 +494,10 @@ class AlwabpSolution(Solution):
             )
 
             # Swap cycle times.
-            (self.station_cycle_time_memo[i],
-             self.station_cycle_time_memo[mirror_idx]) = (
-                self.station_cycle_time_memo[mirror_idx],
-                self.station_cycle_time_memo[i],
+            (self._station_cycle_time_memo[i],
+             self._station_cycle_time_memo[mirror_idx]) = (
+                self._station_cycle_time_memo[mirror_idx],
+                self._station_cycle_time_memo[i],
             )
 
         # Update worker-to-station mapping.
@@ -754,9 +754,9 @@ class AlwabpSolution(Solution):
                 self.get_task_execution_time(task, worker)
                 for task in self.station_tasks_assignment[station]
             )
-            self.station_cycle_time_memo[station] = total_time
+            self._station_cycle_time_memo[station] = total_time
 
-        return self.station_cycle_time_memo[station]
+        return self._station_cycle_time_memo[station]
 
     def get_max_cycle_time(self) -> float:
         """
@@ -765,7 +765,7 @@ class AlwabpSolution(Solution):
         Returns:
             float: The maximum cycle time.
         """
-        return max(self.station_cycle_time_memo.values())
+        return max(self._station_cycle_time_memo.values())
 
     def get_min_cycle_time(self) -> float:
         """
@@ -774,7 +774,7 @@ class AlwabpSolution(Solution):
         Returns:
             float: The minimum cycle time.
         """
-        return min(self.station_cycle_time_memo.values())
+        return min(self._station_cycle_time_memo.values())
 
     def get_idle_time(self) -> float:
         """
@@ -902,8 +902,6 @@ class AlwabpSolution(Solution):
                     all_precedences = self._calculate_all_precedences(task, graph_orientation)
                     self.all_task_precedences[graph_orientation][task] = all_precedences
 
-        self.order_solution_tasks()
-
     def __get_tasks_executed_by_worker(self, worker: int) -> Tuple[int, ...]:
         """
         Retrieves the list of tasks that a specific worker can execute.
@@ -993,7 +991,7 @@ class AlwabpSolution(Solution):
         Assigns a worker to a station if not already assigned.
 
         Updates the assignment, removes the worker from the unassigned list,
-        recalculates the station's cycle time if requested, and updates the solution hash.
+        recalculates the station cycle time if requested, and updates the solution hash.
         
         Args:
             worker (int): The worker identifier.
@@ -1004,7 +1002,7 @@ class AlwabpSolution(Solution):
             bool: True if the assignment was successful, False otherwise.
         """
         try:
-            if self.station_worker_assignment.get(station) != worker:
+            if self.worker_station_assignment[worker] is None:
                 sol_hash = hash(self)
                 self.station_worker_assignment[station] = worker
                 self.worker_station_assignment[worker] = station
@@ -1025,7 +1023,7 @@ class AlwabpSolution(Solution):
 
                 return True
             else:
-                LogManager.invalid_action("add worker to station, it was already assigned to it", self.name)
+                LogManager.invalid_action("add worker to station, it was already assigned to one", self.name)
                 return False
         except Exception as e:
             LogManager.invalid_action("add worker to station", self.name, e)
@@ -1038,7 +1036,7 @@ class AlwabpSolution(Solution):
         Removes a worker from a specified station.
 
         Updates the assignment mappings, adds the worker back to the unassigned list,
-        recalculates the station's cycle time if requested, and updates the solution hash.
+        recalculates the station cycle time if requested, and updates the solution hash.
         
         Args:
             worker (int): The worker identifier.
@@ -1053,7 +1051,7 @@ class AlwabpSolution(Solution):
                 sol_hash = hash(self)
                 self.station_worker_assignment[station] = None
                 self.worker_station_assignment[worker] = None
-                self.unassigned_workers.append(worker)
+                self.unassigned_workers.add(worker)
 
                 if recalculate_cycle_time:
                     self.calculate_cycle_time(station, True)
@@ -1070,7 +1068,7 @@ class AlwabpSolution(Solution):
 
                 return True
             else:
-                LogManager.invalid_action("remove worker from station, it wasn't assigned to it", self.name)
+                LogManager.invalid_action("remove worker from station, it wasnt assigned to it", self.name)
                 return False
         except Exception as e:
             LogManager.invalid_action("remove worker from station", self.name, e)
@@ -1091,14 +1089,14 @@ class AlwabpSolution(Solution):
             bool: True if the task was added successfully, False otherwise.
         """
         try:
-            if task not in self.station_tasks_assignment.get(station, []):
+            if self.task_station_assignment[task] is None:
                 sol_hash = hash(self)
                 self.station_tasks_assignment[station].append(task)
                 self.task_station_assignment[task] = station
                 self._unassigned_tasks.remove(task)
 
                 worker = self.station_worker_assignment[station]
-                self.station_cycle_time_memo[station] += self.get_task_execution_time(task, worker)
+                self._station_cycle_time_memo[station] += self.get_task_execution_time(task, worker)
 
                 if self._first_unassigned_station == station:
                     self._first_unassigned_station = None if station >= self._number_of_stations else station + 1
@@ -1115,7 +1113,7 @@ class AlwabpSolution(Solution):
 
                 return True
             else:
-                LogManager.invalid_action("add task to station, it was already assigned to it", self.name)
+                LogManager.invalid_action("add task to station, it was already assigned to one", self.name)
                 return False
         except Exception as e:
             LogManager.invalid_action("add task to station", self.name, e)
@@ -1136,14 +1134,14 @@ class AlwabpSolution(Solution):
             bool: True if the removal was successful, False otherwise.
         """
         try:
-            if task in self.station_tasks_assignment.get(station, []):
+            if self.task_station_assignment[task] == station:
                 sol_hash = hash(self)
                 self.station_tasks_assignment[station].remove(task)
                 self.task_station_assignment[task] = None
-                self._unassigned_tasks.append(task)
+                self._unassigned_tasks.add(task)
 
                 worker = self.station_worker_assignment[station]
-                self.station_cycle_time_memo[station] -= self.get_task_execution_time(task, worker)
+                self._station_cycle_time_memo[station] -= self.get_task_execution_time(task, worker)
 
                 if not self.station_tasks_assignment[station] and (
                     self._first_unassigned_station is None or station < self._first_unassigned_station
@@ -1162,7 +1160,7 @@ class AlwabpSolution(Solution):
 
                 return True
             else:
-                LogManager.invalid_action("remove task from station, it wasn't assigned to it", self.name)
+                LogManager.invalid_action("remove task from station, it wasnt assigned to it", self.name)
                 return False
         except Exception as e:
             LogManager.invalid_action("remove task from station", self.name, e)
@@ -1202,7 +1200,7 @@ class AlwabpSolution(Solution):
         Args:
             task (int): The task identifier.
             station (int): The station identifier.
-            worker (Optional[int]): The worker identifier; if None, uses the station's current worker.
+            worker (Optional[int]): The worker identifier; if None, uses the station current worker.
         
         Returns:
             bool: True if the task can be assigned, False otherwise.
@@ -1213,7 +1211,7 @@ class AlwabpSolution(Solution):
             return False
 
         if (worker and self.cycle_time_limit and
-            (self.station_cycle_time_memo[station] + self.get_task_execution_time(task, worker)) > self.cycle_time_limit):
+            (self._station_cycle_time_memo[station] + self.get_task_execution_time(task, worker)) > self.cycle_time_limit):
             return False
 
         for preceding_task in self.all_task_precedences[self.default_graph_orientation][task]:
@@ -1263,11 +1261,11 @@ class AlwabpSolution(Solution):
             task (int): The task identifier.
         
         Returns:
-            int: The best worker's identifier.
+            int: The best worker identifier.
         """
         return self._best_worker_for_task[task]
 
-    def max_task_execution_time(self, task: int, worker: Optional[int] = None, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None) -> float:
+    def max_task_execution_time(self, task: int, worker: Optional[int] = None, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[Iterable[int]] = None) -> float:
         """
         Calculates the maximum execution time for a task considering a subset of workers.
 
@@ -1277,7 +1275,7 @@ class AlwabpSolution(Solution):
             task (int): The task identifier.
             worker (Optional[int]): Ignored in this function.
             custom_dict (Optional[Dict[int, List[int]]]): Custom execution time data.
-            workers (Optional[List[int]]): List of worker identifiers to consider.
+            workers (Optional[Iterable[int]]): List of worker identifiers to consider.
         
         Returns:
             float: The maximum execution time among the considered workers.
@@ -1287,7 +1285,7 @@ class AlwabpSolution(Solution):
             return max(task_times[worker - 1] for worker in workers)
         return max(task_times)
 
-    def min_task_execution_time(self, task: int, worker: Optional[int] = None, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None) -> float:
+    def min_task_execution_time(self, task: int, worker: Optional[int] = None, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[Iterable[int]] = None) -> float:
         """
         Calculates the minimum execution time for a task considering a subset of workers.
 
@@ -1295,7 +1293,7 @@ class AlwabpSolution(Solution):
             task (int): The task identifier.
             worker (Optional[int]): Ignored in this function.
             custom_dict (Optional[Dict[int, List[int]]]): Custom execution time data.
-            workers (Optional[List[int]]): List of worker identifiers to consider.
+            workers (Optional[Iterable[int]]): List of worker identifiers to consider.
         
         Returns:
             float: The minimum execution time among the considered workers.
@@ -1305,7 +1303,7 @@ class AlwabpSolution(Solution):
             return min(task_times[worker - 1] for worker in workers)
         return min(task_times)
 
-    def average_task_execution_time(self, task: int, worker: Optional[int] = None, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[List[int]] = None) -> float:
+    def average_task_execution_time(self, task: int, worker: Optional[int] = None, custom_dict: Optional[Dict[int, List[int]]] = None, workers: Optional[Iterable[int]] = None) -> float:
         """
         Calculates the average execution time for a task over the considered workers.
 
@@ -1313,7 +1311,7 @@ class AlwabpSolution(Solution):
             task (int): The task identifier.
             worker (Optional[int]): Ignored in this function.
             custom_dict (Optional[Dict[int, List[int]]]): Custom execution time data.
-            workers (Optional[List[int]]): List of worker identifiers to consider.
+            workers (Optional[Iterable[int]]): List of worker identifiers to consider.
         
         Returns:
             float: The average execution time.
@@ -1321,7 +1319,7 @@ class AlwabpSolution(Solution):
         task_times = custom_dict[task] if custom_dict else self._bounded_task_execution_times[task]
         if workers:
             total_time = sum(task_times[worker - 1] for worker in workers)
-            number_of_workers = len(workers)
+            number_of_workers = len(set(workers))
         else:
             total_time = sum(task_times)
             number_of_workers = self._number_of_workers
@@ -1451,13 +1449,13 @@ class AlwabpSolution(Solution):
 
     def decreasing_ratio_of_number_all_task_precedences_over_time(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
         """
-        Returns the negative ratio of the total number of precedences to the task's execution time.
+        Returns the negative ratio of the total number of precedences to the task execution time.
         """
         return -self.ratio_of_number_all_task_precedences_over_time(task, worker, custom_dict)
 
     def decreasing_ratio_of_number_immediate_task_precedences_over_time(self, task: int, worker: int, custom_dict: Optional[Dict[int, List[int]]]) -> float:
         """
-        Returns the negative ratio of the immediate precedences count to the task's execution time.
+        Returns the negative ratio of the immediate precedences count to the task execution time.
         """
         return -self.ratio_of_number_immediate_task_precedences_over_time(task, worker, custom_dict)
 
@@ -1599,7 +1597,7 @@ class AlwabpSolution(Solution):
         """
         return sorted(self.unassigned_workers, key=lambda worker: self.get_worker_min_rlb(worker))
 
-    def get_worker_min_rlb(self, worker: int, override_unassigned_tasks: List[int] = []) -> int:
+    def get_worker_min_rlb(self, worker: int, override_unassigned_tasks: Iterable[int] = []) -> int:
         """
         Calculates the minimum restricted lower bound (RLB) for a worker.
 
@@ -1613,7 +1611,7 @@ class AlwabpSolution(Solution):
         Returns:
             int: The computed minimum RLB.
         """
-        unassigned_tasks = override_unassigned_tasks.copy() if override_unassigned_tasks else self._unassigned_tasks
+        unassigned_tasks = override_unassigned_tasks if override_unassigned_tasks else self._unassigned_tasks
 
         if len(self.unassigned_workers) == 1:
             return 0
@@ -1639,7 +1637,7 @@ class AlwabpSolution(Solution):
 
     def station_would_be_feasible(self, station: int, worker: int) -> bool:
         """
-        Checks if a station's task list is feasible for a given worker.
+        Checks if a station task list is feasible for a given worker.
 
         Verifies that the worker can execute all tasks in the station and, if a cycle time limit is set,
         that the total execution time does not exceed the limit.

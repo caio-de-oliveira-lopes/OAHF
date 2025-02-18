@@ -145,7 +145,7 @@ class TabuSearch(MetaHeuristic):
                     while (
                         move := ns.get_move_operation()
                     ) is not None and not self.stop_on_evaluations([best_eval]):
-                        worked = move.apply_operation()
+                        worked = move.apply()
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)
 
@@ -204,7 +204,7 @@ class TabuSearch(MetaHeuristic):
                                 best_move_eval = curr_eval
                                 best_move = move
 
-                            move.unapply_operation(curr_eval)
+                            move.unapply()
 
                     self.stop_criteria.increment_counter()
                     self.intensification_criteria.increment_counter()
@@ -214,7 +214,7 @@ class TabuSearch(MetaHeuristic):
                         pbar.update(1)
 
                     if best_move:
-                        best_move.apply_operation()
+                        best_move.apply()
                         curr_eval = self.evaluator.evaluate(curr_sol)
 
                         # Update best solution if necessary

@@ -63,7 +63,7 @@ class BestImprovement(MetaHeuristic):
                     while (
                         move := ns.get_move_operation()
                     ) is not None and not self.stop_on_evaluations([best_eval]):
-                        worked = move.apply_operation()
+                        worked = move.apply()
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)
 
@@ -73,7 +73,7 @@ class BestImprovement(MetaHeuristic):
                                 best_sol = curr_sol.copy()
                                 best_eval = curr_eval
 
-                            move.unapply_operation(curr_eval)
+                            move.unapply()
 
                         self.stop_criteria.increment_counter()
 
