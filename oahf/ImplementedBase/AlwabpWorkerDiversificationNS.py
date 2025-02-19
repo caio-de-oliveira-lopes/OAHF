@@ -24,14 +24,11 @@ class AlwabpWorkerDiversificationNS(Neighborhood):
         cost_function: Optional cost function for movement evaluation.
     """
 
-    def __init__(self, stop_criteria: Optional[StopCriteria] = None):
+    def __init__(self):
         """
         Initializes the neighborhood with optional stopping criteria.
-
-        Args:
-            stop_criteria (Optional[StopCriteria]): Criteria to determine when to stop exploration.
         """
-        super().__init__(stop_criteria, False)
+        super().__init__(False)
         self.enumerator: Optional[Iterator[Movement]] = (
             None  # Stores the current movement iterator.
         )
@@ -122,6 +119,4 @@ class AlwabpWorkerDiversificationNS(Neighborhood):
         Returns:
             AlwabpWorkerDiversificationNS: A new instance with identical parameters.
         """
-        return AlwabpWorkerDiversificationNS(
-            self.stop_criteria.copy() if self.stop_criteria else None,
-        )
+        return AlwabpWorkerDiversificationNS()

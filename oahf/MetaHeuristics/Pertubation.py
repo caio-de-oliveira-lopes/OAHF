@@ -84,7 +84,7 @@ class Pertubation(MetaHeuristic):
                 build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
 
                 if build:
-                    move = ns.get_move_operation()
+                    move = ns.get_move()
                     self.stop_criteria.increment_counter()
                     while move is not None and not self.stop_on_evaluations(
                         [best_eval]
@@ -104,7 +104,7 @@ class Pertubation(MetaHeuristic):
                             else:
                                 move.unapply()
 
-                        move = ns.get_move_operation()
+                        move = ns.get_move()
                         self.stop_criteria.increment_counter()
             except Exception as ex:
                 LogManager.something_went_wrong(str(ns), ex)

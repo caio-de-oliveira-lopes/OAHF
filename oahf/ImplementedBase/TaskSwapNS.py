@@ -23,17 +23,15 @@ class TaskSwapNS(Neighborhood):
 
     def __init__(
         self,
-        graph_orientation: GraphOrientation,
-        stop_criteria: Optional[StopCriteria] = None,
+        graph_orientation: GraphOrientation
     ):
         """
         Initializes the neighborhood search for task swapping.
 
         Args:
             graph_orientation (GraphOrientation): Defines the dependency relationships between tasks.
-            stop_criteria (Optional[StopCriteria]): Optional criteria to terminate the neighborhood search.
         """
-        super().__init__(stop_criteria, False)
+        super().__init__(False)
         self.enumerator: Optional[Iterator[Movement]] = (
             None  # Stores the current movement iterator.
         )
@@ -193,7 +191,4 @@ class TaskSwapNS(Neighborhood):
         Returns:
             TaskSwapNS: A new instance with identical parameters.
         """
-        return TaskSwapNS(
-            self.graph_orientation,
-            self.stop_criteria.copy() if self.stop_criteria else None,
-        )
+        return TaskSwapNS(self.graph_orientation)

@@ -20,14 +20,11 @@ class WorkerSwapNS(Neighborhood):
     to the opposite stations.
     """
 
-    def __init__(self, stop_criteria: Optional[StopCriteria] = None):
+    def __init__(self):
         """
         Initializes the neighborhood search for worker swapping.
-
-        Args:
-            stop_criteria (Optional[StopCriteria]): Optional criteria to terminate the neighborhood search.
         """
-        super().__init__(stop_criteria, False)
+        super().__init__(False)
         self.enumerator: Optional[Iterator[Movement]] = (
             None  # Stores the current movement iterator.
         )
@@ -136,6 +133,4 @@ class WorkerSwapNS(Neighborhood):
         Returns:
             WorkerSwapNS: A new instance with identical parameters.
         """
-        return WorkerSwapNS(
-            self.stop_criteria.copy() if self.stop_criteria else None,
-        )
+        return WorkerSwapNS()

@@ -306,7 +306,7 @@ class HeuristicParser:
                         order_moves,
                     )
                     neighborhood = WorkerSwapReconstructNS(
-                        grc, evaluator, stop_criteria
+                        grc, evaluator
                     )
                 elif n["name"].lower() == "alwabp_task_intensification":
                     neighborhood = AlwabpTaskIntensificationNS()

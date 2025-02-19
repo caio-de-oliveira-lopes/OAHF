@@ -143,7 +143,7 @@ class TabuSearch(MetaHeuristic):
                     best_move_eval = None
 
                     while (
-                        move := ns.get_move_operation()
+                        move := ns.get_move()
                     ) is not None and not self.stop_on_evaluations([best_eval]):
                         worked = move.apply()
                         if worked:

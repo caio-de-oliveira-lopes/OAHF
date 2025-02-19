@@ -19,17 +19,15 @@ class RearrangeCriticalTaskNS(Neighborhood):
 
     def __init__(
         self,
-        graph_orientation: GraphOrientation,
-        stop_criteria: Optional[StopCriteria] = None,
+        graph_orientation: GraphOrientation
     ):
         """
         Initializes the RearrangeCriticalTaskNS instance.
 
         Parameters:
             graph_orientation (GraphOrientation): The direction of the task precedence graph.
-            stop_criteria (Optional[StopCriteria]): Criteria to determine when the search should stop.
         """
-        super().__init__(stop_criteria, False)
+        super().__init__(False)
         self.enumerator: Optional[Iterator[Movement]] = None
         self.solution: Optional[AlwabpSolution] = None
         self.thread_id: int = 0
@@ -139,7 +137,4 @@ class RearrangeCriticalTaskNS(Neighborhood):
         Returns:
             RearrangeCriticalTaskNS: A new instance with the same configuration as the original.
         """
-        return RearrangeCriticalTaskNS(
-            self.graph_orientation,
-            self.stop_criteria.copy() if self.stop_criteria else None,
-        )
+        return RearrangeCriticalTaskNS(self.graph_orientation)

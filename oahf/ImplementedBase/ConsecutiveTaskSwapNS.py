@@ -21,17 +21,15 @@ class ConsecutiveTaskSwapNS(Neighborhood):
 
     def __init__(
         self,
-        graph_orientation: GraphOrientation,
-        stop_criteria: Optional[StopCriteria] = None,
+        graph_orientation: GraphOrientation
     ):
         """
         Initializes the neighborhood search for consecutive task swapping.
 
         Args:
             graph_orientation (GraphOrientation): Defines the dependency relationships between tasks.
-            stop_criteria (Optional[StopCriteria]): Optional criteria to terminate the neighborhood search.
         """
-        super().__init__(stop_criteria, False)
+        super().__init__(False)
         self.enumerator: Optional[Iterator[Movement]] = (
             None  # Stores the current movement iterator.
         )
@@ -95,7 +93,7 @@ class ConsecutiveTaskSwapNS(Neighborhood):
             # Initialize the first neighborhood (TaskSwapNS) for the first swap.
             swap_neighborhood_1 = TaskSwapNS(self.graph_orientation)
             if swap_neighborhood_1.build_neighborhood(self.thread_id, solution_copy):
-                while swap_move_1 := swap_neighborhood_1.get_move_operation():
+                while swap_move_1 := swap_neighborhood_1.get_move():
 
                     # Extract and track the task pair affected by the first movement.
                     first_pair = AlwabpSolution.get_related_tasks_from_movement(
@@ -119,7 +117,7 @@ class ConsecutiveTaskSwapNS(Neighborhood):
                             self.thread_id, solution_copy
                         )
 
-                        while swap_move_2 := swap_neighborhood_2.get_move_operation():
+                        while swap_move_2 := swap_neighborhood_2.get_move():
 
                             # Extract the task pair affected by the second movement.
                             second_pair = (
@@ -164,7 +162,4 @@ class ConsecutiveTaskSwapNS(Neighborhood):
         Returns:
             ConsecutiveTaskSwapNS: A new instance with identical parameters.
         """
-        return ConsecutiveTaskSwapNS(
-            self.graph_orientation,
-            self.stop_criteria.copy() if self.stop_criteria else None,
-        )
+        return ConsecutiveTaskSwapNS(self.graph_orientation)

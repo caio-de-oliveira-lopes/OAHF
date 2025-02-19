@@ -93,10 +93,10 @@ class GRC(MetaHeuristic):
                 build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
                 if build:
                     all_moves: List[Movement] = []
-                    move = ns.get_move_operation()
+                    move = ns.get_move()
                     while move is not None:
                         all_moves.append(move)
-                        move = ns.get_move_operation()
+                        move = ns.get_move()
 
                     if not all_moves:
                         break  # no moves and no ns available

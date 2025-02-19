@@ -21,11 +21,10 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         task_ordering_rule: TaskOrderingRule,
         graph_orientation: GraphOrientation,
         greediness: float = 0,
-        priority_matrix: Optional[Dict[int, List[int]]] = None,
-        stop_criteria: Optional[StopCriteria] = None,
+        priority_matrix: Optional[Dict[int, List[int]]] = None
     ):
         """Initializes the neighborhood search for ALWABP, setting configuration parameters for worker-oriented task insertion."""
-        super().__init__(stop_criteria, False)
+        super().__init__(False)
         self.enumerator: Optional[Iterator[Movement]] = None
         self.solution: Optional[AlwabpSolution] = None
         self.thread_id: int = 0
@@ -246,6 +245,5 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             self.task_ordering_rule,
             self.graph_orientation,
             self.greediness,
-            self.priority_matrix,
-            self.stop_criteria.copy() if self.stop_criteria else None,
+            self.priority_matrix
         )

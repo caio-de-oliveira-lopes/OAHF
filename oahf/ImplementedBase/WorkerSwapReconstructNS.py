@@ -21,8 +21,7 @@ class WorkerSwapReconstructNS(Neighborhood):
     def __init__(
         self,
         reconstruction_metaheuristic: "MetaHeuristic",
-        evaluator: Evaluator,
-        stop_criteria: Optional[StopCriteria],
+        evaluator: Evaluator
     ):
         """
         Initializes the neighborhood search with dependencies and reconstruction logic.
@@ -30,9 +29,8 @@ class WorkerSwapReconstructNS(Neighborhood):
         Args:
             graph_orientation (GraphOrientation): Dependency orientation (e.g., precedence relationships).
             reconstruction_metaheuristic (MetaHeuristic): Metaheuristic for solution reconstruction.
-            stop_criteria (Optional[StopCriteria]): Optional criteria to terminate the search.
         """
-        super().__init__(stop_criteria, False)
+        super().__init__(False)
 
         from oahf.Base.MetaHeuristic import MetaHeuristic
 
@@ -44,7 +42,7 @@ class WorkerSwapReconstructNS(Neighborhood):
         )
         self.thread_id: int = 0  # Thread identifier for parallel execution.
         self.cost_function = None  # Optional cost function for evaluating movements.
-        self.worker_swap_ns = WorkerSwapNS(stop_criteria)
+        self.worker_swap_ns = WorkerSwapNS()
         self.reconstruction_metaheuristic: MetaHeuristic = reconstruction_metaheuristic
         self.evaluator = evaluator
 
@@ -89,7 +87,7 @@ class WorkerSwapReconstructNS(Neighborhood):
         Yields:
             Movement: A composed movement representing a worker swap and reconstruction.
         """
-        if self.solution and self.stop_criteria:
+        if self.solution and self.reconstruction_metaheuristic.stop_criteria:
             # Generate removal movements for cleaning.
             cleaning_moves = [
                 AlwabpRemovalMovement(task, None, station, self.solution)
@@ -104,7 +102,7 @@ class WorkerSwapReconstructNS(Neighborhood):
             # Apply the cleaning movement to prepare the solution.
             if cleaning_movement_copy.apply():
                 # Iterate over all possible worker swap movements.
-                while workers_swap_move := self.worker_swap_ns.get_move_operation():
+                while workers_swap_move := self.worker_swap_ns.get_move():
                     workers_swap_move_copy = workers_swap_move.copy(solution_copy)
                     if workers_swap_move_copy.apply():
 
@@ -126,7 +124,7 @@ class WorkerSwapReconstructNS(Neighborhood):
                             solution_copy, restore_assignment_moves
                         )
 
-                        while not self.stop_criteria.stop_on_evaluations([curr_eval]):
+                        while not self.reconstruction_metaheuristic.stop_criteria.stop_on_evaluations([curr_eval]):
                             dgo = solution_copy.default_graph_orientation
 
                             reconstructed_solution = (
@@ -205,6 +203,5 @@ class WorkerSwapReconstructNS(Neighborhood):
         """
         return WorkerSwapReconstructNS(
             self.reconstruction_metaheuristic,
-            self.evaluator,
-            self.stop_criteria.copy() if self.stop_criteria else None,
+            self.evaluator
         )

@@ -1,28 +1,22 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from oahf.Base.Entity import Entity
 from oahf.Base.Movement import Movement
 from oahf.Base.Solution import Solution
-from oahf.Base.StopCriteria import StopCriteria
-from oahf.Logger.LogManager import LogManager
 
 
 class Neighborhood(Entity, ABC):
     def __init__(
         self,
-        stop_criteria: Optional["StopCriteria"] = None,
         is_perturbation: bool = False,
     ) -> None:
         """
         Initializes the Neighborhood object with the specified stop criteria and perturbation flag.
 
         Args:
-            stop_criteria (StopCriteria): The stopping criteria for the neighborhood operations.
             is_perturbation (bool): A flag indicating if the neighborhood is a perturbation. Default is False.
         """
         super().__init__()
-        self.stop_criteria: Optional["StopCriteria"] = stop_criteria
         self.is_perturbation: bool = is_perturbation
         self._allow_infeasible_movements: bool = False
 
@@ -76,33 +70,3 @@ class Neighborhood(Entity, ABC):
     def clear_related_keys(self) -> None:
         """Clears related keys. Can be overridden by subclasses."""
         pass
-
-    def get_move_operation(self) -> Optional["Movement"]:
-        """
-        Gets the movement operation for the neighborhood.
-
-        Returns:
-            Movement: The movement if available; None otherwise.
-        """
-        if self.stop():
-            return None
-
-        move: Optional["Movement"] = None
-
-        try:
-            move = self.get_move()
-        except Exception as ex:
-            LogManager.invalid_action(
-                "get movement, neighborhood", type(self).__name__, ex
-            )
-            raise
-
-        return move
-
-    def stop(self) -> bool:
-        """Checks if the stopping criteria have been met."""
-        return self.stop_criteria is not None and self.stop_criteria.stop()
-
-    def set_stop_criteria(self, stop: Optional["StopCriteria"]) -> None:
-        """Sets the stopping criteria for the neighborhood."""
-        self.stop_criteria = stop
