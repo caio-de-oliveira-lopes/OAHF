@@ -167,8 +167,8 @@ class AlwabpSolution(Solution):
             for graph_orientation in EnumUtil.get_values(GraphOrientation)
         }
         # Map each worker to the tasks they can execute.
-        self.tasks_executed_by_worker: Dict[int, Tuple[int, ...]] = {
-            worker: tuple() for worker in self.workers
+        self.tasks_executed_by_worker: Dict[int, Set[int]] = {
+            worker: set() for worker in self.workers
         }
         self._cycle_time_limit: Optional[float] = None
 
@@ -902,7 +902,7 @@ class AlwabpSolution(Solution):
                     all_precedences = self._calculate_all_precedences(task, graph_orientation)
                     self.all_task_precedences[graph_orientation][task] = all_precedences
 
-    def __get_tasks_executed_by_worker(self, worker: int) -> Tuple[int, ...]:
+    def __get_tasks_executed_by_worker(self, worker: int) -> Set[int]:
         """
         Retrieves the list of tasks that a specific worker can execute.
 
@@ -912,7 +912,7 @@ class AlwabpSolution(Solution):
             worker (int): The worker identifier.
         
         Returns:
-            Tuple[int, ...]: A tuple of task identifiers executable by the worker.
+            Set[int]: A set of task identifiers executable by the worker.
         """
         if worker not in self.workers:
             raise ValueError(f"Worker ID {worker} is invalid.")
@@ -922,7 +922,7 @@ class AlwabpSolution(Solution):
             if execution_times[worker - 1] != float("inf"):
                 tasks_executed.append(task)
 
-        return tuple(tasks_executed)
+        return set(tasks_executed)
 
     def order_solution_tasks(self) -> None:
         """
@@ -1205,24 +1205,36 @@ class AlwabpSolution(Solution):
         Returns:
             bool: True if the task can be assigned, False otherwise.
         """
-        worker = worker or self.station_worker_assignment[station]
+        # If worker is not provided then use station current worker
+        if worker is None:
+            worker = self.station_worker_assignment[station]
 
-        if worker and task not in self.tasks_executed_by_worker[worker]:
+        # Check if the worker can execute the task
+        # It is important that self.tasks_executed_by_worker[worker] is a set to achieve constant time membership checking
+        if worker is not None and task not in self.tasks_executed_by_worker[worker]:
             return False
 
-        if (worker and self.cycle_time_limit and
-            (self._station_cycle_time_memo[station] + self.get_task_execution_time(task, worker)) > self.cycle_time_limit):
-            return False
+        # Check if the cycle time limit is respected
+        if worker is not None and self.cycle_time_limit:
+            task_time = self.get_task_execution_time(task, worker)
+            station_time = self._station_cycle_time_memo[station]
+            if station_time + task_time > self.cycle_time_limit:
+                return False
 
-        for preceding_task in self.all_task_precedences[self.default_graph_orientation][task]:
+        # Use local variables to store precedence data to reduce repeated dictionary accesses
+        default_orientation = self.default_graph_orientation
+        task_precedences = self.all_task_precedences[default_orientation].get(task, [])
+        for preceding_task in task_precedences:
             another_station = self.find_station_for_task(preceding_task)
             if not another_station or another_station > station:
                 return False
 
-        reversed_graph = GraphOrientation.reverse(self.default_graph_orientation)
-        for sucessor_task in self.all_task_precedences[reversed_graph][task]:
-            another_station = self.find_station_for_task(sucessor_task)
-            if another_station and another_station < station:
+        # Calculate reversed graph only once
+        reversed_orientation = GraphOrientation.reverse(default_orientation)
+        task_successors = self.all_task_precedences[reversed_orientation].get(task, [])
+        for successor_task in task_successors:
+            another_station = self.find_station_for_task(successor_task)
+            if another_station is not None and another_station < station:
                 return False
 
         return True
