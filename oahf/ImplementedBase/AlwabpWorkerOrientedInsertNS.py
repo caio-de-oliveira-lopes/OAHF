@@ -1,10 +1,10 @@
-from collections import deque
+from collections import defaultdict
+import bisect
 from typing import Dict, Iterator, List, Optional, Tuple
 
 from oahf.Base.Movement import Movement
 from oahf.Base.MultipleMovement import MultipleMovement
 from oahf.Base.Neighborhood import Neighborhood
-from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.ThreadManager import ThreadManager
 from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
 from oahf.ImplementedBase.AlwabpSolution import (
@@ -81,163 +81,128 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         In case multiple movements have the same cost, the movement with fewer tasks will be preferred as a tiebreaker.
         After sorting, cost is reapplied based on the position in the sorted list.
         """
-        if self.solution and self.station:
-            worker_moves: Dict[int, MultipleMovement] = {}
-
-            # Neighborhood will prioritize keeping workers at their respective stations
-            worker_assigned_to_station = self.solution.station_worker_assignment[
-                self.station
-            ]
-            worker_already_assigned = worker_assigned_to_station is not None
-            if not worker_already_assigned:
-                unassigned_workers = self.solution.unassigned_workers
-            else:
-                unassigned_workers = [worker_assigned_to_station]
-
-            solution_copy = self.solution.copy()
-            for unassigned_worker in unassigned_workers:
-                
-                worker_related_values = tuple(
-                    self.task_ordering_rule_dict[task][unassigned_worker - 1] 
-                    for task in self.task_ordering_rule_dict
-                )
-                c_min = min(worker_related_values)
-                c_max = max(worker_related_values)
-                self.threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
-
-                ordered_unassigned_tasks = sorted(
-                    self.solution.unassigned_tasks, 
-                    key=lambda task: worker_related_values[task - 1]
-                )
-                
-                lcr = [
-                    task
-                    for task in ordered_unassigned_tasks
-                    if worker_related_values[task - 1] <= self.threshold_value
-                ]
-
-                # Set up data structures for incremental update
-                lcr_set = set(lcr)  # For quick membership tests and removals
-                lcr_queue = deque(lcr)  # To preserve original ordering for filtering
-                ordered_chosen_tasks = (
-                    []
-                )  # Will hold the tasks in the order they are chosen
-
-                # Precompute the immediate precedences for the current orientation
-                immediate_precedences = self.solution.immediate_task_precedences[
-                    self.graph_orientation
-                ]
-
-                # Build a mapping of each task to the number of its unsatisfied prerequisites.
-                # We count a prerequisite as "unsatisfied" if it is still in the solution unassigned tasks.
-                unsatisfied_counts = {}
-                for task in lcr_set:
-                    prerequisites = immediate_precedences.get(task, [])
-                    unsatisfied_counts[task] = sum(
-                        1 for p in prerequisites if p in self.solution.unassigned_tasks
-                    )
-
-                # Build a reverse mapping: for each task, which tasks (from lcr_set) depend on it.
-                dependents = {}
-                for task in lcr_set:
-                    for p in immediate_precedences.get(task, []):
-                        # Only consider prerequisites that are also in lcr_set
-                        if p in lcr_set:
-                            dependents.setdefault(p, set()).add(task)
-
-                # Initialize the set of available tasks: tasks whose unsatisfied count is zero.
-                available_tasks = {
-                    task for task, count in unsatisfied_counts.items() if count == 0
-                }
-
-                # 3. Incrementally select tasks using the available_tasks set
-                while available_tasks:
-                    # Filter lcr_queue to maintain the original order among tasks that are available.
-                    filtered_lcr = [task for task in lcr_queue if task in available_tasks]
-                    if not filtered_lcr:
-                        break
-
-                    # Select a task randomly (using your ThreadManager) among the available ones.
-                    task_index = ThreadManager.get_next(
-                        self.thread_id, 0, len(filtered_lcr) - 1
-                    )
-                    chosen_task = filtered_lcr[task_index]
-                    ordered_chosen_tasks.append(chosen_task)
-
-                    # Remove the chosen task from our data structures.
-                    available_tasks.remove(chosen_task)
-                    lcr_set.remove(chosen_task)
-                    try:
-                        lcr_queue.remove(chosen_task)
-                    except ValueError:
-                        pass  # Task already removed
-
-                    # For every task that depends on the chosen task, decrement its unsatisfied count.
-                    # If a count reaches zero, it becomes available.
-                    for dependent in dependents.get(chosen_task, set()):
-                        if dependent in lcr_set:
-                            unsatisfied_counts[dependent] -= 1
-                            if unsatisfied_counts[dependent] == 0:
-                                available_tasks.add(dependent)
-
-                # 4. If no tasks were chosen, return an empty iterator.
-                if not ordered_chosen_tasks:
-                    continue
-
-                moves_executed_on_copy = []
-
-                if not worker_already_assigned:
-                    worker_move = AlwabpInsertionMovement(
-                        None, unassigned_worker, self.station, solution_copy
-                    )
-                    if worker_move.apply():
-                        moves_executed_on_copy.append(worker_move)
-
-                for task in ordered_chosen_tasks:
-                    if solution_copy.can_task_be_assigned_to(
-                        task, self.station, unassigned_worker
-                    ):
-                        new_move = AlwabpInsertionMovement(
-                            task, unassigned_worker, self.station, solution_copy
-                        )
-                        if new_move.apply():
-                            moves_executed_on_copy.append(new_move)
-
-                construction_composition = MultipleMovement(
-                    solution_copy, moves_executed_on_copy
-                )
-
-                if moves_executed_on_copy:
-                    move = construction_composition.copy(self.solution)
-                    worker_moves[unassigned_worker] = move
-
-                    # Calculate cost for the movement
-                    if self.cost_function and not worker_already_assigned:
-                        cost = self.cost_function(
-                            unassigned_worker, solution_copy.unassigned_tasks
-                        )
-                        move.override_cost = (
-                            move.override_cost + float(cost)
-                            if move.override_cost
-                            else float(cost)
-                        )
-
-                construction_composition.unapply()
-
-            # Apply tiebreaker by preferring movements with more tasks when costs are equal
-            sorted_moves = sorted(
-                worker_moves.values(),
-                key=lambda mv: (mv.override_cost, -len(mv.movements)),
-            )
-
-            # Reapply cost based on sorted order (list position + 1)
-            for idx, movement in enumerate(sorted_moves, start=1):
-                movement.override_cost = (
-                    idx  # Change cost to consider the tiebreakers applied
-                )
-                yield movement
-        else:
+        if not (self.solution and self.station):
             LogManager.invalid_action("generate movements", type(self).__name__)
+            return
+
+        worker_moves = {}
+        solution = self.solution
+        station = self.station
+        worker_assigned = solution.station_worker_assignment[station]
+        worker_already_assigned = worker_assigned is not None
+        if not worker_already_assigned:
+            unassigned_workers = solution.unassigned_workers
+        else:
+            unassigned_workers = [worker_assigned]
+
+        solution_unassigned_tasks = solution.unassigned_tasks
+        # Precompute set for unassigned tasks for faster membership tests
+        unassigned_tasks_set = set(solution_unassigned_tasks)
+        graph_orient = self.graph_orientation
+        immediate_precedences = solution.immediate_task_precedences[graph_orient]
+        solution_copy = solution.copy()
+
+        for worker in unassigned_workers:
+            # Compute worker related values once for the current worker
+            task_order_rule = self.task_ordering_rule_dict
+            worker_related_values = tuple(task_order_rule[task][worker - 1] for task in task_order_rule)
+            c_min = min(worker_related_values)
+            c_max = max(worker_related_values)
+            threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
+            self.threshold_value = threshold_value
+
+            # Filter unassigned tasks first then sort; this should reduce sorting overhead
+            filtered_tasks = [t for t in solution_unassigned_tasks if worker_related_values[t - 1] <= threshold_value]
+            ordered_tasks = sorted(filtered_tasks, key=lambda t: worker_related_values[t - 1])
+            lcr = ordered_tasks
+
+            # Data structures for incremental update
+            lcr_set = set(lcr)
+            lcr_list = list(lcr)  # Preserve original ordering
+            ordered_chosen_tasks = []
+
+            # Compute unsatisfied prerequisite counts using unassigned_tasks_set
+            unsatisfied_counts = {
+                t: sum(1 for p in immediate_precedences.get(t, []) if p in unassigned_tasks_set)
+                for t in lcr_set
+            }
+
+            # Build reverse mapping (dependents) using defaultdict for tasks in lcr_set
+            dependents = defaultdict(set)
+            for t in lcr_set:
+                for p in immediate_precedences.get(t, []):
+                    if p in lcr_set:
+                        dependents[p].add(t)
+
+            # Initialize available tasks as those with zero unsatisfied prerequisites
+            available_tasks = {t for t, cnt in unsatisfied_counts.items() if cnt == 0}
+
+            # Precompute index mapping to preserve original ordering
+            index_map = {t: i for i, t in enumerate(lcr_list)}
+            # Maintain parallel lists for available tasks and their positions to avoid recomputing order
+            available_in_order = []
+            available_positions = []
+            for t in lcr_list:
+                if t in available_tasks:
+                    pos = index_map[t]
+                    available_in_order.append(t)
+                    available_positions.append(pos)
+
+            # Incrementally select tasks while available tasks exist
+            while available_tasks:
+                if not available_in_order:
+                    break
+
+                # Select a task randomly among the available ones using ThreadManager
+                task_index = ThreadManager.get_next(self.thread_id, 0, len(available_in_order) - 1)
+                chosen_task = available_in_order.pop(task_index)
+                available_positions.pop(task_index)
+                ordered_chosen_tasks.append(chosen_task)
+                available_tasks.remove(chosen_task)
+                lcr_set.remove(chosen_task)
+
+                # For each task that depends on the chosen task, update its unsatisfied count and add if available
+                for dependent in dependents.get(chosen_task, set()):
+                    if dependent in lcr_set:
+                        unsatisfied_counts[dependent] -= 1
+                        if unsatisfied_counts[dependent] == 0:
+                            available_tasks.add(dependent)
+                            pos = index_map[dependent]
+                            # Insert dependent into available_in_order preserving original order using available_positions
+                            insert_index = bisect.bisect_left(available_positions, pos)
+                            available_positions.insert(insert_index, pos)
+                            available_in_order.insert(insert_index, dependent)
+
+            if not ordered_chosen_tasks:
+                continue
+
+            moves_executed = []
+            if not worker_already_assigned:
+                worker_move = AlwabpInsertionMovement(None, worker, station, solution_copy)
+                if worker_move.apply():
+                    moves_executed.append(worker_move)
+
+            for t in ordered_chosen_tasks:
+                if solution_copy.can_task_be_assigned_to(t, station, worker):
+                    new_move = AlwabpInsertionMovement(t, worker, station, solution_copy)
+                    if new_move.apply():
+                        moves_executed.append(new_move)
+
+            construction = MultipleMovement(solution_copy, moves_executed)
+            if moves_executed:
+                move = construction.copy(solution)
+                worker_moves[worker] = move
+                if self.cost_function and not worker_already_assigned:
+                    cost = self.cost_function(worker, solution_copy.unassigned_tasks)
+                    move.override_cost = (move.override_cost + float(cost)) if move.override_cost else float(cost)
+
+            construction.unapply()
+
+        sorted_moves = sorted(worker_moves.values(),
+                              key=lambda mv: (mv.override_cost, -len(mv.movements)))
+        for idx, movement in enumerate(sorted_moves, start=1):
+            movement.override_cost = idx
+            yield movement
 
     def copy(self) -> "AlwabpWorkerOrientedInsertNS":
         """Creates a copy of the current neighborhood search with the same settings."""
