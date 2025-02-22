@@ -1,5 +1,5 @@
-from collections import defaultdict
 import bisect
+from collections import defaultdict
 from typing import Dict, Iterator, List, Optional, Tuple
 
 from oahf.Base.Movement import Movement
@@ -21,7 +21,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         task_ordering_rule: TaskOrderingRule,
         graph_orientation: GraphOrientation,
         greediness: float = 0,
-        priority_matrix: Optional[Dict[int, List[int]]] = None
+        priority_matrix: Optional[Dict[int, List[int]]] = None,
     ):
         """Initializes the neighborhood search for ALWABP, setting configuration parameters for worker-oriented task insertion."""
         super().__init__(False)
@@ -35,7 +35,14 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.greediness: float = greediness
         self.priority_matrix = priority_matrix
 
-    def build_neighborhood(self, thread_id: int, solution: AlwabpSolution, task_ordering_rule_dict: Optional[Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]]] = None) -> bool:
+    def build_neighborhood(
+        self,
+        thread_id: int,
+        solution: AlwabpSolution,
+        task_ordering_rule_dict: Optional[
+            Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]]
+        ] = None,
+    ) -> bool:
         """Prepares the neighborhood search by initializing the solution and computing initial station assignments."""
 
         solution.default_graph_orientation = self.graph_orientation
@@ -49,14 +56,20 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
         self.cost_function = solution.get_worker_min_rlb
         self.thread_id = thread_id
-           
+
         if rebuild or task_ordering_rule_dict:
-            self.task_ordering_rule_dict = task_ordering_rule_dict[self.task_ordering_rule] if task_ordering_rule_dict else self.compute_tasks_priority()[self.task_ordering_rule]
+            self.task_ordering_rule_dict = (
+                task_ordering_rule_dict[self.task_ordering_rule]
+                if task_ordering_rule_dict
+                else self.compute_tasks_priority()[self.task_ordering_rule]
+            )
 
         self.enumerator = self.all_moves()
         return True
 
-    def compute_tasks_priority(self) -> Dict[TaskOrderingRule, Dict[int, tuple[float, ...]]]:
+    def compute_tasks_priority(
+        self,
+    ) -> Dict[TaskOrderingRule, Dict[int, tuple[float, ...]]]:
         """Computes task priority based on the selected weight type, then updates with precedence values."""
         if not self.solution:
             raise ValueError(
@@ -99,21 +112,31 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         # Precompute set for unassigned tasks for faster membership tests
         unassigned_tasks_set = set(solution_unassigned_tasks)
         graph_orient = self.graph_orientation
+        if self.graph_orientation == GraphOrientation.BACKWARD:
+            print("a")
         immediate_precedences = solution.immediate_task_precedences[graph_orient]
         solution_copy = solution.copy()
 
         for worker in unassigned_workers:
             # Compute worker related values once for the current worker
             task_order_rule = self.task_ordering_rule_dict
-            worker_related_values = tuple(task_order_rule[task][worker - 1] for task in task_order_rule)
+            worker_related_values = tuple(
+                task_order_rule[task][worker - 1] for task in task_order_rule
+            )
             c_min = min(worker_related_values)
             c_max = max(worker_related_values)
             threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
             self.threshold_value = threshold_value
 
             # Filter unassigned tasks first then sort; this should reduce sorting overhead
-            filtered_tasks = [t for t in solution_unassigned_tasks if worker_related_values[t - 1] <= threshold_value]
-            ordered_tasks = sorted(filtered_tasks, key=lambda t: worker_related_values[t - 1])
+            filtered_tasks = [
+                t
+                for t in solution_unassigned_tasks
+                if worker_related_values[t - 1] <= threshold_value
+            ]
+            ordered_tasks = sorted(
+                filtered_tasks, key=lambda t: worker_related_values[t - 1]
+            )
             lcr = ordered_tasks
 
             # Data structures for incremental update
@@ -123,7 +146,11 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
             # Compute unsatisfied prerequisite counts using unassigned_tasks_set
             unsatisfied_counts = {
-                t: sum(1 for p in immediate_precedences.get(t, []) if p in unassigned_tasks_set)
+                t: sum(
+                    1
+                    for p in immediate_precedences.get(t, [])
+                    if p in unassigned_tasks_set
+                )
                 for t in lcr_set
             }
 
@@ -154,9 +181,11 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                     break
 
                 # Select a task randomly among the available ones using ThreadManager
-                task_index = ThreadManager.get_next(self.thread_id, 0, len(available_in_order) - 1)
-                chosen_task = available_in_order.pop(task_index)
-                available_positions.pop(task_index)
+                # task_index = ThreadManager.get_next(self.thread_id, 0, len(available_in_order) - 1)
+
+                # Select the first element of the list
+                chosen_task = available_in_order.pop(0)
+                available_positions.pop(0)
                 ordered_chosen_tasks.append(chosen_task)
                 available_tasks.remove(chosen_task)
                 lcr_set.remove(chosen_task)
@@ -178,13 +207,17 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
             moves_executed = []
             if not worker_already_assigned:
-                worker_move = AlwabpInsertionMovement(None, worker, station, solution_copy)
+                worker_move = AlwabpInsertionMovement(
+                    None, worker, station, solution_copy
+                )
                 if worker_move.apply():
                     moves_executed.append(worker_move)
 
             for t in ordered_chosen_tasks:
                 if solution_copy.can_task_be_assigned_to(t, station, worker):
-                    new_move = AlwabpInsertionMovement(t, worker, station, solution_copy)
+                    new_move = AlwabpInsertionMovement(
+                        t, worker, station, solution_copy
+                    )
                     if new_move.apply():
                         moves_executed.append(new_move)
 
@@ -194,12 +227,19 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                 worker_moves[worker] = move
                 if self.cost_function and not worker_already_assigned:
                     cost = self.cost_function(worker, solution_copy.unassigned_tasks)
-                    move.override_cost = (move.override_cost + float(cost)) if move.override_cost else float(cost)
+                    move.override_cost = (
+                        (move.override_cost + float(cost))
+                        if move.override_cost
+                        else float(cost)
+                    )
 
             construction.unapply()
 
-        sorted_moves = sorted(worker_moves.values(),
-                              key=lambda mv: (mv.override_cost, -len(mv.movements)))
+        sorted_moves = sorted(
+            worker_moves.values(), key=lambda mv: (mv.override_cost, -len(mv.movements))
+        )
+        print("a")
+
         for idx, movement in enumerate(sorted_moves, start=1):
             movement.override_cost = idx
             yield movement
@@ -210,5 +250,5 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             self.task_ordering_rule,
             self.graph_orientation,
             self.greediness,
-            self.priority_matrix
+            self.priority_matrix,
         )
