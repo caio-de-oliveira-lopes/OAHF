@@ -64,6 +64,12 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                 else self.compute_tasks_priority()[self.task_ordering_rule]
             )
 
+            self.first_tiebreaker = (
+                task_ordering_rule_dict[TaskOrderingRule.MAX_IF]
+                if task_ordering_rule_dict
+                else self.compute_tasks_priority()[TaskOrderingRule.MAX_IF]
+            )
+
         self.enumerator = self.all_moves()
         return True
 
@@ -115,13 +121,17 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         if self.graph_orientation == GraphOrientation.BACKWARD:
             print("a")
         immediate_precedences = solution.immediate_task_precedences[graph_orient]
+        task_order_rule = self.task_ordering_rule_dict
+        first_tiebreaker = self.first_tiebreaker
         solution_copy = solution.copy()
 
         for worker in unassigned_workers:
             # Compute worker related values once for the current worker
-            task_order_rule = self.task_ordering_rule_dict
             worker_related_values = tuple(
                 task_order_rule[task][worker - 1] for task in task_order_rule
+            )
+            tiebreaker_rule = tuple(
+                first_tiebreaker[task][worker - 1] for task in task_order_rule
             )
             c_min = min(worker_related_values)
             c_max = max(worker_related_values)
@@ -135,7 +145,17 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                 if worker_related_values[t - 1] <= threshold_value
             ]
             ordered_tasks = sorted(
-                filtered_tasks, key=lambda t: worker_related_values[t - 1]
+                filtered_tasks,
+                key=lambda t: (
+                    worker_related_values[t - 1],  # primary factor
+                    tiebreaker_rule[
+                        t - 1
+                    ],  # first tiebreaker (used if primary factor is equal)
+                    solution_copy.get_task_execution_time(
+                        t, worker
+                    ),  # second tiebreaker
+                    t,  # fourth factor (the task itself)
+                ),
             )
             lcr = ordered_tasks
 
@@ -184,8 +204,9 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                 # task_index = ThreadManager.get_next(self.thread_id, 0, len(available_in_order) - 1)
 
                 # Select the first element of the list
-                chosen_task = available_in_order.pop(0)
-                available_positions.pop(0)
+                task_index = 0
+                chosen_task = available_in_order.pop(task_index)
+                available_positions.pop(task_index)
                 ordered_chosen_tasks.append(chosen_task)
                 available_tasks.remove(chosen_task)
                 lcr_set.remove(chosen_task)

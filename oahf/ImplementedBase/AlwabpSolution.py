@@ -167,9 +167,12 @@ class AlwabpSolution(Solution):
         }
 
         # Initialize task ordering rules for various criteria.
-        self.task_ordering_rules: Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]] = {  # type: ignore
-            weight_type: {task: (-1.0,) * number_of_workers for task in self.tasks}
-            for weight_type in EnumUtil.get_values(TaskOrderingRule)
+        self.task_ordering_rules: Dict[GraphOrientation, Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]]] = {  # type: ignore
+            graph_orientation: {
+                weight_type: {task: (-1.0,) * number_of_workers for task in self.tasks}
+                for weight_type in EnumUtil.get_values(TaskOrderingRule)
+            }
+            for graph_orientation in EnumUtil.get_values(GraphOrientation)
         }
 
         # Initialize cycle time memoization per station.
@@ -292,6 +295,8 @@ class AlwabpSolution(Solution):
             self.cycle_time_limit = self.cycle_time_limit + 1
             self.reset()
             return False
+        else:
+            self.narrow_bounds()
         return super().validate_aspects()
 
     def narrow_bounds(self) -> None:
@@ -330,7 +335,8 @@ class AlwabpSolution(Solution):
         self._update_bounded_task_execution_times(499)
         self._compute_best_workers_for_tasks()
         self._compute_workers_ranks()
-        self._calculate_task_ordering_rules()
+        self._calculate_task_ordering_rules(GraphOrientation.BACKWARD)
+        self._calculate_task_ordering_rules(GraphOrientation.FORWARD)
 
     def _compute_workers_ranks(
         self,
@@ -1783,13 +1789,11 @@ class AlwabpSolution(Solution):
             return self.decreasing_ratio_of_number_immediate_task_followers_over_time
         elif task_ordering_rule == TaskOrderingRule.MIN_RANK:
             return self.get_rank
-        else:
-            raise ValueError(
-                "Task Ordering Rule must be one of the listed possibilities."
-            )
 
     def _calculate_task_ordering_rules(
-        self, priority_matrix: Optional[Dict[int, List[int]]] = None
+        self,
+        graph_orientation: GraphOrientation,
+        priority_matrix: Optional[Dict[int, List[int]]] = None,
     ) -> Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]]:
         """
         Calculates and stores task ordering weights for each task based on various criteria.
@@ -1799,12 +1803,14 @@ class AlwabpSolution(Solution):
 
         Args:
             priority_matrix (Optional[Dict[int, List[int]]]): Custom data for calculating ordering weights.
+            graph_orientation (GraphOrientation): GraphOrientation to calculate the ordering weights.
 
         Returns:
             Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]]: Updated ordering rules for all tasks.
         """
         if not priority_matrix:
-            result_storage = self.task_ordering_rules
+            result_storage = self.task_ordering_rules[graph_orientation]
+            self.default_graph_orientation = graph_orientation
         else:
             result_storage: Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]] = {  # type: ignore
                 weight_type: {
@@ -1845,7 +1851,9 @@ class AlwabpSolution(Solution):
         Returns:
             float: The ordering weight value.
         """
-        return self.task_ordering_rules[variation][task][worker]
+        return self.task_ordering_rules[self.default_graph_orientation][variation][
+            task
+        ][worker]
 
     def get_task_ordering_rules_dict(
         self, priority_matrix: Optional[Dict[int, List[int]]] = None
@@ -1862,9 +1870,11 @@ class AlwabpSolution(Solution):
             Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]]: The task ordering rules.
         """
         if not priority_matrix:
-            return self.task_ordering_rules
+            return self.task_ordering_rules[self.default_graph_orientation]
         else:
-            return self._calculate_task_ordering_rules(priority_matrix)
+            return self._calculate_task_ordering_rules(
+                self.default_graph_orientation, priority_matrix
+            )
 
     def get_min_restricted_lower_bound(self) -> List[int]:
         """
