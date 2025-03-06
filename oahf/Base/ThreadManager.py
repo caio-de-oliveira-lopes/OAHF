@@ -26,9 +26,11 @@ class ThreadManager:
         return int((cls._watch - time.time()) * 1000)
 
     @classmethod
-    def get_next_double(cls, thread_id: int) -> float:
-        """Gets the next random double for the specified thread ID."""
-        return cls._random_keys[thread_id].random()
+    def get_next_float(
+        cls, thread_id: int, min_value: float, max_value: float
+    ) -> float:
+        """Gets the next random float between min_value and max_value for the specified thread ID."""
+        return cls._random_keys[thread_id].uniform(min_value, max_value)
 
     @classmethod
     def get_next(cls, thread_id: int, min_value: int, max_value: int) -> int:

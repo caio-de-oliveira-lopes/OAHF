@@ -13,6 +13,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
 
+from oahf.Base import ThreadManager
 from oahf.Base.Movement import Movement
 from oahf.Base.MultipleMovement import MultipleMovement
 from oahf.Base.Solution import Solution
@@ -1929,7 +1930,7 @@ class AlwabpSolution(Solution):
                 self.min_task_execution_time(task, workers=unassigned_workers)
             )
 
-        return amount_of_time // (len(unassigned_workers) or 1)
+        return round(amount_of_time / (len(unassigned_workers) or 1))
 
     def get_first_unassigned_station(self) -> Optional[int]:
         """
@@ -2279,3 +2280,95 @@ class AlwabpSolution(Solution):
                 )
 
         return MultipleMovement(self, moves)
+
+    @classmethod
+    def generate_random_keys(
+        cls, thread_id: int, example_sol: "AlwabpSolution", population_size: int
+    ) -> List[List[float]]:
+        """
+        Generates a population of random keys for task assignment.
+
+        Args:
+            thread_id (int): Thread identifier for random number generation.
+            example_sol (AlwabpSolution): Problem instance with tasks and workers.
+            population_size (int): Number of individuals in the population.
+
+        Returns:
+            List[List[float]]: A population of randomly generated keys.
+        """
+        number_of_tasks = example_sol._number_of_tasks
+        number_of_workers = example_sol._number_of_workers
+
+        # Generate population where each individual is a list of random float values
+        return [
+            [
+                float(ThreadManager.get_next_float(thread_id, 0.0, 1.0))
+                for _ in range(number_of_tasks * number_of_workers)
+            ]
+            for _ in range(population_size)
+        ]
+
+    def from_random_key(
+        self, random_keys: List[float], evaluator: "AlwabpEvaluator"
+    ) -> "AlwabpSolution":
+        new_solution = self.copy()
+        new_solution.reset()
+
+        number_of_tasks = new_solution._number_of_tasks
+        number_of_workers = new_solution._number_of_workers
+
+        from oahf.ImplementedBase.AlwabpEvaluator import AlwabpEvaluator
+
+        if isinstance(evaluator, AlwabpEvaluator):
+            return new_solution
+
+        from oahf.ImplementedBase.AlwabpWorkerOrientedInsertNS import (
+            AlwabpWorkerOrientedInsertNS,
+        )
+        from oahf.ImplementedBase.BetterAcceptanceCriteria import (
+            BetterAcceptanceCriteria,
+        )
+        from oahf.ImplementedBase.ListSelection import ListSelection
+        from oahf.ImplementedBase.WorkersUnassignedStopCriteria import (
+            WorkersUnassignedStopCriteria,
+        )
+        from oahf.MetaHeuristics.GRC import GRC
+
+        def break_into_task_ordering_rule_dict(
+            random_keys, number_of_tasks, number_of_workers
+        ) -> Dict[int, Tuple[float, ...]]:
+            # Validate the list length
+            if len(random_keys) != number_of_tasks * number_of_workers:
+                raise ValueError(
+                    "Length of random_keys must equal number_of_tasks * number_of_workers"
+                )
+
+            # Build the dictionary by slicing the list into chunks of size number_of_workers
+            task_dict: Dict[int, Tuple[float, ...]] = {
+                task: tuple(
+                    random_keys[
+                        (task - 1) * number_of_workers : task * number_of_workers
+                    ]
+                )
+                for task in range(1, number_of_tasks + 1)
+            }
+            return task_dict
+
+        greediness = 1
+        stop_criteria = WorkersUnassignedStopCriteria(0)
+        acceptance_criteria = BetterAcceptanceCriteria()
+        neighborhood = AlwabpWorkerOrientedInsertNS(
+            TaskOrderingRule.MAX_IF, GraphOrientation.FORWARD, 0
+        )
+
+        task_ordering_rule_dict = break_into_task_ordering_rule_dict(
+            random_keys, number_of_tasks, number_of_workers
+        )
+        neighborhood.set_task_ordering_rule_dict(task_ordering_rule_dict)
+
+        ns = ListSelection(False, neighborhood)
+
+        grc = GRC(0, greediness, stop_criteria, evaluator, acceptance_criteria, ns)
+        constructed_sol = grc.run(new_solution)
+
+        return constructed_sol  # type: ignore

@@ -21,7 +21,6 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         task_ordering_rule: TaskOrderingRule,
         graph_orientation: GraphOrientation,
         greediness: float = 0,
-        priority_matrix: Optional[Dict[int, List[int]]] = None,
     ):
         """Initializes the neighborhood search for ALWABP, setting configuration parameters for worker-oriented task insertion."""
         super().__init__(False)
@@ -33,15 +32,17 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.graph_orientation = graph_orientation
         self.station: Optional[int] = None
         self.greediness: float = greediness
-        self.priority_matrix = priority_matrix
+        self.task_ordering_rule_dict: Optional[Dict[int, Tuple[float, ...]]] = None
+
+    def set_task_ordering_rule_dict(
+        self, task_ordering_rule_dict: Dict[int, Tuple[float, ...]]
+    ) -> None:
+        self.task_ordering_rule_dict = task_ordering_rule_dict
 
     def build_neighborhood(
         self,
         thread_id: int,
         solution: AlwabpSolution,
-        task_ordering_rule_dict: Optional[
-            Dict[TaskOrderingRule, Dict[int, Tuple[float, ...]]]
-        ] = None,
     ) -> bool:
         """Prepares the neighborhood search by initializing the solution and computing initial station assignments."""
 
@@ -57,18 +58,13 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         self.cost_function = solution.get_worker_min_rlb
         self.thread_id = thread_id
 
-        if rebuild or task_ordering_rule_dict:
-            self.task_ordering_rule_dict = (
-                task_ordering_rule_dict[self.task_ordering_rule]
-                if task_ordering_rule_dict
-                else self.compute_tasks_priority()[self.task_ordering_rule]
-            )
-
-            self.first_tiebreaker = (
-                task_ordering_rule_dict[TaskOrderingRule.MAX_IF]
-                if task_ordering_rule_dict
-                else self.compute_tasks_priority()[TaskOrderingRule.MAX_IF]
-            )
+        if rebuild:
+            if not self.task_ordering_rule_dict:
+                priorities = self.compute_tasks_priority()
+                self.task_ordering_rule_dict = priorities[self.task_ordering_rule]
+                self.first_tiebreaker = priorities[TaskOrderingRule.MAX_IF]
+            else:
+                self.first_tiebreaker = self.task_ordering_rule_dict
 
         self.enumerator = self.all_moves()
         return True
@@ -82,7 +78,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                 "No solution object was associated with this neighborhood search."
             )
 
-        return self.solution.get_task_ordering_rules_dict(self.priority_matrix)
+        return self.solution.get_task_ordering_rules_dict()
 
     def get_move(self) -> Optional[Movement]:
         """Retrieves the next available movement in the neighborhood search."""
@@ -100,7 +96,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         In case multiple movements have the same cost, the movement with fewer tasks will be preferred as a tiebreaker.
         After sorting, cost is reapplied based on the position in the sorted list.
         """
-        if not (self.solution and self.station):
+        if not (self.solution and self.station and self.task_ordering_rule_dict):
             LogManager.invalid_action("generate movements", type(self).__name__)
             return
 
@@ -268,8 +264,5 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
     def copy(self) -> "AlwabpWorkerOrientedInsertNS":
         """Creates a copy of the current neighborhood search with the same settings."""
         return AlwabpWorkerOrientedInsertNS(
-            self.task_ordering_rule,
-            self.graph_orientation,
-            self.greediness,
-            self.priority_matrix,
+            self.task_ordering_rule, self.graph_orientation, self.greediness
         )

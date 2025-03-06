@@ -86,25 +86,32 @@ class BRKGA(MetaHeuristic):
         Returns:
             Pool: The pool of solutions found during execution.
         """
-        # Convert Pool to initial population
-        initial_population = [sol.to_random_keys() for sol in origin_pool.solutions]
+        # Ramdomly generate initial population
+        example_sol = origin_pool.get_solution_at(0)
+        initial_population = type(example_sol).generate_random_keys(
+            self.thread_id, example_sol, self.population_size
+        )
 
         # Problem definition for Pymoo
         class PymooProblem(Problem):
-            def __init__(self):
+            def __init__(self, evaluator: Evaluator):
                 super().__init__(
                     n_var=len(initial_population[0]), n_obj=1, xl=0.0, xu=1.0
                 )
+                self.evaluator: Evaluator = evaluator
 
             def _evaluate(self, X, out, *args, **kwargs):
                 solutions = []
-                for keys in X:
-                    solutions.append(origin_pool.solutions[0].from_random_keys(keys))
+                for key in X:
+                    solutions.append(origin_pool.solutions[0].from_random_key(key))
 
-                fitness = Solution.evaluate_population(solutions)
+                fitness = [
+                    self.evaluator.evaluate(solution).get_objective_function()
+                    for solution in solutions
+                ]
                 out["F"] = np.array(fitness)
 
-        problem = PymooProblem()
+        problem = PymooProblem(self.evaluator)
 
         # Initialize BRKGA algorithm
         algorithm = PymooBRKGA(
@@ -133,7 +140,7 @@ class BRKGA(MetaHeuristic):
 
             # Get the best solution from this generation
             current_best_keys = res.X[np.argmin(res.F)]  # type: ignore
-            current_solution = origin_pool.solutions[0].from_random_keys(
+            current_solution = origin_pool.solutions[0].from_random_key(
                 current_best_keys
             )
             current_evaluation = self.evaluator.evaluate(current_solution)
