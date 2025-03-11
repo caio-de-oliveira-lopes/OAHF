@@ -1,5 +1,6 @@
 from typing import Iterator, List, Optional
 
+from oahf.Base import MetaHeuristic
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
@@ -44,16 +45,20 @@ class ListPool(Pool):
         new_pool.evaluator = self.evaluator
         return new_pool
 
-    def add_solution(self, solution: Optional[Solution]) -> bool:
+    def add_solution(
+        self, solution: Optional[Solution], mh: Optional[MetaHeuristic]
+    ) -> bool:
         """Add a solution to the pool."""
-        return super().add_solution(solution)
+        return super().add_solution(solution, mh)
 
     def get_list(self) -> List[Solution]:
         """Get a list of solutions in the pool."""
         return self.solutions
 
     @classmethod
-    def from_dict(cls, heuristic_parser: "HeuristicParser", data: dict, base_solution: Solution) -> "ListPool":
+    def from_dict(
+        cls, heuristic_parser: "HeuristicParser", data: dict, base_solution: Solution
+    ) -> "ListPool":
         """
         Creates an instance of the ListPool class from a dictionary.
 
@@ -73,7 +78,9 @@ class ListPool(Pool):
 
         # Populate the solutions list
         solutions = data.get("solutions", [])
-        parsed_solutions = [type(base_solution).from_dict(sol, base_solution) for sol in solutions]
+        parsed_solutions = [
+            type(base_solution).from_dict(sol, base_solution) for sol in solutions
+        ]
 
         instance = ListPool(parsed_solutions, heuristic_parser_key=data.get("id"))
 

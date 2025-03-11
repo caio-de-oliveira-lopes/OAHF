@@ -114,8 +114,6 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         # Precompute set for unassigned tasks for faster membership tests
         unassigned_tasks_set = set(solution_unassigned_tasks)
         graph_orient = self.graph_orientation
-        if self.graph_orientation == GraphOrientation.BACKWARD:
-            print("a")
         immediate_precedences = solution.immediate_task_precedences[graph_orient]
         task_order_rule = self.task_ordering_rule_dict
         first_tiebreaker = self.first_tiebreaker
@@ -123,11 +121,12 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
 
         for worker in unassigned_workers:
             # Compute worker related values once for the current worker
+            w_idx = worker - 1
             worker_related_values = tuple(
-                task_order_rule[task][worker - 1] for task in task_order_rule
+                task_order_rule[task][w_idx] for task in task_order_rule
             )
             tiebreaker_rule = tuple(
-                first_tiebreaker[task][worker - 1] for task in task_order_rule
+                first_tiebreaker[task][w_idx] for task in task_order_rule
             )
             c_min = min(worker_related_values)
             c_max = max(worker_related_values)
@@ -183,13 +182,10 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             # Precompute index mapping to preserve original ordering
             index_map = {t: i for i, t in enumerate(lcr_list)}
             # Maintain parallel lists for available tasks and their positions to avoid recomputing order
-            available_in_order = []
-            available_positions = []
-            for t in lcr_list:
-                if t in available_tasks:
-                    pos = index_map[t]
-                    available_in_order.append(t)
-                    available_positions.append(pos)
+            available_in_order = [t for t in lcr_list if t in available_tasks]
+            available_positions = [
+                index_map[t] for t in lcr_list if t in available_tasks
+            ]
 
             # Incrementally select tasks while available tasks exist
             while available_tasks:
@@ -197,10 +193,12 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                     break
 
                 # Select a task randomly among the available ones using ThreadManager
-                # task_index = ThreadManager.get_next(self.thread_id, 0, len(available_in_order) - 1)
-
+                task_index = ThreadManager.get_next(
+                    self.thread_id, 0, len(available_in_order) - 1
+                )
                 # Select the first element of the list
-                task_index = 0
+                # task_index = 0
+
                 chosen_task = available_in_order.pop(task_index)
                 available_positions.pop(task_index)
                 ordered_chosen_tasks.append(chosen_task)
@@ -255,7 +253,6 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
         sorted_moves = sorted(
             worker_moves.values(), key=lambda mv: (mv.override_cost, -len(mv.movements))
         )
-        print("a")
 
         for idx, movement in enumerate(sorted_moves, start=1):
             movement.override_cost = idx

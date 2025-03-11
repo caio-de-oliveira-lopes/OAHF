@@ -86,10 +86,10 @@ class MultipleBestImprovement(MetaHeuristic):
                             ListSelection(False, ns),
                         )
 
-                        best_pool.add_solution(best_improv.run(best_sol))
+                        best_pool.add_solution(best_improv.run(best_sol), self)
 
                         if self.destination_pool:
-                            self.destination_pool.add_solution(best_sol)
+                            self.destination_pool.add_solution(best_sol, self)
 
                     except Exception as ex:
                         LogManager.something_went_wrong(self.__class__.__name__, ex)

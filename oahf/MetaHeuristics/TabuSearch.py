@@ -185,10 +185,12 @@ class TabuSearch(MetaHeuristic):
                                     ):
                                         best_sol = curr_sol.copy()
                                         best_eval = curr_eval
-                                        
+
                                         if self.destination_pool:
-                                            self.destination_pool.add_solution(best_sol)
-                                            
+                                            self.destination_pool.add_solution(
+                                                best_sol, self
+                                            )
+
                                         best_move = None
                                         best_move_eval = None
                                         break
@@ -228,9 +230,9 @@ class TabuSearch(MetaHeuristic):
                         ):
                             curr_sol = best_sol.copy()
                             best_eval = curr_eval
-                            
+
                             if self.destination_pool:
-                                self.destination_pool.add_solution(best_sol)
+                                self.destination_pool.add_solution(best_sol, self)
 
                         # Add move to tabu list and enforce tabu tenure
                         self.tabu_list.add_element(
@@ -281,7 +283,7 @@ class TabuSearch(MetaHeuristic):
                                 selected_ls,
                             )
 
-                            pool.add_solution(perturbation_ls.run(curr_sol))
+                            pool.add_solution(perturbation_ls.run(curr_sol), self)
 
                         curr_sol = pool.get_best(self.evaluator)
                         curr_eval = self.evaluator.evaluate(curr_sol)
@@ -298,9 +300,9 @@ class TabuSearch(MetaHeuristic):
                         ):
                             curr_sol = best_sol.copy()
                             best_eval = curr_eval
-                            
+
                             if self.destination_pool:
-                                self.destination_pool.add_solution(best_sol)
+                                self.destination_pool.add_solution(best_sol, self)
 
                     if not curr_sol == best_sol:
                         curr_sol = best_sol.copy()

@@ -1,4 +1,3 @@
-from abc import ABC
 from typing import Iterable, List
 
 from oahf.Base.StopCriteria import StopCriteria

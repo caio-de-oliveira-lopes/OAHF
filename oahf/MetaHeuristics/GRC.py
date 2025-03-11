@@ -110,7 +110,9 @@ class GRC(MetaHeuristic):
                             key=lambda x: (
                                 x.get_cost()
                                 if self.greediness > 0.9999
-                                else ThreadManager.get_next_double(self.thread_id)
+                                else ThreadManager.get_next_float(
+                                    self.thread_id, 0, len(ordered_moves)
+                                )
                             )
                         )
 

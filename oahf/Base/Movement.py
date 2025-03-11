@@ -2,9 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from oahf.Base.Entity import Entity
-from oahf.Base.Evaluation import Evaluation
 from oahf.Base.Solution import Solution
-from oahf.Logger.LogManager import LogManager
 
 
 class Movement(Entity, ABC):

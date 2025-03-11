@@ -151,6 +151,6 @@ class BRKGA(MetaHeuristic):
             ):
                 best_solution = current_solution.copy()
                 best_evaluation = current_evaluation
-                destination_pool.add_solution(best_solution)
+                destination_pool.add_solution(best_solution, self)
 
         return destination_pool

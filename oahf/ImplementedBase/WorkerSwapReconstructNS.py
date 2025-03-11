@@ -19,9 +19,7 @@ class WorkerSwapReconstructNS(Neighborhood):
     """
 
     def __init__(
-        self,
-        reconstruction_metaheuristic: "MetaHeuristic",
-        evaluator: Evaluator
+        self, reconstruction_metaheuristic: "MetaHeuristic", evaluator: Evaluator
     ):
         """
         Initializes the neighborhood search with dependencies and reconstruction logic.
@@ -91,10 +89,9 @@ class WorkerSwapReconstructNS(Neighborhood):
             # Generate removal movements for cleaning.
             cleaning_moves = [
                 AlwabpRemovalMovement(task, None, station, self.solution)
-                for station in self.solution.stations
-                for task in self.solution.station_tasks_assignment[station]
+                for station in reversed(self.solution.stations)
+                for task in reversed(self.solution.station_tasks_assignment[station])
             ]
-
             cleaning_movement = MultipleMovement(self.solution, cleaning_moves)
             solution_copy = self.solution.copy()
             cleaning_movement_copy = cleaning_movement.copy(solution_copy)
@@ -124,7 +121,9 @@ class WorkerSwapReconstructNS(Neighborhood):
                             solution_copy, restore_assignment_moves
                         )
 
-                        while not self.reconstruction_metaheuristic.stop_criteria.stop_on_evaluations([curr_eval]):
+                        while not self.reconstruction_metaheuristic.stop_criteria.stop_on_evaluations(
+                            [curr_eval]
+                        ):
                             dgo = solution_copy.default_graph_orientation
 
                             reconstructed_solution = (
@@ -202,6 +201,5 @@ class WorkerSwapReconstructNS(Neighborhood):
             WorkerSwapReconstructNS: A new instance with identical parameters.
         """
         return WorkerSwapReconstructNS(
-            self.reconstruction_metaheuristic,
-            self.evaluator
+            self.reconstruction_metaheuristic, self.evaluator
         )

@@ -203,7 +203,7 @@ class JobRotationLPSelector(MetaHeuristic):
                             )
                             break
 
-                result.add_solution(job_rotation_solution)
+                result.add_solution(job_rotation_solution, self)
 
             grb_model.dispose()  # Dispose the model when done
             return result

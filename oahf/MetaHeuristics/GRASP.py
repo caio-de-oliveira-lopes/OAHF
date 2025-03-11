@@ -94,17 +94,13 @@ class GRASP(MetaHeuristic):
         self.acceptance_criteria.reset()
 
         while not self.stop_on_evaluations([best_eval]):
-            curr_pool = construction.run_operation(
-                curr_pool, None, self
-            )
+            curr_pool = construction.run_operation(curr_pool, None, self)
 
             curr_sol = curr_pool.get_best(self.evaluator)
             if not curr_sol or not curr_sol.validate_aspects():
                 continue
 
-            curr_pool = local_search.run_operation(
-                curr_pool, None, self
-            )
+            curr_pool = local_search.run_operation(curr_pool, None, self)
             curr_sol = curr_pool.get_best(self.evaluator)
 
             if curr_sol:
@@ -115,7 +111,7 @@ class GRASP(MetaHeuristic):
                 ):
                     best_eval = curr_eval
                     best_sol = curr_sol
-                    destination_pool.add_solution(best_sol)
+                    destination_pool.add_solution(best_sol, self)
                     # Optionally log the best evaluation
                     # print(best_eval)
 

@@ -4,6 +4,7 @@ from oahf.Base.Evaluation import Evaluation
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
 
+
 class StopNoImprovement(StopTimeIterationCriteria):
     def __init__(
         self,
@@ -42,14 +43,18 @@ class StopNoImprovement(StopTimeIterationCriteria):
         """Checks if the stopping criteria are met based on evaluations."""
         evaluation = next(iter(evaluations))  # Get the first evaluation
         self.last_evaluation = evaluation
-        if len(self.ofs) > self.iterations_no_improv:
+        ofs_size = len(self.ofs)
+        if ofs_size > self.iterations_no_improv:
             if self.perc_improvement:
-                if abs((self.ofs[0] / self.ofs[-1]) - 1) <= self.perc_improvement:
+                if (
+                    abs((self.ofs[0] / self.ofs[ofs_size - 1]) - 1)
+                    <= self.perc_improvement
+                ):
                     return True
                 else:
                     self.stop()
             else:
-                if self.ofs[-2] <= self.ofs[-1]:
+                if self.ofs[ofs_size - 2] <= self.ofs[ofs_size - 1]:
                     return True
                 else:
                     self.stop()
@@ -58,8 +63,9 @@ class StopNoImprovement(StopTimeIterationCriteria):
     def current_status(self) -> str:
         """Returns the current status of the stopping criteria."""
         status = super().current_status()
-        if len(self.ofs) > 1:
-            improvement = self.ofs[0] / self.ofs[-1] - 1
+        ofs_size = len(self.ofs)
+        if ofs_size > 1:
+            improvement = self.ofs[0] / self.ofs[ofs_size - 1] - 1
             status += f" improvement: {improvement};"
         return status
 

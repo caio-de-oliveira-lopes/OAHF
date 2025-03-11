@@ -8,6 +8,7 @@ operations necessary to build, evaluate, and transform solutions.
 """
 
 import copy
+import math
 from enum import Enum, auto
 from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 
@@ -333,7 +334,7 @@ class AlwabpSolution(Solution):
         """
         self._update_tasks_executed_by_worker()
         self._fill_all_task_precedences()
-        self._update_bounded_task_execution_times(499)
+        self._update_bounded_task_execution_times(float(499))
         self._compute_best_workers_for_tasks()
         self._compute_workers_ranks()
         self._calculate_task_ordering_rules(GraphOrientation.BACKWARD)
@@ -864,10 +865,9 @@ class AlwabpSolution(Solution):
         success: bool = False
 
         if graph_orientation is None:
-            orientations = EnumUtil.get_values(GraphOrientation)  # type: ignore
+            orientations = list(EnumUtil.get_values(GraphOrientation))  # type: ignore
         else:
             orientations.append(graph_orientation)
-
         for orientation in orientations:
             if graph_orientation is None:
                 if orientation is GraphOrientation.FORWARD:
@@ -1930,7 +1930,7 @@ class AlwabpSolution(Solution):
                 self.min_task_execution_time(task, workers=unassigned_workers)
             )
 
-        return round(amount_of_time / (len(unassigned_workers) or 1))
+        return math.ceil(amount_of_time / (len(unassigned_workers) or 1))
 
     def get_first_unassigned_station(self) -> Optional[int]:
         """
@@ -2322,6 +2322,7 @@ class AlwabpSolution(Solution):
         if isinstance(evaluator, AlwabpEvaluator):
             return new_solution
 
+        from oahf.Base.MultipleStopCriteria import MultipleStopCriteria
         from oahf.ImplementedBase.AlwabpWorkerOrientedInsertNS import (
             AlwabpWorkerOrientedInsertNS,
         )
@@ -2329,6 +2330,9 @@ class AlwabpSolution(Solution):
             BetterAcceptanceCriteria,
         )
         from oahf.ImplementedBase.ListSelection import ListSelection
+        from oahf.ImplementedBase.MaxCycleTimeStopCriteria import (
+            MaxCycleTimeStopCriteria,
+        )
         from oahf.ImplementedBase.WorkersUnassignedStopCriteria import (
             WorkersUnassignedStopCriteria,
         )
@@ -2354,21 +2358,31 @@ class AlwabpSolution(Solution):
             }
             return task_dict
 
+        new_solution.default_graph_orientation = GraphOrientation.FORWARD
+
         greediness = 1
-        stop_criteria = WorkersUnassignedStopCriteria(0)
+        stop_criteria = MultipleStopCriteria(
+            True, WorkersUnassignedStopCriteria(0), MaxCycleTimeStopCriteria(500)
+        )
         acceptance_criteria = BetterAcceptanceCriteria()
         neighborhood = AlwabpWorkerOrientedInsertNS(
             TaskOrderingRule.MAX_IF, GraphOrientation.FORWARD, 0
         )
-
         task_ordering_rule_dict = break_into_task_ordering_rule_dict(
             random_keys, number_of_tasks, number_of_workers
         )
         neighborhood.set_task_ordering_rule_dict(task_ordering_rule_dict)
-
         ns = ListSelection(False, neighborhood)
-
         grc = GRC(0, greediness, stop_criteria, evaluator, acceptance_criteria, ns)
-        constructed_sol = grc.run(new_solution)
+
+        stop_criteria.reset()
+        acceptance_criteria.reset()
+
+        while not stop_criteria.stop_on_evaluations([]):
+            ns.reset(0)
+            constructed_sol = grc.run(new_solution)
+
+            if constructed_sol and constructed_sol.validate_aspects():
+                break
 
         return constructed_sol  # type: ignore

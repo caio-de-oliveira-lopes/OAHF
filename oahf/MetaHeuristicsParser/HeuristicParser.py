@@ -16,10 +16,7 @@ from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.Commons.ProblemData import ProblemData
 from oahf.ImplementedBase.AlwabpEvaluator import AlwabpEvaluator
-from oahf.ImplementedBase.AlwabpSolution import (
-    GraphOrientation,
-    TaskOrderingRule,
-)
+from oahf.ImplementedBase.AlwabpSolution import GraphOrientation, TaskOrderingRule
 from oahf.ImplementedBase.AlwabpTaskDiversificationNS import AlwabpTaskDiversificationNS
 from oahf.ImplementedBase.AlwabpTaskIntensificationNS import AlwabpTaskIntensificationNS
 from oahf.ImplementedBase.AlwabpWorkerDiversificationNS import (
@@ -176,10 +173,11 @@ class HeuristicParser:
 
         self.fix_all_solutions_in_pools()
 
+        ordered_mh_size = len(self.ordered_metaheuristics)
         if self.ordered_metaheuristics:
-            final_pool = self.ordered_metaheuristics[-1].destination_pool or ListPool(
-                evaluator=evaluator
-            )
+            final_pool = self.ordered_metaheuristics[
+                ordered_mh_size - 1
+            ].destination_pool or ListPool(evaluator=evaluator)
             if final_pool.count() == 0:
                 for pool in list(self.solution_pools.values()):
                     if not final_pool.evaluator or (
@@ -187,7 +185,7 @@ class HeuristicParser:
                         and pool.evaluator.get_solution_type()
                         == final_pool.evaluator.get_solution_type()
                     ):
-                        final_pool.add_solution(pool.get_best())
+                        final_pool.add_solution(pool.get_best(), None)
 
             return final_pool.get_best()
 
@@ -217,7 +215,7 @@ class HeuristicParser:
         result_pool = ListPool([original_solution])
 
         for pool in list(self.solution_pools.values()):
-            result_pool.add_solution(pool.get_best(evaluator))
+            result_pool.add_solution(pool.get_best(evaluator), None)
 
         return result_pool.get_best(evaluator)  # type: ignore
 
@@ -305,9 +303,7 @@ class HeuristicParser:
                         ns,
                         order_moves,
                     )
-                    neighborhood = WorkerSwapReconstructNS(
-                        grc, evaluator
-                    )
+                    neighborhood = WorkerSwapReconstructNS(grc, evaluator)
                 elif n["name"].lower() == "alwabp_task_intensification":
                     neighborhood = AlwabpTaskIntensificationNS()
                 elif n["name"].lower() == "alwabp_task_diversification":
@@ -721,8 +717,10 @@ class HeuristicParser:
                     if (parsed := self.parse_stop_criteria(other_criteria)) is not None
                 ]
                 return MultipleStopCriteria(stop_when_any, *multiple_criterias)
-            elif "no_improvement" in criteria:                
-                iterations_no_improv = int(criteria["no_improvement"]["iterations_no_improv"])
+            elif "no_improvement" in criteria:
+                iterations_no_improv = int(
+                    criteria["no_improvement"]["iterations_no_improv"]
+                )
                 seconds = (
                     float(criteria["no_improvement"].get("seconds"))
                     if "seconds" in criteria["no_improvement"]
@@ -737,8 +735,10 @@ class HeuristicParser:
                     int(criteria["no_improvement"].get("perc_improv"))
                     if "perc_improvement" in criteria["no_improvement"]
                     else None
-                )                
-                return StopNoImprovement(iterations_no_improv, seconds, iterations, perc_improv)
+                )
+                return StopNoImprovement(
+                    iterations_no_improv, seconds, iterations, perc_improv
+                )
             else:
                 raise ValueError(f"Unavailable stop criteria: {criteria}")
         except Exception as e:

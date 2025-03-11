@@ -125,7 +125,6 @@ class Util:
         from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
         solution = None
-
         if problem_data.input_type is Type[AlwabpSolution]:
             solution = cls.read_ALWABP_input(problem_data.input_file)
 
@@ -154,14 +153,12 @@ class Util:
                 # Check the first line (number of tasks)
                 if not lines or not lines[0].strip():
                     return None
-
                 number_of_tasks = int(lines[0].strip())
 
                 # Second line is the task-worker relationship matrix
                 worker_lines = lines[1].split()
                 number_of_workers = len(worker_lines)
                 number_of_stations = number_of_workers
-
                 alwabp_instance = AlwabpSolution(
                     number_of_tasks, number_of_workers, number_of_stations
                 )
@@ -176,13 +173,12 @@ class Util:
                 # Read precedence graph (task pairs) directly
                 for line in lines[(number_of_tasks + 1) :]:
                     splited_lines = line.split()
-                    u_task, v_task = int(splited_lines[0]), int(splited_lines[-1])
+                    u_task, v_task = int(splited_lines[0]), int(splited_lines[1])
 
                     if u_task == -1 or v_task == -1:
                         break
 
                     alwabp_instance.add_precedence(u_task, v_task)
-
         except Exception as e:
             LogManager.something_went_wrong(cls.__name__, e)
             return None

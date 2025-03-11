@@ -1,4 +1,3 @@
-import inspect
 from abc import ABC, abstractmethod
 from typing import Dict, Iterator, List, Optional
 
@@ -68,29 +67,26 @@ class Pool(Entity, ABC):
         return self.solutions
 
     @abstractmethod
-    def add_solution(self, solution: Optional[Solution]) -> bool:
-        """Add a solution to the pool (to be implemented by subclasses).
-
-        Tracks the most recent MetaHeuristic subclass that called this method.
+    def add_solution(
+        self, solution: Optional[Solution], mh: Optional["MetaHeuristic"]
+    ) -> bool:
         """
-        
-        from oahf.Base.MetaHeuristic import MetaHeuristic
-        from oahf.Utils.Util import Util
-        
+        Add a solution to the pool (to be implemented by subclasses).
+        """
+
         if solution is None or solution in self._solution_set:
             return False
 
-        # Use a more efficient stack traversal (f_back) to find the MetaHeuristic caller.
-        frame = inspect.currentframe()
-        while frame:
-            instance = frame.f_locals.get("self")
-            if instance and isinstance(instance, MetaHeuristic):
-                if solution.id not in self._solution_info:
-                    self._solution_info[solution.id] = {}
-                self._solution_info[solution.id]["metaheuristic"] = type(instance).__name__
-                self._solution_info[solution.id]["execution_time"] = Util.get_duration_from_start_timestamp()
-                break
-            frame = frame.f_back
+        from oahf.Base.MetaHeuristic import MetaHeuristic
+        from oahf.Utils.Util import Util
+
+        if isinstance(mh, MetaHeuristic):
+            if solution.id not in self._solution_info:
+                self._solution_info[solution.id] = {}
+            self._solution_info[solution.id]["metaheuristic"] = type(mh).__name__
+            self._solution_info[solution.id][
+                "execution_time"
+            ] = Util.get_duration_from_start_timestamp()
 
         # Append solution and add it to the lookup set.
         self.solutions.append(solution)
@@ -150,5 +146,5 @@ class Pool(Entity, ABC):
         Returns:
             Pool: An instance of the Pool class populated with data from the dictionary.
         """
-        
+
         raise NotImplementedError

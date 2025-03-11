@@ -72,7 +72,7 @@ class MetaHeuristic(Entity, ABC):
             self.start_time = self._current_milliseconds()
 
             for sol in origin_pool.get_list():
-                result.add_solution(self.run(sol))
+                result.add_solution(self.run(sol), self)
 
             self.end_time = self._current_milliseconds()
 
