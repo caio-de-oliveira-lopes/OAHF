@@ -5,6 +5,7 @@ from .GenericMultipleMetaheuristic import GenericMultipleMetaheuristic
 from .GeneticAlgorithm import GeneticAlgorithm
 from .GRASP import GRASP
 from .GRC import GRC
+from .HGA import HGA
 from .ILS import ILS
 from .JobRotationLPSelector import JobRotationLPSelector
 from .MultipleBestImprovement import MultipleBestImprovement
@@ -21,11 +22,12 @@ __all__ = [
     "GeneticAlgorithm",
     "GRASP",
     "GRC",
+    "HGA",
     "ILS",
     "JobRotationLPSelector",
     "MultipleBestImprovement",
     "ParallelILS",
     "Pertubation",
     "PerturbationDrivenLocalSearch",
-    "TabuSearch"
+    "TabuSearch",
 ]

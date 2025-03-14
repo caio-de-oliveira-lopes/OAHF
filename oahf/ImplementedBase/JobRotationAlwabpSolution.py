@@ -112,7 +112,7 @@ class JobRotationAlwabpSolution(Solution):
         """Not implemented for JobRotationAlwabpSolution."""
         raise NotImplementedError("Solution diff is not supported.")
 
-    def validate_aspects(self) -> bool:
+    def validate_aspects(self, update: bool = True) -> bool:
         """Validates specific aspects of the solution."""
         return all(self.period_solutions)
 

@@ -280,7 +280,7 @@ class AlwabpSolution(Solution):
         """
         return copy.deepcopy(self)
 
-    def validate_aspects(self) -> bool:
+    def validate_aspects(self, update: bool = True) -> bool:
         """
         Validates the solution aspects.
 
@@ -294,8 +294,9 @@ class AlwabpSolution(Solution):
         if self.cycle_time_limit and (
             self.unassigned_tasks or self._unassigned_workers
         ):
-            self.cycle_time_limit = self.cycle_time_limit + 1
-            self.reset()
+            if update:
+                self.cycle_time_limit = self.cycle_time_limit + 1
+                self.reset()
             return False
         else:
             self.narrow_bounds()

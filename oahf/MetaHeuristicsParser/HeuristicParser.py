@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from oahf.Base import AcceptanceCriteria, Evaluation
+from oahf.Base import AcceptanceCriteria
 from oahf.Base.Constraint import Constraint
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic

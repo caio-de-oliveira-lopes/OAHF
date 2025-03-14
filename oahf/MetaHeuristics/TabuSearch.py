@@ -176,6 +176,15 @@ class TabuSearch(MetaHeuristic):
                                     curr_eval = self.evaluator.evaluate(curr_sol)
 
                                     if (
+                                        self.destination_pool
+                                        and not curr_eval.infeasible()
+                                        and not curr_eval.has_penalty()
+                                    ):
+                                        self.destination_pool.add_solution(
+                                            curr_sol, self
+                                        )
+
+                                    if (
                                         not curr_eval.infeasible()
                                         and not curr_eval.has_penalty()
                                         and self.acceptance_criteria.accept(
@@ -185,12 +194,6 @@ class TabuSearch(MetaHeuristic):
                                     ):
                                         best_sol = curr_sol.copy()
                                         best_eval = curr_eval
-
-                                        if self.destination_pool:
-                                            self.destination_pool.add_solution(
-                                                best_sol, self
-                                            )
-
                                         best_move = None
                                         best_move_eval = None
                                         break
@@ -219,6 +222,13 @@ class TabuSearch(MetaHeuristic):
                         best_move.apply()
                         curr_eval = self.evaluator.evaluate(curr_sol)
 
+                        if (
+                            self.destination_pool
+                            and not curr_eval.infeasible()
+                            and not curr_eval.has_penalty()
+                        ):
+                            self.destination_pool.add_solution(curr_sol, self)
+
                         # Update best solution if necessary
                         if (
                             not curr_eval.infeasible()
@@ -230,9 +240,6 @@ class TabuSearch(MetaHeuristic):
                         ):
                             curr_sol = best_sol.copy()
                             best_eval = curr_eval
-
-                            if self.destination_pool:
-                                self.destination_pool.add_solution(best_sol, self)
 
                         # Add move to tabu list and enforce tabu tenure
                         self.tabu_list.add_element(
@@ -288,6 +295,13 @@ class TabuSearch(MetaHeuristic):
                         curr_sol = pool.get_best(self.evaluator)
                         curr_eval = self.evaluator.evaluate(curr_sol)
 
+                        if (
+                            self.destination_pool
+                            and not curr_eval.infeasible()
+                            and not curr_eval.has_penalty()
+                        ):
+                            self.destination_pool.add_solution(curr_sol, self)
+
                         # Update best solution if necessary
                         if (
                             curr_sol
@@ -300,9 +314,6 @@ class TabuSearch(MetaHeuristic):
                         ):
                             curr_sol = best_sol.copy()
                             best_eval = curr_eval
-
-                            if self.destination_pool:
-                                self.destination_pool.add_solution(best_sol, self)
 
                     if not curr_sol == best_sol:
                         curr_sol = best_sol.copy()
