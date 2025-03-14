@@ -52,6 +52,12 @@ To execute the project, provide the necessary input files:
 files
 ```
 
+### Using Cython
+The project can also run compiling all files using cython. To do that, run at the project directory:
+```bash
+python setup.py build_ext --inplace
+```
+
 ## Input Files
 
 - <input1>(.json): desc

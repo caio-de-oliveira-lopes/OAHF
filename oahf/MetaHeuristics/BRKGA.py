@@ -11,6 +11,7 @@ from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.Logger.LogManager import LogManager
 
 
 class BRKGA(MetaHeuristic):
@@ -56,6 +57,7 @@ class BRKGA(MetaHeuristic):
         self.elite_fraction = elite_fraction
         self.mutant_fraction = mutant_fraction
         self.bias = bias
+        self.local_seach: Optional[MetaHeuristic] = None
 
     def copy(self, thread: int) -> "MetaHeuristic":
         """Creates a copy of the current BRKGA instance."""
@@ -73,11 +75,11 @@ class BRKGA(MetaHeuristic):
         )
 
     def run(self, sol: Solution) -> Solution:
-        """Runs the BRKGA on a single solution. Not implemented in this class."""
+        """Runs the meta-heuristic on a single solution. Not implemented in this class."""
         raise NotImplementedError("Use run_operation() method for this class.")
 
     def run_operation(self, origin_pool: Pool, destination_pool: Pool) -> Pool:
-        """Executes the BRKGA meta-heuristic with external control.
+        """Executes the meta-heuristic with external control.
 
         Args:
             origin_pool (Pool): The initial solution pool.
@@ -94,16 +96,23 @@ class BRKGA(MetaHeuristic):
 
         # Problem definition for Pymoo
         class PymooProblem(Problem):
-            def __init__(self, evaluator: Evaluator):
+            def __init__(
+                self, evaluator: Evaluator, local_seach: Optional[MetaHeuristic]
+            ):
                 super().__init__(
                     n_var=len(initial_population[0]), n_obj=1, xl=0.0, xu=1.0
                 )
                 self.evaluator: Evaluator = evaluator
+                self.local_seach: Optional[MetaHeuristic] = local_seach
 
             def _evaluate(self, X, out, *args, **kwargs):
                 solutions = []
                 for key in X:
-                    solutions.append(origin_pool.solutions[0].from_random_key(key))
+                    solutions.append(
+                        origin_pool.solutions[0].from_random_key(
+                            key, self.local_seach, self.evaluator
+                        )
+                    )
 
                 fitness = [
                     self.evaluator.evaluate(solution).get_objective_function()
@@ -111,10 +120,10 @@ class BRKGA(MetaHeuristic):
                 ]
                 out["F"] = np.array(fitness)
 
-        problem = PymooProblem(self.evaluator)
+        problem = PymooProblem(self.evaluator, self.local_seach)
 
         # Initialize BRKGA algorithm
-        algorithm = PymooBRKGA(
+        algorithm = CustomBRKGA(
             pop_size=self.population_size,
             elite_frac=self.elite_fraction,
             mutant_frac=self.mutant_fraction,
@@ -137,20 +146,46 @@ class BRKGA(MetaHeuristic):
                 seed=self.thread_id,
                 verbose=False,
             )
+            if res.opt:
+                # Get the best solution from this generation
+                best_idx = np.argmin(res.F)  # type: ignore
+                best_key = res.opt.get("X")[best_idx]
+                current_solution = origin_pool.solutions[0].from_random_key(
+                    best_key, self.local_seach, self.evaluator
+                )
+                current_evaluation = self.evaluator.evaluate(current_solution)
+                destination_pool.add_solution(current_solution, self)
 
-            # Get the best solution from this generation
-            current_best_keys = res.X[np.argmin(res.F)]  # type: ignore
-            current_solution = origin_pool.solutions[0].from_random_key(
-                current_best_keys
-            )
-            current_evaluation = self.evaluator.evaluate(current_solution)
-
-            # Accept new solution if it improves the best solution
-            if self.acceptance_criteria.accept(
-                best_evaluation, current_evaluation, current_solution
-            ):
-                best_solution = current_solution.copy()
-                best_evaluation = current_evaluation
-                destination_pool.add_solution(best_solution, self)
+                # Accept new solution if it improves the best solution
+                if self.acceptance_criteria.accept(
+                    best_evaluation, current_evaluation, current_solution
+                ):
+                    best_solution = current_solution.copy()
+                    best_evaluation = current_evaluation
+            else:
+                LogManager.something_went_wrong(str(BRKGA), "res.opt is None")
+                raise
 
         return destination_pool
+
+
+class CustomBRKGA(PymooBRKGA):
+    def __init__(
+        self, pop_size=100, elite_frac=0.2, mutant_frac=0.1, bias=0.0, **kwargs
+    ):
+        # Calculate numbers based on your intended pop_size
+        n_elites = int(pop_size * elite_frac)
+        n_mutants = int(pop_size * mutant_frac)
+        n_offsprings = pop_size - n_elites - n_mutants
+
+        # Instead of passing pop_size to the super class (which leads to conflict),
+        # we call the super constructor without the pop_size parameter.
+        super().__init__(
+            elite_frac=elite_frac, mutant_frac=mutant_frac, bias=bias, **kwargs
+        )
+
+        # Then override the internal population size attributes if needed.
+        self.n_elites = n_elites
+        self.n_mutants = n_mutants
+        self.n_offsprings = n_offsprings
+        self.pop_size = pop_size  # Use your intended total pop_size

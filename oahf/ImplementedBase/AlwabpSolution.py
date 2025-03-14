@@ -14,10 +14,10 @@ from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
 
-from oahf.Base import ThreadManager
 from oahf.Base.Movement import Movement
 from oahf.Base.MultipleMovement import MultipleMovement
 from oahf.Base.Solution import Solution
+from oahf.Base.ThreadManager import ThreadManager
 from oahf.ImplementedBase import AlwabpRemovalMovement
 from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
 from oahf.Logger.LogManager import LogManager
@@ -442,7 +442,7 @@ class AlwabpSolution(Solution):
             self.print_update(f"Updated cycle time limit to {str(value)}.")
         else:
             print(f"Starting with cycle time limit as {str(value)}.")
-        self._cycle_time_limit = value
+        self._cycle_time_limit = float(value)
 
     @property
     def default_graph_orientation(self) -> GraphOrientation:
@@ -764,7 +764,7 @@ class AlwabpSolution(Solution):
         for station in solution.stations:
             solution.calculate_cycle_time(station, force_calculate=True)
 
-        solution._cycle_time_limit = solution.get_max_cycle_time()
+        solution._cycle_time_limit = float(solution.get_max_cycle_time())
         return solution
 
     def calculate_cycle_time(
@@ -2309,7 +2309,10 @@ class AlwabpSolution(Solution):
         ]
 
     def from_random_key(
-        self, random_keys: List[float], evaluator: "AlwabpEvaluator"
+        self,
+        random_keys: np.ndarray,
+        local_seach: Optional["MetaHeuristic"],
+        evaluator: "AlwabpEvaluator",
     ) -> "AlwabpSolution":
         new_solution = self.copy()
         new_solution.reset()
@@ -2319,7 +2322,7 @@ class AlwabpSolution(Solution):
 
         from oahf.ImplementedBase.AlwabpEvaluator import AlwabpEvaluator
 
-        if isinstance(evaluator, AlwabpEvaluator):
+        if not isinstance(evaluator, AlwabpEvaluator):
             return new_solution
 
         from oahf.Base.MultipleStopCriteria import MultipleStopCriteria
@@ -2378,11 +2381,16 @@ class AlwabpSolution(Solution):
         stop_criteria.reset()
         acceptance_criteria.reset()
 
-        while not stop_criteria.stop_on_evaluations([]):
+        while not stop_criteria.stop_on_evaluations([evaluator.evaluate(new_solution)]):
             ns.reset(0)
             constructed_sol = grc.run(new_solution)
 
             if constructed_sol and constructed_sol.validate_aspects():
+                if local_seach:
+                    constructed_sol = local_seach.run(constructed_sol)
+
                 break
+            else:
+                new_solution.validate_aspects()
 
         return constructed_sol  # type: ignore

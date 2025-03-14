@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Iterator, List, Optional
 
+from oahf.Base import MetaHeuristic
 from oahf.Base.Entity import Entity
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.Solution import Solution
@@ -70,10 +71,7 @@ class Pool(Entity, ABC):
     def add_solution(
         self, solution: Optional[Solution], mh: Optional["MetaHeuristic"]
     ) -> bool:
-        """
-        Add a solution to the pool (to be implemented by subclasses).
-        """
-
+        """Add a solution to the pool (to be implemented by subclasses)."""
         if solution is None or solution in self._solution_set:
             return False
 

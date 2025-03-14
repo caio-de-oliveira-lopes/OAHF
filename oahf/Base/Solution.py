@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
 
+import numpy
+
 from oahf.Base.Entity import Entity
 
 
@@ -163,7 +165,12 @@ class Solution(Entity, ABC):
         random_keys = []
         return random_keys
 
-    def from_random_key(self, random_keys: List[float]) -> "Solution":
+    def from_random_key(
+        self,
+        random_keys: numpy.ndarray,
+        local_seach: Optional["MetaHeuristic"],
+        evaluator: "Evaluator",
+    ) -> "Solution":
         """
         Reconstructs the solution from a random-keys representation.
 
