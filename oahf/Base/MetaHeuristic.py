@@ -15,6 +15,27 @@ from oahf.Logger.LogManager import LogManager
 
 
 class MetaHeuristic(Entity, ABC):
+    """
+    MetaHeuristic serves as an abstract base class for implementing various metaheuristic optimization algorithms.
+    It provides a structured framework for solution evaluation, neighborhood selection, and acceptance criteria
+    while also handling stopping conditions and execution management.
+
+    Attributes:
+        logger (logging.Logger): Logger instance for logging events.
+        thread_id (int): ID of the thread executing the heuristic.
+        stop_criteria (StopCriteria): Stopping criteria for terminating the heuristic execution.
+        evaluator (Evaluator): Evaluator used for assessing solution quality.
+        acceptance_criteria (AcceptanceCriteria): Defines how new solutions are accepted.
+        neighborhood_selection (Optional[NeighborhoodSelection]): Selection strategy for generating neighboring solutions.
+        meta_heuristics_used (List[MetaHeuristic]): List of other metaheuristics used in combination with this one.
+        origin_pool (Optional[Pool]): Pool of initial solutions.
+        destination_pool (Optional[Pool]): Pool where optimized solutions are stored.
+        parent_metaheuristic (Optional[MetaHeuristic]): Reference to a parent metaheuristic if applicable.
+        log_solutions (bool): Flag indicating whether to log solutions.
+        start_time (int): Timestamp when execution started.
+        end_time (int): Timestamp when execution ended.
+    """
+
     logger = logging.getLogger(__name__)
 
     def __init__(
@@ -28,7 +49,6 @@ class MetaHeuristic(Entity, ABC):
         origin_pool: Optional[Pool] = None,
         destination_pool: Optional[Pool] = None,
     ):
-
         super().__init__()
         self.neighborhood_selection: Optional["NeighborhoodSelection"] = (
             neighborhood_selection
@@ -65,41 +85,40 @@ class MetaHeuristic(Entity, ABC):
             if self.neighborhood_selection:
                 self.neighborhood_selection.reset(self.thread_id)
 
-            result = destination_pool
-            if result is None:
-                result = ListPool()
-
+            result = destination_pool if destination_pool else ListPool()
             self.start_time = self._current_milliseconds()
 
             for sol in origin_pool.get_list():
                 result.add_solution(self.run(sol), self, False)
 
             self.end_time = self._current_milliseconds()
-
             return result
         except Exception as ex:
             LogManager.something_went_wrong(self.__class__.__name__, ex)
             raise
 
     def stop(self) -> bool:
+        """Check if the stopping criteria have been met."""
         return self.stop_criteria.stop() or (
             self.parent_metaheuristic is not None and self.parent_metaheuristic.stop()
         )
 
     def set_stop_criteria_report(self, perc_counter: float):
+        """Update the stopping criteria progress report."""
         self.stop_criteria.set_progress_report(perc_counter)
 
     def set_log_solution(self):
+        """Enable solution logging."""
         self.log_solutions = True
 
     def stop_on_evaluations(self, evs: Iterable["Evaluation"]) -> bool:
+        """Determine if the heuristic should stop based on evaluations."""
         if evs:
             return self.stop_criteria.stop_on_evaluations(evs) or (
                 self.parent_metaheuristic is not None
                 and self.parent_metaheuristic.stop_on_evaluations(evs)
             )
-        else:
-            return False
+        return False
 
     @abstractmethod
     def copy(self, thread: int) -> "MetaHeuristic":
@@ -107,20 +126,23 @@ class MetaHeuristic(Entity, ABC):
         pass
 
     def set_thread_id(self, thread_id: int):
+        """Set the thread ID for the heuristic and its dependencies."""
         self.thread_id = thread_id
-        if self.meta_heuristics_used:
-            for n in self.meta_heuristics_used:
-                n.set_thread_id(thread_id)
+        for heuristic in self.meta_heuristics_used:
+            heuristic.set_thread_id(thread_id)
 
     def reset_neighborhoods(self, sol: "Solution"):
+        """Reset all neighborhood structures based on the given solution."""
         if self.neighborhood_selection:
             for neighborhood in self.neighborhood_selection.get_all():
                 neighborhood.reset(sol)
 
     def get_neighborhood_selection(self) -> Optional["NeighborhoodSelection"]:
+        """Retrieve the neighborhood selection strategy."""
         return self.neighborhood_selection
 
     def get_stop_criteria(self) -> "StopCriteria":
+        """Retrieve the stopping criteria object."""
         return self.stop_criteria
 
     @staticmethod

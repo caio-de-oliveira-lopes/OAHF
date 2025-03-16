@@ -682,6 +682,17 @@ class HeuristicParser:
                         int(m["parameters"]["diversification_local_search"])
                     ]
 
+                    origin_pool = (
+                        self.solution_pools[m["origin_pool"]]
+                        if "origin_pool" in m
+                        else None
+                    )
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
+
                     meta = TabuSearch(
                         thread_id,
                         stop_criteria,  # type: ignore
@@ -694,6 +705,8 @@ class HeuristicParser:
                         diversification_ns,
                         intensification_ls,
                         diversification_ls,
+                        origin_pool,
+                        destination_pool,
                     )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")

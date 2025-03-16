@@ -440,9 +440,9 @@ class AlwabpSolution(Solution):
             value (float): The new cycle time limit.
         """
         if self._cycle_time_limit:
-            self.print_update(f"Updated cycle time limit to {str(value)}.")
+            self.print_update(f"Updated cycle time limit to {str(int(value))}.")
         else:
-            print(f"Starting with cycle time limit as {str(value)}.")
+            print(f"Starting with cycle time limit as {str(int(value))}.")
         self._cycle_time_limit = float(value)
 
     @property

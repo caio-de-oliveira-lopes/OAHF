@@ -1,5 +1,6 @@
 import collections
 import gc
+from typing import Optional
 
 from tqdm import tqdm
 
@@ -8,6 +9,7 @@ from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Movement import Movement
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
+from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.ImplementedBase import ListSelection
 from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
@@ -38,6 +40,8 @@ class TabuSearch(MetaHeuristic):
         diversification_ns: NeighborhoodSelection,
         intensification_ls: MetaHeuristic,
         diversification_ls: MetaHeuristic,
+        origin_pool: Optional[Pool] = None,
+        destination_pool: Optional[Pool] = None,
     ) -> None:
         """
         Initializes the TabuSearch metaheuristic.
@@ -63,9 +67,18 @@ class TabuSearch(MetaHeuristic):
                 solutions during the intensification phase.
             diversification_ls (MetaHeuristic): A local search metaheuristic used to explore
                 diverse solutions during the diversification phase.
+            origin_pool (Optional[Pool]): Pool of initial solutions.
+            destination_pool (Optional[Pool]): Pool where optimized solutions are stored.
         """
         super().__init__(
-            thread_id, stop_criteria, evaluator, acceptance_criteria, ns.copy()
+            thread_id,
+            stop_criteria,
+            evaluator,
+            acceptance_criteria,
+            ns.copy(),
+            [],
+            origin_pool,
+            destination_pool,
         )
         self.tabu_list = TabuSearch.TabuTenure()
         self.intensification_criteria = intensification_criteria
@@ -93,7 +106,36 @@ class TabuSearch(MetaHeuristic):
             self.diversification_ns.copy(),
             self.intensification_ls.copy(thread),
             self.diversification_ls.copy(thread),
+            self.origin_pool.copy() if self.origin_pool is not None else None,
+            self.destination_pool.copy() if self.destination_pool is not None else None,
         )
+
+    def run_operation(
+        self,
+        origin_pool: Pool,
+        destination_pool: Optional[Pool],
+        parent: Optional["MetaHeuristic"] = None,
+    ) -> Pool:
+        """Run the heuristic on a given pool of solutions."""
+        try:
+            self.parent_metaheuristic = parent
+            self.stop_criteria.reset()
+            if self.neighborhood_selection:
+                self.neighborhood_selection.reset(self.thread_id)
+
+            result = destination_pool if destination_pool else ListPool()
+            self.start_time = self._current_milliseconds()
+
+            sol = origin_pool.get_best(self.evaluator)
+
+            if sol:
+                result.add_solution(self.run(sol), self)
+
+            self.end_time = self._current_milliseconds()
+            return result
+        except Exception as ex:
+            LogManager.something_went_wrong(self.__class__.__name__, ex)
+            raise
 
     def run(self, sol: Solution) -> Solution:
         """Executes the Tabu Search on a single solution."""
