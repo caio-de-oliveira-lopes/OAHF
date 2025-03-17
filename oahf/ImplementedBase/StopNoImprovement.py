@@ -52,15 +52,24 @@ class StopNoImprovement(StopTimeIterationCriteria):
                     abs((self.ofs[0] / self.ofs[ofs_size - 1]) - 1)
                     <= self.perc_improvement
                 ):
+                    self.report_stop()
                     return True
                 else:
                     self.stop()
             else:
                 if self.ofs[ofs_size - 2] <= self.ofs[ofs_size - 1]:
+                    self.report_stop()
                     return True
                 else:
                     self.stop()
         return self.stop()
+
+    def report_stop(self):
+        from oahf.Utils.Util import Util
+
+        Util.logger().info(
+            f"Method went through {self.iterations_no_improv} iterations without improvement."
+        )
 
     def current_status(self) -> str:
         """Returns the current status of the stopping criteria."""
