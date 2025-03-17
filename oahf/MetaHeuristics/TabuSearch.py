@@ -17,6 +17,7 @@ from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
 )
 from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
+from oahf.ImplementedBase.StopNoImprovement import StopNoImprovement
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
 from oahf.Logger.LogManager import LogManager
 from oahf.MetaHeuristics.BestImprovement import BestImprovement
@@ -138,17 +139,28 @@ class TabuSearch(MetaHeuristic):
             raise
 
     def run(self, sol: Solution) -> Solution:
-        """Executes the Tabu Search on a single solution."""
+        """Executes the Tabu Search on a single solution with optimizations for computational time."""
+        # Create initial copies and cache frequently used attributes
         best_sol = sol.copy()
         curr_sol = sol.copy()
 
-        curr_eval = self.evaluator.evaluate(curr_sol)
-        best_eval = self.evaluator.evaluate(best_sol)
+        name = self.name
+        evaluator = self.evaluator
+        tabu_list = self.tabu_list
+        acceptance = self.acceptance_criteria
+        stop_criteria = self.stop_criteria
+        intensification_criteria = self.intensification_criteria
+        neighborhood_selection: NeighborhoodSelection = self.neighborhood_selection  # type: ignore
+        thread_id = self.thread_id
+        destination_pool = self.destination_pool
 
-        self.stop_criteria.reset()
-        self.acceptance_criteria.reset()
-        self.intensification_criteria.reset()
+        curr_eval = evaluator.evaluate(curr_sol)
+        best_eval = evaluator.evaluate(best_sol)
 
+        # Reset criteria and structures
+        stop_criteria.reset()
+        acceptance.reset()
+        intensification_criteria.reset()
         type(best_sol).reset_intensification_diversification_structures()
 
         counter = 0
@@ -156,220 +168,191 @@ class TabuSearch(MetaHeuristic):
 
         pbar = None
         if self.use_progress_bar:
-            max_iterations = self.stop_criteria.max_iterations  # type: ignore
+            max_iterations = stop_criteria.max_iterations  # type: ignore
             pbar = tqdm(
-                total=max_iterations,
-                desc="Tabu Search Progress",
-                position=0,
-                leave=True,
+                total=max_iterations, desc=f"{name} Progress", position=0, leave=True
             )
 
-        while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]):  # type: ignore
+        # Cache neighborhood count if constant
+        num_neigh = neighborhood_selection.num_neighborhoods()
+
+        while (
+            ns := neighborhood_selection.get_next(thread_id)
+        ) and not self.stop_on_evaluations([best_eval]):
             if curr_sol is None:
                 break
 
-            if counter % self.neighborhood_selection.num_neighborhoods() == 0:  # type: ignore
+            # Every full cycle over neighborhoods, update penalties and reevaluate
+            if counter % num_neigh == 0:
                 best_eval.update_penalties()
                 curr_eval.reevaluate()
                 best_eval.reevaluate()
+
             try:
-                if ns is None:
-                    break
-
                 ns.allow_infeasible_movements = True
-                build = ns.build_neighborhood_operation(self.thread_id, curr_sol)  # type: ignore
+                if not ns.build_neighborhood_operation(thread_id, curr_sol):
+                    ns.allow_infeasible_movements = False
+                    continue
 
-                if build:
-                    counter += 1
-                    best_move = None
-                    best_move_eval = None
+                counter += 1
+                best_move = None
+                best_move_eval = None
 
-                    while (
-                        move := ns.get_move()
-                    ) is not None and not self.stop_on_evaluations([best_eval]):
-                        worked = move.apply()
-                        if worked:
-                            curr_eval = self.evaluator.evaluate(curr_sol)
+                # Iterate through moves in the current neighborhood
+                while (
+                    move := ns.get_move()
+                ) is not None and not self.stop_on_evaluations([best_eval]):
+                    if move.apply():
+                        curr_eval = evaluator.evaluate(curr_sol)
 
-                            if (
-                                not curr_eval.infeasible()
-                                and not curr_eval.has_penalty()
-                            ):
-                                type(
-                                    curr_sol
-                                ).update_intensification_diversification_structures(
-                                    curr_sol
+                        if not curr_eval.infeasible() and not curr_eval.has_penalty():
+                            type(
+                                curr_sol
+                            ).update_intensification_diversification_structures(
+                                curr_sol
+                            )
+
+                        # If move is tabu, check if it still meets acceptance criteria
+                        if move in tabu_list:
+                            if acceptance.accept(best_eval, curr_eval, curr_sol):
+                                best_improv = BestImprovement(
+                                    thread_id,
+                                    NoStopCriteria(),
+                                    evaluator,
+                                    acceptance,
+                                    self.second_level_ns,
                                 )
+                                previous_curr_sol = curr_sol
+                                curr_sol = best_improv.run(curr_sol)
+                                curr_eval = evaluator.evaluate(curr_sol)
 
-                            if move in self.tabu_list:
-                                if self.acceptance_criteria.accept(
-                                    best_eval, curr_eval, curr_sol
+                                if (
+                                    destination_pool
+                                    and not curr_eval.infeasible()
+                                    and not curr_eval.has_penalty()
                                 ):
-                                    best_improv = BestImprovement(
-                                        self.thread_id,
-                                        NoStopCriteria(),
-                                        self.evaluator,
-                                        self.acceptance_criteria,
-                                        self.second_level_ns,
+                                    destination_pool.add_solution(curr_sol, self)
+
+                                if (
+                                    not curr_eval.infeasible()
+                                    and not curr_eval.has_penalty()
+                                    and acceptance.accept(
+                                        best_eval, curr_eval, curr_sol
                                     )
-
-                                    previous_curr_sol = curr_sol
-                                    curr_sol = best_improv.run(curr_sol)
-                                    curr_eval = self.evaluator.evaluate(curr_sol)
-
-                                    if (
-                                        self.destination_pool
-                                        and not curr_eval.infeasible()
-                                        and not curr_eval.has_penalty()
-                                    ):
-                                        self.destination_pool.add_solution(
-                                            curr_sol, self
-                                        )
-
-                                    if (
-                                        not curr_eval.infeasible()
-                                        and not curr_eval.has_penalty()
-                                        and self.acceptance_criteria.accept(
-                                            best_eval, curr_eval, curr_sol
-                                        )
-                                        and not curr_sol == best_sol
-                                    ):
-                                        best_sol = curr_sol.copy()
-                                        best_eval = curr_eval
-                                        best_move = None
-                                        best_move_eval = None
-                                        break
-                                    else:
-                                        curr_sol = previous_curr_sol
-
-                            elif (
-                                best_move_eval is not None
-                                and self.acceptance_criteria.accept(
-                                    best_move_eval, curr_eval, curr_sol
-                                )
-                            ) or (best_move_eval is None):
+                                    and curr_sol != best_sol
+                                ):
+                                    best_sol = curr_sol.copy()
+                                    best_eval = curr_eval
+                                    best_move = None
+                                    best_move_eval = None
+                                    break
+                                else:
+                                    curr_sol = previous_curr_sol
+                        else:
+                            # Update best move if found or if current move is acceptable compared to the previous one
+                            if best_move_eval is None or acceptance.accept(
+                                best_move_eval, curr_eval, curr_sol
+                            ):
                                 best_move_eval = curr_eval
                                 best_move = move
 
-                            move.unapply()
+                        move.unapply()
 
-                    self.stop_criteria.increment_counter()
-                    self.intensification_criteria.increment_counter()
+                stop_criteria.increment_counter(pbar)
+                intensification_criteria.increment_counter()
 
-                    # Use progress bar if max iterations is configured
-                    if pbar:
-                        pbar.update(1)
-
-                    if best_move:
-                        best_move.apply()
-                        curr_eval = self.evaluator.evaluate(curr_sol)
-
-                        if (
-                            self.destination_pool
-                            and not curr_eval.infeasible()
-                            and not curr_eval.has_penalty()
-                        ):
-                            self.destination_pool.add_solution(curr_sol, self)
-
-                        # Update best solution if necessary
-                        if (
-                            not curr_eval.infeasible()
-                            and not curr_eval.has_penalty()
-                            and self.acceptance_criteria.accept(
-                                best_eval, curr_eval, curr_sol
-                            )
-                            and not curr_sol == best_sol
-                        ):
-                            curr_sol = best_sol.copy()
-                            best_eval = curr_eval
-
-                        # Add move to tabu list and enforce tabu tenure
-                        self.tabu_list.add_element(
-                            best_move, self.get_tabu_iterations_block(best_move)
-                        )
-                        self.tabu_list.decrement_and_clean()
-
-                    # Apply intensification or diversification strategy
-                    if self.intensification_criteria.stop():
-
-                        # Use garbage collector
-                        gc.collect()
-
-                        # Reseting the criteria
-                        self.intensification_criteria.reset()
-
-                        selected_ns = (
-                            self.intensification_ns.copy()
-                            if intensification
-                            else self.diversification_ns.copy()
-                        )
-
-                        selected_ls = (
-                            self.intensification_ls.copy(self.thread_id)
-                            if intensification
-                            else self.diversification_ls.copy(self.thread_id)
-                        )
-
-                        intensification = not intensification
-                        pool = ListPool(solutions=[curr_sol])
-
-                        while search := selected_ns.get_next(self.thread_id):
-                            perturbation = Pertubation(
-                                self.thread_id,
-                                StopTimeIterationCriteria(iterations=1),
-                                self.evaluator,
-                                ListSelection(False, search.copy()),
-                                AlwaysAcceptAcceptanceCriteria(),
-                                True,
-                            )
-
-                            perturbation_ls = PerturbationDrivenLocalSearch(
-                                self.thread_id,
-                                StopTimeIterationCriteria(iterations=1),
-                                self.evaluator,
-                                self.acceptance_criteria,
-                                perturbation,
-                                selected_ls,
-                            )
-
-                            pool.add_solution(perturbation_ls.run(curr_sol), self)
-
-                        curr_sol = pool.get_best(self.evaluator)
-                        curr_eval = self.evaluator.evaluate(curr_sol)
-
-                        if (
-                            self.destination_pool
-                            and not curr_eval.infeasible()
-                            and not curr_eval.has_penalty()
-                        ):
-                            self.destination_pool.add_solution(curr_sol, self)
-
-                        # Update best solution if necessary
-                        if (
-                            curr_sol
-                            and not curr_eval.infeasible()
-                            and not curr_eval.has_penalty()
-                            and self.acceptance_criteria.accept(
-                                best_eval, curr_eval, curr_sol
-                            )
-                            and not curr_sol == best_sol
-                        ):
-                            curr_sol = best_sol.copy()
-                            best_eval = curr_eval
-
-                    if not curr_sol == best_sol:
+                if best_move:
+                    best_move.apply()
+                    curr_eval = evaluator.evaluate(curr_sol)
+                    if (
+                        destination_pool
+                        and not curr_eval.infeasible()
+                        and not curr_eval.has_penalty()
+                    ):
+                        destination_pool.add_solution(curr_sol, self)
+                    # Update best solution if criteria are met
+                    if (
+                        not curr_eval.infeasible()
+                        and not curr_eval.has_penalty()
+                        and acceptance.accept(best_eval, curr_eval, curr_sol)
+                        and curr_sol != best_sol
+                    ):
                         curr_sol = best_sol.copy()
+                        best_eval = curr_eval
+
+                    tabu_list.add_element(
+                        best_move, self.get_tabu_iterations_block(best_move)
+                    )
+                    tabu_list.decrement_and_clean()
+
+                # Intensification/Diversification phase
+                if intensification_criteria.stop():
+                    gc.collect()  # trigger garbage collection
+                    intensification_criteria.reset()
+
+                    selected_ns = (
+                        self.intensification_ns.copy()
+                        if intensification
+                        else self.diversification_ns.copy()
+                    )
+                    selected_ls = (
+                        self.intensification_ls.copy(thread_id)
+                        if intensification
+                        else self.diversification_ls.copy(thread_id)
+                    )
+                    intensification = not intensification
+
+                    pool = ListPool(solutions=[curr_sol])
+                    while search := selected_ns.get_next(thread_id):
+                        perturbation = Pertubation(
+                            thread_id,
+                            StopTimeIterationCriteria(iterations=1),
+                            evaluator,
+                            ListSelection(False, search.copy()),
+                            AlwaysAcceptAcceptanceCriteria(),
+                            True,
+                        )
+                        perturbation_ls = PerturbationDrivenLocalSearch(
+                            thread_id,
+                            StopTimeIterationCriteria(iterations=1),
+                            evaluator,
+                            acceptance,
+                            perturbation,
+                            selected_ls,
+                        )
+                        pool.add_solution(perturbation_ls.run(curr_sol), self)
+
+                    curr_sol = pool.get_best(evaluator)
+                    curr_eval = evaluator.evaluate(curr_sol)
+                    if (
+                        destination_pool
+                        and not curr_eval.infeasible()
+                        and not curr_eval.has_penalty()
+                    ):
+                        destination_pool.add_solution(curr_sol, self)
+
+                    if (
+                        curr_sol
+                        and not curr_eval.infeasible()
+                        and not curr_eval.has_penalty()
+                        and acceptance.accept(best_eval, curr_eval, curr_sol)
+                        and curr_sol != best_sol
+                    ):
+                        curr_sol = best_sol.copy()
+                        best_eval = curr_eval
+
+                if curr_sol != best_sol:
+                    curr_sol = best_sol.copy()
 
                 ns.allow_infeasible_movements = False
 
             except Exception as ex:
                 LogManager.something_went_wrong(self.__class__.__name__, ex)
-                if not curr_sol == best_sol:
+                if curr_sol != best_sol:
                     curr_sol = best_sol.copy()
                 ns.allow_infeasible_movements = False
 
         type(best_sol).reset_intensification_diversification_structures()
-
         if pbar:
             pbar.close()
 

@@ -1,6 +1,8 @@
 import time
 from typing import Optional
 
+from tqdm import tqdm
+
 from oahf.Base.StopCriteria import StopCriteria
 
 
@@ -66,13 +68,15 @@ class StopTimeIterationCriteria(StopCriteria):
     def stop(self) -> bool:
         """Determines if the stopping criteria have been met."""
         elapsed_time = int((time.time() - self.sw_start) * 1000)
-        return (self.milliseconds is not None and elapsed_time >= self.milliseconds) or (
-            self.max_iterations is not None and self.counter >= self.max_iterations
-        )
+        return (
+            self.milliseconds is not None and elapsed_time >= self.milliseconds
+        ) or (self.max_iterations is not None and self.counter >= self.max_iterations)
 
-    def increment_counter(self) -> None:
+    def increment_counter(self, pbar: Optional[tqdm] = None) -> None:
         """Increments the counter for iterations."""
         self.counter += 1
+        if pbar:
+            pbar.update(1)
         super().increment_counter()
 
     def get_progress(self) -> float:

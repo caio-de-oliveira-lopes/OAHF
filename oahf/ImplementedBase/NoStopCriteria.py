@@ -1,8 +1,8 @@
 from typing import Iterable
 
 from oahf.Base.Evaluation import Evaluation
-from oahf.Base.ThreadManager import ThreadManager
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.Base.ThreadManager import ThreadManager
 
 
 class NoStopCriteria(StopCriteria):
@@ -12,11 +12,6 @@ class NoStopCriteria(StopCriteria):
     def stop(self) -> bool:
         """Determines whether the stopping criteria have been met."""
         return False
-
-    def increment_counter(self) -> None:
-        """Increments the internal counter and prints the progress report if enabled."""
-        if self._progress_report:
-            self.print_progress_report()
 
     def reset(self) -> None:
         """Resets the stopping criteria."""

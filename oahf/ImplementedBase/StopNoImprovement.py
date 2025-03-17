@@ -1,5 +1,7 @@
 from typing import Iterable, List, Optional
 
+from tqdm import tqdm
+
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.StopCriteria import StopCriteria
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
@@ -69,13 +71,13 @@ class StopNoImprovement(StopTimeIterationCriteria):
             status += f" improvement: {improvement};"
         return status
 
-    def increment_counter(self) -> None:
+    def increment_counter(self, pbar: Optional[tqdm] = None) -> None:
         """Increments the counter for evaluations."""
         if self.last_evaluation is not None:
             self.ofs.append(self.last_evaluation.get_objective_function())
             if len(self.ofs) > self.iterations_no_improv + 1:
                 self.ofs.pop(0)  # Remove the first element
-        super().increment_counter()
+        super().increment_counter(pbar)
 
     def reset(self) -> None:
         """Resets the stopping criteria."""

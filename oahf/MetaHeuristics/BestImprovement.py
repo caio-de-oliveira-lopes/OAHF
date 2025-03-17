@@ -44,39 +44,37 @@ class BestImprovement(MetaHeuristic):
 
     def run(self, sol: Solution) -> Solution:
         """Executes the best improvement strategy on the given solution."""
+        # Initial solution copies
         best_sol = sol.copy()
         curr_sol = sol.copy()
-        best_eval = self.evaluator.evaluate(best_sol)
 
-        self.stop_criteria.reset()
-        self.acceptance_criteria.reset()
+        # Cache frequently used attributes
+        evaluator = self.evaluator
+        acceptance = self.acceptance_criteria
+        stop_criteria = self.stop_criteria
+        neighborhood_selection = self.neighborhood_selection
+        thread_id = self.thread_id
 
-        while (ns := self.neighborhood_selection.get_next(self.thread_id)) and not self.stop_on_evaluations([best_eval]):  # type: ignore
+        best_eval = evaluator.evaluate(best_sol)
+        stop_criteria.reset()
+        acceptance.reset()
+
+        while (ns := neighborhood_selection.get_next(thread_id)) and not self.stop_on_evaluations([best_eval]):  # type: ignore
             try:
-                # Warning: circular selections with no time StopCriteria may get in an infinite loop
                 if ns is None:
                     break
 
-                build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
-
-                if build:
+                if ns.build_neighborhood_operation(thread_id, curr_sol):
                     while (
                         move := ns.get_move()
                     ) is not None and not self.stop_on_evaluations([best_eval]):
-                        worked = move.apply()
-                        if worked:
-                            curr_eval = self.evaluator.evaluate(curr_sol)
-
-                            if self.acceptance_criteria.accept(
-                                best_eval, curr_eval, curr_sol
-                            ):
+                        if move.apply():
+                            curr_eval = evaluator.evaluate(curr_sol)
+                            if acceptance.accept(best_eval, curr_eval, curr_sol):
                                 best_sol = curr_sol.copy()
                                 best_eval = curr_eval
-
                             move.unapply()
-
-                        self.stop_criteria.increment_counter()
-
+                        stop_criteria.increment_counter()
             except Exception as ex:
                 LogManager.something_went_wrong(self.__class__.__name__, ex)
                 curr_sol = best_sol.copy()

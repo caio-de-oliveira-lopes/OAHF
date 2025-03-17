@@ -4,6 +4,7 @@ import numpy as np
 from pymoo.algorithms.soo.nonconvex.brkga import BRKGA as PymooBRKGA
 from pymoo.core.problem import Problem
 from pymoo.optimize import minimize
+from tqdm import tqdm
 
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
@@ -11,6 +12,7 @@ from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
+from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
 from oahf.Logger.LogManager import LogManager
 
 
@@ -58,6 +60,10 @@ class BRKGA(MetaHeuristic):
         self.mutant_fraction = mutant_fraction
         self.bias = bias
         self.local_seach: Optional[MetaHeuristic] = None
+        self.use_progress_bar = (
+            isinstance(stop_criteria, StopTimeIterationCriteria)
+            and stop_criteria.max_iterations is not None
+        )
 
     def copy(self, thread: int) -> "MetaHeuristic":
         """Creates a copy of the current BRKGA instance."""
@@ -79,92 +85,103 @@ class BRKGA(MetaHeuristic):
         raise NotImplementedError("Use run_operation() method for this class.")
 
     def run_operation(self, origin_pool: Pool, destination_pool: Pool) -> Pool:
-        """Executes the meta-heuristic with external control.
+        """Executes the meta-heuristic with external control, optimized for computational efficiency."""
 
-        Args:
-            origin_pool (Pool): The initial solution pool.
-            destination_pool (Pool): The output solution pool.
+        # Cache frequently used attributes
+        evaluator = self.evaluator
+        acceptance = self.acceptance_criteria
+        stop_criteria = self.stop_criteria
+        thread_id = self.thread_id
+        use_progress_bar = self.use_progress_bar
+        local_search = self.local_seach
+        population_size = self.population_size
+        name = self.name
 
-        Returns:
-            Pool: The pool of solutions found during execution.
-        """
-        # Ramdomly generate initial population
+        # Randomly generate initial population
         example_sol = origin_pool.get_solution_at(0)
         initial_population = type(example_sol).generate_random_keys(
-            self.thread_id, example_sol, self.population_size
+            thread_id, example_sol, population_size
         )
 
         # Problem definition for Pymoo
         class PymooProblem(Problem):
             def __init__(
-                self, evaluator: Evaluator, local_seach: Optional[MetaHeuristic]
+                self, evaluator: Evaluator, local_search: Optional[MetaHeuristic]
             ):
                 super().__init__(
                     n_var=len(initial_population[0]), n_obj=1, xl=0.0, xu=1.0
                 )
-                self.evaluator: Evaluator = evaluator
-                self.local_seach: Optional[MetaHeuristic] = local_seach
+                self.evaluator = evaluator
+                self.local_search = local_search
 
             def _evaluate(self, X, out, *args, **kwargs):
-                solutions = []
-                for key in X:
-                    solutions.append(
-                        origin_pool.solutions[0].from_random_key(
-                            key, self.local_seach, self.evaluator
-                        )
+                solutions = [
+                    origin_pool.solutions[0].from_random_key(
+                        key, self.local_search, self.evaluator
                     )
-
-                fitness = [
-                    self.evaluator.evaluate(solution).get_objective_function()
-                    for solution in solutions
+                    for key in X
                 ]
-                out["F"] = np.array(fitness)
+                out["F"] = np.array(
+                    [
+                        self.evaluator.evaluate(sol).get_objective_function()
+                        for sol in solutions
+                    ]
+                )
 
-        problem = PymooProblem(self.evaluator, self.local_seach)
+        problem = PymooProblem(evaluator, local_search)
 
         # Initialize BRKGA algorithm
         algorithm = CustomBRKGA(
-            pop_size=self.population_size,
+            pop_size=population_size,
             elite_frac=self.elite_fraction,
             mutant_frac=self.mutant_fraction,
             bias=self.bias,
         )
 
         # External loop control
-        self.stop_criteria.reset()
-        self.acceptance_criteria.reset()
-        best_solution = origin_pool.get_best(self.evaluator)
-        best_evaluation = self.evaluator.evaluate(best_solution)
+        stop_criteria.reset()
+        acceptance.reset()
+
+        best_solution = origin_pool.get_best(evaluator)
+        best_evaluation = evaluator.evaluate(best_solution)
+
+        pbar = None
+        if use_progress_bar:
+            max_iterations = stop_criteria.max_iterations  # type: ignore
+            pbar = tqdm(
+                total=max_iterations, desc=f"{name} Progress", position=0, leave=True
+            )
 
         while not self.stop_on_evaluations([best_evaluation]):
-            self.stop_criteria.increment_counter()
+            stop_criteria.increment_counter(pbar)
 
+            # Run a single generation of BRKGA
             res = minimize(
-                problem,
-                algorithm,
-                ("n_gen", 1),  # Run one generation at a time
-                seed=self.thread_id,
-                verbose=False,
+                problem, algorithm, ("n_gen", 1), seed=thread_id, verbose=False
             )
+
             if res.opt:
                 # Get the best solution from this generation
                 best_idx = np.argmin(res.F)  # type: ignore
                 best_key = res.opt.get("X")[best_idx]
                 current_solution = origin_pool.solutions[0].from_random_key(
-                    best_key, self.local_seach, self.evaluator
+                    best_key, local_search, evaluator
                 )
-                current_evaluation = self.evaluator.evaluate(current_solution)
+                current_evaluation = evaluator.evaluate(current_solution)
+
                 destination_pool.add_solution(current_solution, self)
 
-                # Accept new solution if it improves the best solution
-                if self.acceptance_criteria.accept(
+                # Accept new solution if it improves the best one
+                if acceptance.accept(
                     best_evaluation, current_evaluation, current_solution
                 ):
                     best_solution = current_solution.copy()
                     best_evaluation = current_evaluation
             else:
                 LogManager.something_went_wrong(str(BRKGA), "res.opt is None")
-                raise
+
+        if pbar:
+            pbar.close()
 
         return destination_pool
 

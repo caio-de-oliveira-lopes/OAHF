@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Iterable
+from typing import Iterable, Optional
+
+from tqdm import tqdm
 
 from oahf.Base.Evaluation import Evaluation
 from oahf.Base.ThreadManager import ThreadManager
@@ -14,7 +16,7 @@ class StopCriteria(ABC):
         """Determines whether the stopping criteria have been met."""
         pass
 
-    def increment_counter(self) -> None:
+    def increment_counter(self, pbar: Optional[tqdm] = None) -> None:
         """Increments the internal counter and prints the progress report if enabled."""
         if self._progress_report:
             self.print_progress_report()

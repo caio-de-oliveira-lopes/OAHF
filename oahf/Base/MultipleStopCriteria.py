@@ -1,4 +1,6 @@
-from typing import Iterable, List
+from typing import Iterable, List, Optional
+
+from tqdm import tqdm
 
 from oahf.Base.StopCriteria import StopCriteria
 
@@ -48,12 +50,12 @@ class MultipleStopCriteria(StopCriteria):
             self.stop_when_any, *(criteria.copy() for criteria in self.stop_criterias)
         )
 
-    def increment_counter(self) -> None:
+    def increment_counter(self, pbar: Optional[tqdm] = None) -> None:
         """
         Increments the internal counter for each stop criteria and prints progress report if enabled.
         """
         for criteria in self.stop_criterias:
-            criteria.increment_counter()
+            criteria.increment_counter(pbar)
 
         super().increment_counter()
 
