@@ -786,8 +786,11 @@ class HeuristicParser:
                     if "perc_improvement" in criteria["no_improvement"]
                     else None
                 )
+                show_report = (
+                    criteria["no_improvement"].get("show_report", "").lower() == "true"
+                )
                 return StopNoImprovement(
-                    iterations_no_improv, seconds, iterations, perc_improv
+                    iterations_no_improv, seconds, iterations, perc_improv, show_report
                 )
             else:
                 raise ValueError(f"Unavailable stop criteria: {criteria}")

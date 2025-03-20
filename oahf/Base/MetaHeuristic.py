@@ -2,6 +2,8 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Iterable, List, Optional
 
+from tqdm import tqdm
+
 from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Entity import Entity
 from oahf.Base.Evaluation import Evaluation
@@ -111,13 +113,19 @@ class MetaHeuristic(Entity, ABC):
         """Enable solution logging."""
         self.log_solutions = True
 
-    def stop_on_evaluations(self, evs: Iterable["Evaluation"]) -> bool:
+    def stop_on_evaluations(
+        self, evs: Iterable["Evaluation"], pbar: Optional[tqdm] = None
+    ) -> bool:
         """Determine if the heuristic should stop based on evaluations."""
         if evs:
-            return self.stop_criteria.stop_on_evaluations(evs) or (
+            stop = self.stop_criteria.stop_on_evaluations(evs) or (
                 self.parent_metaheuristic is not None
-                and self.parent_metaheuristic.stop_on_evaluations(evs)
+                and self.parent_metaheuristic.stop_on_evaluations(evs, pbar)
             )
+            if pbar and stop:
+                pbar.close()
+
+            return stop
         return False
 
     @abstractmethod

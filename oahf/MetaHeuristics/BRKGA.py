@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 from pymoo.algorithms.soo.nonconvex.brkga import BRKGA as PymooBRKGA
@@ -106,21 +106,48 @@ class BRKGA(MetaHeuristic):
         # Problem definition for Pymoo
         class PymooProblem(Problem):
             def __init__(
-                self, evaluator: Evaluator, local_search: Optional[MetaHeuristic]
+                self,
+                evaluator: Evaluator,
+                local_search: Optional[MetaHeuristic],
+                origin_solution: Solution,
+                initial_population: List[List[float]],
             ):
                 super().__init__(
                     n_var=len(initial_population[0]), n_obj=1, xl=0.0, xu=1.0
                 )
                 self.evaluator = evaluator
                 self.local_search = local_search
+                self.origin_solution = (
+                    origin_solution  # A representative solution from the origin pool.
+                )
+                self.cache = {}  # Dictionary for memoization.
 
-            def _evaluate(self, X, out, *args, **kwargs):
-                solutions = [
-                    origin_pool.solutions[0].from_random_key(
+            def _make_hashable(self, key):
+                """
+                Converts the key into a hashable form.
+                If key is a numpy array, it is converted to a tuple of its elements.
+                """
+                if isinstance(key, np.ndarray):
+                    # Convert to tuple. Alternatively, you could use key.tobytes() if preferred.
+                    return tuple(key.tolist())
+                return key
+
+            def get_solution_from_key(self, key):
+                """
+                Retrieves the solution corresponding to the given key from the cache.
+                If it's not in the cache, computes it and stores it.
+                """
+                hashable_key = self._make_hashable(key)
+                if hashable_key not in self.cache:
+                    self.cache[hashable_key] = self.origin_solution.from_random_key(
                         key, self.local_search, self.evaluator
                     )
-                    for key in X
-                ]
+                return self.cache[hashable_key]
+
+            def _evaluate(self, X, out, *args, **kwargs):
+                # Compute solutions using memoization.
+                solutions = [self.get_solution_from_key(key) for key in X]
+                # Evaluate each solution and extract the objective function value.
                 out["F"] = np.array(
                     [
                         self.evaluator.evaluate(sol).get_objective_function()
@@ -128,7 +155,7 @@ class BRKGA(MetaHeuristic):
                     ]
                 )
 
-        problem = PymooProblem(evaluator, local_search)
+        problem = PymooProblem(evaluator, local_search, example_sol, initial_population)
 
         # Initialize BRKGA algorithm
         algorithm = CustomBRKGA(
@@ -149,10 +176,10 @@ class BRKGA(MetaHeuristic):
         if use_progress_bar:
             max_iterations = stop_criteria.max_iterations  # type: ignore
             pbar = tqdm(
-                total=max_iterations, desc=f"{name} Progress", position=0, leave=True
+                total=max_iterations, desc=f"{name} Progress", position=0, leave=False
             )
 
-        while not self.stop_on_evaluations([best_evaluation]):
+        while not self.stop_on_evaluations([best_evaluation], pbar):
             stop_criteria.increment_counter(pbar)
 
             # Run a single generation of BRKGA
@@ -179,9 +206,6 @@ class BRKGA(MetaHeuristic):
                     best_evaluation = current_evaluation
             else:
                 LogManager.something_went_wrong(str(BRKGA), "res.opt is None")
-
-        if pbar:
-            pbar.close()
 
         return destination_pool
 

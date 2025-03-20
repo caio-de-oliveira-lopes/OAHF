@@ -14,6 +14,7 @@ class StopNoImprovement(StopTimeIterationCriteria):
         seconds: Optional[float] = None,
         iterations: Optional[int] = None,
         perc_improv: Optional[float] = None,
+        show_report: bool = False,
     ):
         """
         Initializes a StopNoImprovement instance.
@@ -27,6 +28,7 @@ class StopNoImprovement(StopTimeIterationCriteria):
         self.iterations_no_improv = iterations_no_improv
         self.perc_improvement: Optional[float] = perc_improv
         self.last_evaluation: Optional[Evaluation] = None
+        self.show_report = show_report
 
     def stop(self) -> bool:
         """Determines if the stopping criteria have been met."""
@@ -67,9 +69,10 @@ class StopNoImprovement(StopTimeIterationCriteria):
     def report_stop(self):
         from oahf.Utils.Util import Util
 
-        Util.logger().info(
-            f"Method went through {self.iterations_no_improv} iterations without improvement."
-        )
+        if self.show_report:
+            Util.logger().info(
+                f"Method went through {self.iterations_no_improv} iterations without improvement."
+            )
 
     def current_status(self) -> str:
         """Returns the current status of the stopping criteria."""
@@ -82,11 +85,12 @@ class StopNoImprovement(StopTimeIterationCriteria):
 
     def increment_counter(self, pbar: Optional[tqdm] = None) -> None:
         """Increments the counter for evaluations."""
+        super().increment_counter(pbar)
+
         if self.last_evaluation is not None:
             self.ofs.append(self.last_evaluation.get_objective_function())
             if len(self.ofs) > self.iterations_no_improv + 1:
                 self.ofs.pop(0)  # Remove the first element
-        super().increment_counter(pbar)
 
     def reset(self) -> None:
         """Resets the stopping criteria."""

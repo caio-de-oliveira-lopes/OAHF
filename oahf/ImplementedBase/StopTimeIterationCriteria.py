@@ -75,8 +75,10 @@ class StopTimeIterationCriteria(StopCriteria):
     def increment_counter(self, pbar: Optional[tqdm] = None) -> None:
         """Increments the counter for iterations."""
         self.counter += 1
-        if pbar:
+        if pbar and pbar.n < pbar.total:
             pbar.update(1)
+            pbar.refresh()
+
         super().increment_counter()
 
     def get_progress(self) -> float:

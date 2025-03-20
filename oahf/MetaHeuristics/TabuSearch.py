@@ -170,7 +170,7 @@ class TabuSearch(MetaHeuristic):
         if self.use_progress_bar:
             max_iterations = stop_criteria.max_iterations  # type: ignore
             pbar = tqdm(
-                total=max_iterations, desc=f"{name} Progress", position=0, leave=True
+                total=max_iterations, desc=f"{name} Progress", position=0, leave=False
             )
 
         # Cache neighborhood count if constant
@@ -178,7 +178,7 @@ class TabuSearch(MetaHeuristic):
 
         while (
             ns := neighborhood_selection.get_next(thread_id)
-        ) and not self.stop_on_evaluations([best_eval]):
+        ) and not self.stop_on_evaluations([best_eval], pbar):
             if curr_sol is None:
                 break
 
@@ -201,7 +201,7 @@ class TabuSearch(MetaHeuristic):
                 # Iterate through moves in the current neighborhood
                 while (
                     move := ns.get_move()
-                ) is not None and not self.stop_on_evaluations([best_eval]):
+                ) is not None and not self.stop_on_evaluations([best_eval], pbar):
                     if move.apply():
                         curr_eval = evaluator.evaluate(curr_sol)
 
@@ -353,8 +353,6 @@ class TabuSearch(MetaHeuristic):
                 ns.allow_infeasible_movements = False
 
         type(best_sol).reset_intensification_diversification_structures()
-        if pbar:
-            pbar.close()
 
         return best_sol
 

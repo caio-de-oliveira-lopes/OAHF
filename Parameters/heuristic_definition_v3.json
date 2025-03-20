@@ -3496,7 +3496,8 @@
 		"stop_criteria": {
 			"no_improvement": {
 				"iterations": 1000,
-				"iterations_no_improv": 500
+				"iterations_no_improv": 500,
+				"show_report": "true"
 			}
 		},
 		"acceptance_criteria": {
