@@ -1,0 +1,5 @@
+# scenario.txt
+parameterFile           "C:/Projetos/OAHF/parameters.txt"
+targetRunner            "python target_runner.py"
+maxExperiments          5000
+trainInstancesDir       "C:\\Projetos\\OAHF\\Instances\\alwabp"
