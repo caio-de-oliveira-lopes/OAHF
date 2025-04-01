@@ -1,0 +1,7 @@
+# name                switch      type      values
+iterationsCandidate   "--iter "   c      (1000,3000,5000)
+populationSize        "--iter "   c      (40, 70, 100)
+crossoverProbability  "--iter "   c      (0.5, 0.6, 0.7, 0.8, 0.9)
+eliteFraction         "--iter "   c      (0.1, 0.2, 0.3)
+mutantFraction        "--iter "   c      (0.0)
+bias                  "--iter "   c      (0.3, 0.5, 0.7)

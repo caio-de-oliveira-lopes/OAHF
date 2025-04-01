@@ -212,7 +212,7 @@ class Util:
             data = json.load(f)
 
         # Get the value from the JSON data
-        value: int = int(data.get(input_name, None))
+        value: int = int(data.get(input_name, 1))
 
         return value
 
