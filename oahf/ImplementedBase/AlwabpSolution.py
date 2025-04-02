@@ -10,6 +10,7 @@ operations necessary to build, evaluate, and transform solutions.
 import copy
 import math
 from enum import Enum, auto
+import sys
 from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
@@ -183,7 +184,7 @@ class AlwabpSolution(Solution):
         }
 
         self._default_graph_orientation: GraphOrientation = GraphOrientation.FORWARD
-        self.print_solution_updates: bool = False
+        self.print_solution_updates: bool = True
         self._first_unassigned_station: Optional[int] = 1
         self._number_of_tasks: int = number_of_tasks
         self._number_of_workers: int = number_of_workers
@@ -225,6 +226,7 @@ class AlwabpSolution(Solution):
                 setattr(result, attr, self.__dict__[attr])
 
         result.get_new_id()
+        result.output_id = result.id
 
         # Copy attributes from Solution and AlwabpSolution.
         result.print_solution_updates = self.print_solution_updates
@@ -335,7 +337,7 @@ class AlwabpSolution(Solution):
         """
         self._update_tasks_executed_by_worker()
         self._fill_all_task_precedences()
-        self._update_bounded_task_execution_times(float(499))
+        self._update_bounded_task_execution_times()
         self._compute_best_workers_for_tasks()
         self._compute_workers_ranks()
         self._calculate_task_ordering_rules(GraphOrientation.BACKWARD)
@@ -551,22 +553,31 @@ class AlwabpSolution(Solution):
         self.order_solution_tasks()
         self.narrow_bounds()
 
-    def _update_bounded_task_execution_times(self, cycle_time: Optional[float]) -> None:
+    def _update_bounded_task_execution_times(self) -> None:
         """
         Updates the bounded execution times for tasks based on the provided cycle time.
-
-        For each task, if any execution time is infinite, it is replaced with cycle_time + 1.
 
         Args:
             cycle_time (Optional[float]): The cycle time to use for bounding execution times.
         """
         self._bounded_task_execution_times = copy.deepcopy(self._task_execution_times)
 
-        if cycle_time:
-            for task in self.tasks:
-                float_array = np.array(self._bounded_task_execution_times[task])
-                float_array[float_array == np.inf] = cycle_time + 1
-                self._bounded_task_execution_times[task] = float_array.tolist()
+        def max_finite_execution_time(task_execution_times: Dict[int, List[float]]) -> float:
+            max_time = -math.inf  # Lowest possible value
+    
+            for task_times in task_execution_times.values():
+                for time in task_times:
+                    if time != math.inf:
+                        max_time = max(max_time, time)
+    
+            return max_time
+
+        max_value = max_finite_execution_time(self._task_execution_times)
+
+        for task in self.tasks:
+            float_array = np.array(self._bounded_task_execution_times[task])
+            float_array[float_array == np.inf] = max_value * self._number_of_tasks
+            self._bounded_task_execution_times[task] = float_array.tolist()
 
     @property
     def unassigned_tasks(self):

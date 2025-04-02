@@ -9,7 +9,7 @@ from oahf.Base.Entity import Entity
 class Solution(Entity, ABC):
     def __init__(self) -> None:
         super().__init__()  # Call the constructor of the Entity class
-        self.print_solution_updates = False
+        self.print_solution_updates = True
         self.name = "Solution"
 
     @abstractmethod

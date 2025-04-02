@@ -237,7 +237,7 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                         moves_executed.append(new_move)
 
             construction = MultipleMovement(solution_copy, moves_executed)
-            if moves_executed:
+            if (worker_already_assigned and len(moves_executed) > 0) or (not worker_already_assigned and len(moves_executed) > 1):
                 move = construction.copy(solution)
                 worker_moves[worker] = move
                 if self.cost_function and not worker_already_assigned:

@@ -61,7 +61,7 @@ def get_latest_output_dir(base_output_path: str, instance_name: str):
 
 def extract_objective_from_output(output_dir: Path) -> float:
     # Look for the JSON output file with the expected pattern
-    json_files = list(output_dir.glob("*output_job_rotation_alwabp*.json"))
+    json_files = list(output_dir.glob("output_*alwabp*.json"))
     if not json_files:
         raise FileNotFoundError(
             f"No output JSON file found in {output_dir} with expected pattern"
@@ -83,15 +83,14 @@ def run_target_tabu():
     // reads the objective value for irace.
     """
     # Expect two candidate values: one for iterations and one for instance
-    if len(sys.argv) < 3:
-        print("Error: Candidate values for iterations and instance not provided.")
-        sys.exit(1)
-    candidate_iterations = sys.argv[1]  # e.g., "3000"
-    candidate_instance = sys.argv[2]  # e.g., "instance2.json"
+    candidate_iterations = sys.argv[6]  # e.g., "3000"
+    print(f"Iterations: {candidate_iterations}")
+    candidate_instance = sys.argv[8]  # e.g., "instance2.json"
+    print(f"Instance: {candidate_instance}")
     heuristic_id = 97  # Candidate heuristic id for modification
 
     # Define the path to the original heuristic file
-    heuristic_file = "C:/Projetos/OAHF/Parameters/heuristic_definition_v3.json"
+    heuristic_file = "C:/Projetos/OAHF/Parameters/heuristic_definition_tabu.json"
 
     # Update the heuristic file with the candidate iterations value
     modified_heuristic = modify_heuristic_iterations(
@@ -105,7 +104,69 @@ def run_target_tabu():
     print("Updated instance in parameters file:", updated_instance)
 
     # Run main.py with the updated parameters file
-    subprocess.run(["python", "main.py", params_file], check=True)
+    subprocess.run(
+    [
+        r"C:\Users\caio.lopes\AppData\Local\miniconda3\Scripts\conda.exe", "run", "--no-capture-output",
+        "-n", "irace_oahf", "python", r"C:\Projetos\OAHF\oahf\main.py", params_file
+    ],
+    check=True
+    )
+
+    # Read the parameter file to obtain the output_path and file_name
+    with open(params_file, "r", encoding="utf-8") as pf:
+        params = json.load(pf)
+    output_path = params.get("output_path")
+    instance_name = params.get("file_name")
+    if not output_path or not instance_name:
+        print("Output path or instance name not found in parameters file.")
+        sys.exit(1)
+
+    # Get the latest output directory using the output_path and instance name
+    latest_output_dir = get_latest_output_dir(output_path, instance_name)
+    print("Latest output directory:", latest_output_dir)
+
+    # Extract the objective value from the output file in the latest directory
+    objective_value = extract_objective_from_output(latest_output_dir)
+    print("Objective value:", objective_value)
+
+    # Since the goal is to maximize the number of different tasks executed, we return the negative value
+    return objective_value
+
+def run_target_hga():
+    """
+    // Uses the candidate values passed via command-line to modify the heuristic file
+    // and update the instance selection in the parameters file, then calls main.py and
+    // reads the objective value for irace.
+    """
+    # Expect two candidate values: one for iterations and one for instance
+    candidate_iterations = sys.argv[6]  # e.g., "3000"
+    print(f"Iterations: {candidate_iterations}")
+    candidate_instance = sys.argv[8]  # e.g., "instance2.json"
+    print(f"Instance: {candidate_instance}")
+    heuristic_id = 99  # Candidate heuristic id for modification
+
+    # Define the path to the original heuristic file
+    heuristic_file = "C:/Projetos/OAHF/Parameters/heuristic_definition_hga.json"
+
+    # Update the heuristic file with the candidate iterations value
+    modified_heuristic = modify_heuristic_iterations(
+        int(candidate_iterations), heuristic_file, heuristic_id
+    )
+    print("Modified heuristic file:", modified_heuristic)
+
+    # Update the parameter file to change the 'file_name' field based on the candidate instance
+    params_file = "C:/Projetos/OAHF/Parameters/oahf_parameters_copy.json"
+    updated_instance = update_instance_in_parameters(params_file, candidate_instance)
+    print("Updated instance in parameters file:", updated_instance)
+
+    # Run main.py with the updated parameters file
+    subprocess.run(
+    [
+        r"C:\Users\caio.lopes\AppData\Local\miniconda3\Scripts\conda.exe", "run", "--no-capture-output",
+        "-n", "irace_oahf", "python", r"C:\Projetos\OAHF\oahf\main.py", params_file
+    ],
+    check=True
+    )
 
     # Read the parameter file to obtain the output_path and file_name
     with open(params_file, "r", encoding="utf-8") as pf:
