@@ -184,7 +184,7 @@ class AlwabpSolution(Solution):
         }
 
         self._default_graph_orientation: GraphOrientation = GraphOrientation.FORWARD
-        self.print_solution_updates: bool = True
+        self.print_solution_updates: bool = False
         self._first_unassigned_station: Optional[int] = 1
         self._number_of_tasks: int = number_of_tasks
         self._number_of_workers: int = number_of_workers

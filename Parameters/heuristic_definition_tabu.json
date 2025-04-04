@@ -334,7 +334,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -353,7 +353,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -372,7 +372,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -391,7 +391,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -410,7 +410,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -429,7 +429,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -448,7 +448,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -467,7 +467,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -486,7 +486,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -505,7 +505,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -524,7 +524,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -543,7 +543,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -562,7 +562,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -581,7 +581,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -600,7 +600,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -619,7 +619,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -638,7 +638,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -657,7 +657,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -676,7 +676,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -695,7 +695,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -714,7 +714,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -733,7 +733,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -752,7 +752,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -771,7 +771,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -790,7 +790,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -809,7 +809,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -828,7 +828,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -847,7 +847,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -866,7 +866,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -885,7 +885,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -904,7 +904,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -923,7 +923,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					},
 					"acceptance_criteria": {
@@ -2522,7 +2522,7 @@
 					},
 					{
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 30000
 						}
 					}
 				]
@@ -2535,905 +2535,6 @@
 		"parameters": {},
 		"neighborhood_selection": 0,
 		"execution_order": 0,
-		"destination_pool": 0
-	},
-	{
-		"id": 65,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [1, 33],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 1,
-		"destination_pool": 0
-	},
-	{
-		"id": 66,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [2, 34],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 2,
-		"destination_pool": 0
-	},
-	{
-		"id": 67,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [3, 35],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 3,
-		"destination_pool": 0
-	},
-	{
-		"id": 68,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [4, 36],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 4,
-		"destination_pool": 0
-	},
-	{
-		"id": 69,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [5, 37],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 5,
-		"destination_pool": 0
-	},
-	{
-		"id": 70,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [6, 38],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 6,
-		"destination_pool": 0
-	},
-	{
-		"id": 71,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [7, 39],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 7,
-		"destination_pool": 0
-	},
-	{
-		"id": 72,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [8, 40],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 8,
-		"destination_pool": 0
-	},
-	{
-		"id": 73,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [9, 41],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 9,
-		"destination_pool": 0
-	},
-	{
-		"id": 74,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [10, 42],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 10,
-		"destination_pool": 0
-	},
-	{
-		"id": 75,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [11, 43],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 11,
-		"destination_pool": 0
-	},
-	{
-		"id": 76,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [12, 44],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 12,
-		"destination_pool": 0
-	},
-	{
-		"id": 77,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [13, 45],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 13,
-		"destination_pool": 0
-	},
-	{
-		"id": 78,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [14, 46],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 14,
-		"destination_pool": 0
-	},
-	{
-		"id": 79,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [15, 47],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 15,
-		"destination_pool": 0
-	},
-	{
-		"id": 80,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [16, 48],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 16,
-		"destination_pool": 0
-	},
-	{
-		"id": 81,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [17, 49],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 17,
-		"destination_pool": 0
-	},
-	{
-		"id": 82,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [18, 50],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 18,
-		"destination_pool": 0
-	},
-	{
-		"id": 83,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [19, 51],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 19,
-		"destination_pool": 0
-	},
-	{
-		"id": 84,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [20, 52],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 20,
-		"destination_pool": 0
-	},
-	{
-		"id": 85,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [21, 53],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 21,
-		"destination_pool": 0
-	},
-	{
-		"id": 86,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [22, 54],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 22,
-		"destination_pool": 0
-	},
-	{
-		"id": 87,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [23, 55],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 23,
-		"destination_pool": 0
-	},
-	{
-		"id": 88,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [24, 56],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 24,
-		"destination_pool": 0
-	},
-	{
-		"id": 89,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [25, 57],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 25,
-		"destination_pool": 0
-	},
-	{
-		"id": 90,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [26, 58],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 26,
-		"destination_pool": 0
-	},
-	{
-		"id": 91,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [27, 59],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 27,
-		"destination_pool": 0
-	},
-	{
-		"id": 92,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [28, 60],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 28,
-		"destination_pool": 0
-	},
-	{
-		"id": 93,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [29, 61],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 29,
-		"destination_pool": 0
-	},
-	{
-		"id": 94,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [30, 62],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 30,
-		"destination_pool": 0
-	},
-	{
-		"id": 95,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [31, 63],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 31,
 		"destination_pool": 0
 	},
 	{
