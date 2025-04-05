@@ -142,8 +142,8 @@ class HeuristicParser:
         Util.set_start_timestamp(start_time)
         last_mh = None
         first = True
-
-        for mh in self.ordered_metaheuristics:
+        num_mh = len(self.ordered_metaheuristics)
+        for idx, mh in enumerate(self.ordered_metaheuristics, start=1):
             changed_mh = mh.name != last_mh
             if changed_mh:
                 if not first:
@@ -156,7 +156,8 @@ class HeuristicParser:
                 )
                 first = False
                 last_mh = mh.name
-
+            
+            #print(f"{(idx)}/{num_mh}")
             origin_pool = (
                 mh.origin_pool
                 if mh.origin_pool is not None

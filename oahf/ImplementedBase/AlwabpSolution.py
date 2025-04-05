@@ -10,7 +10,6 @@ operations necessary to build, evaluate, and transform solutions.
 import copy
 import math
 from enum import Enum, auto
-import sys
 from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
@@ -95,13 +94,13 @@ class AlwabpSolution(Solution):
     # key is one hash that, once solution is reversed, the value hash is valid
     _hash_reverse_map: Dict[int, int] = {}
 
-    # key = tuple(solution_hash, station, task), value is the new hash
-    _hash_task_insertion_map: Dict[tuple[int, int, int], int] = {}
-    _hash_task_removal_map: Dict[tuple[int, int, int], int] = {}
+    # key = hash(solution_hash, station, task), value is the new hash
+    _hash_task_insertion_map: Dict[int, int] = {}
+    _hash_task_removal_map: Dict[int, int] = {}
 
-    # key = tuple(solution_hash, station, worker), value is the new hash
-    _hash_worker_insertion_map: Dict[tuple[int, int, int], int] = {}
-    _hash_worker_removal_map: Dict[tuple[int, int, int], int] = {}
+    # key = hash(solution_hash, station, worker), value is the new hash
+    _hash_worker_insertion_map: Dict[int, int] = {}
+    _hash_worker_removal_map: Dict[int, int] = {}
 
     def __init__(
         self, number_of_tasks: int, number_of_workers: int, number_of_stations: int
@@ -1066,13 +1065,13 @@ class AlwabpSolution(Solution):
                 if recalculate_cycle_time:
                     self.calculate_cycle_time(station, True)
 
-                key = (sol_hash, station, worker)
+                key = hash((sol_hash, station, worker))
                 if new_hash := AlwabpSolution._hash_worker_insertion_map.get(key):
                     self._hash_memo = new_hash
                 else:
                     self._hash_memo = None
                     new_hash = hash(self)
-                    reverse_key = (new_hash, station, worker)
+                    reverse_key = hash((new_hash, station, worker))
                     AlwabpSolution._hash_worker_insertion_map[key] = new_hash
                     AlwabpSolution._hash_worker_removal_map[reverse_key] = sol_hash
 
@@ -1113,13 +1112,13 @@ class AlwabpSolution(Solution):
                 if recalculate_cycle_time:
                     self.calculate_cycle_time(station, True)
 
-                key = (sol_hash, station, worker)
+                key = hash((sol_hash, station, worker))
                 if new_hash := AlwabpSolution._hash_worker_removal_map.get(key):
                     self._hash_memo = new_hash
                 else:
                     self._hash_memo = None
                     new_hash = hash(self)
-                    reverse_key = (new_hash, station, worker)
+                    reverse_key = hash((new_hash, station, worker))
                     AlwabpSolution._hash_worker_removal_map[key] = new_hash
                     AlwabpSolution._hash_worker_insertion_map[reverse_key] = sol_hash
 
@@ -1164,13 +1163,13 @@ class AlwabpSolution(Solution):
                         None if station >= self._number_of_stations else station + 1
                     )
 
-                key = (sol_hash, station, task)
+                key = hash((sol_hash, station, task))
                 if new_hash := AlwabpSolution._hash_task_insertion_map.get(key):
                     self._hash_memo = new_hash
                 else:
                     self._hash_memo = None
                     new_hash = hash(self)
-                    reverse_key = (new_hash, station, task)
+                    reverse_key = hash((new_hash, station, task))
                     AlwabpSolution._hash_task_insertion_map[key] = new_hash
                     AlwabpSolution._hash_task_removal_map[reverse_key] = sol_hash
 
@@ -1216,13 +1215,13 @@ class AlwabpSolution(Solution):
                 ):
                     self._first_unassigned_station = station
 
-                key = (sol_hash, station, task)
+                key = hash((sol_hash, station, task))
                 if new_hash := AlwabpSolution._hash_task_removal_map.get(key):
                     self._hash_memo = new_hash
                 else:
                     self._hash_memo = None
                     new_hash = hash(self)
-                    reverse_key = (new_hash, station, task)
+                    reverse_key = hash((new_hash, station, task))
                     AlwabpSolution._hash_task_removal_map[key] = new_hash
                     AlwabpSolution._hash_task_insertion_map[reverse_key] = sol_hash
 
