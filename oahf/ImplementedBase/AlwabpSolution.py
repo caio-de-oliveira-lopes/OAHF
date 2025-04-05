@@ -651,20 +651,18 @@ class AlwabpSolution(Solution):
             int: The computed hash value.
         """
         if not self._hash_memo:
-            self._hash_memo = hash(
-                (
-                    frozenset(
-                        (
-                            station,
-                            frozenset(tasks),
-                            self.station_worker_assignment[station],
-                        )
-                        for station, tasks in self.station_tasks_assignment.items()
-                    ),
-                    self.default_graph_orientation,
+            combined_hash = 0
+            for station, tasks in self.station_tasks_assignment.items():
+                # Combine the hashes for the station, its worker assignment,
+                # and the tasks (using a sum over task hashes as an example).
+                station_data_hash = (
+                    hash(station) ^
+                    hash(self.station_worker_assignment[station]) ^
+                    sum(hash(task) for task in tasks)
                 )
-            )
-
+                combined_hash ^= station_data_hash  # XOR is commutative.
+            # Include the graph orientation in the final hash.
+            self._hash_memo = combined_hash ^ hash(self.default_graph_orientation)
         return self._hash_memo
 
     def __str__(self) -> str:

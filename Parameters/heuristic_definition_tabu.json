@@ -334,7 +334,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -353,7 +353,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -372,7 +372,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -391,7 +391,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -410,7 +410,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -429,7 +429,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -448,7 +448,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -467,7 +467,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -486,7 +486,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -505,7 +505,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -524,7 +524,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -543,7 +543,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -562,7 +562,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -581,7 +581,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -600,7 +600,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -619,7 +619,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -638,7 +638,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -657,7 +657,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -676,7 +676,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -695,7 +695,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -714,7 +714,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -733,7 +733,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -752,7 +752,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -771,7 +771,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -790,7 +790,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -809,7 +809,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -828,7 +828,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -847,7 +847,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -866,7 +866,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -885,7 +885,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -904,7 +904,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -923,7 +923,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					},
 					"acceptance_criteria": {
@@ -2522,7 +2522,7 @@
 					},
 					{
 						"max_cycle_time": {
-							"cycle_time_limit": 30000
+							"cycle_time_limit": 20000
 						}
 					}
 				]
@@ -2595,10 +2595,8 @@
 		"id":99,
 		"name": "hga",
 		"stop_criteria": {
-			"no_improvement": {
+			"time_iteration": {
 				"iterations": 1000,
-				"iterations_no_improv": 500,
-				"show_report": "true"
 			}
 		},
 		"acceptance_criteria": {
