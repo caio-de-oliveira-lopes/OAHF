@@ -100,7 +100,7 @@ def run_target_tabu():
     #print("Modified heuristic file:", modified_heuristic)
 
     # Update the parameter file to change the 'file_name' field based on the candidate instance
-    params_file = "C:/Projetos/OAHF/Parameters/oahf_parameters_copy.json"
+    params_file = "C:/Projetos/OAHF/Parameters/oahf_parameters_tabu_tunning.json"
     updated_instance = update_instance_in_parameters(params_file, candidate_instance)
     #print("Updated instance in parameters file:", updated_instance)
 
@@ -234,5 +234,5 @@ def run_target_hga():
 
 
 if __name__ == "__main__":
-    #run_target_tabu()
-    run_target_hga()
+    run_target_tabu()
+    #run_target_hga()
