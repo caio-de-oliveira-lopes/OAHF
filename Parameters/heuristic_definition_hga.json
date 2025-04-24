@@ -334,7 +334,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -353,7 +353,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -372,7 +372,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -391,7 +391,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -410,7 +410,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -429,7 +429,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -448,7 +448,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -467,7 +467,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -486,7 +486,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -505,7 +505,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -524,7 +524,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -543,7 +543,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -562,7 +562,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -581,7 +581,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -600,7 +600,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -619,7 +619,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -638,7 +638,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -657,7 +657,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -676,7 +676,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -695,7 +695,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -714,7 +714,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -733,7 +733,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -752,7 +752,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -771,7 +771,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -790,7 +790,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -809,7 +809,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -828,7 +828,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -847,7 +847,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -866,7 +866,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -885,7 +885,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -904,7 +904,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -923,7 +923,7 @@
 					"greediness": 1,
 					"stop_criteria": {
 						"max_cycle_time": {
-							"cycle_time_limit": 20000
+							"cycle_time_limit": 15000
 						}
 					},
 					"acceptance_criteria": {
@@ -963,10 +963,6 @@
 		{
 			"id": 73,
 			"name": "alwabp_worker_diversification"
-		},
-		{
-			"id": 74,
-			"name": "worker_swap"
 		}
 	],
 "neighborhood_selections": [
@@ -1525,17 +1521,9 @@
 	{
 		"id": 69,
 		"name": "list_selection",
-		"neighborhood_ids": [ 32, 33, 34, 35, 68, 69, 74 ],
+		"neighborhood_ids": [32, 34, 68],
 		"parameters": {
 			"circular": "false"
-		}
-	},
-	{
-		"id": 70,
-		"name": "list_selection",
-		"neighborhood_ids": [ 32, 33, 34, 35, 68, 69, 74 ],
-		"parameters": {
-			"circular": "true"
 		}
 	}
 ],
@@ -1548,7 +1536,9 @@
 				"alwabp_evaluator": {
 					"stop_on_first": "true",
 					"constraints": {
-						"max_cycle_time": {}
+						"max_cycle_time": {},
+						"precedence": {},
+						"worker_task": {}
 					}
 				}
 			}
@@ -1569,1034 +1559,57 @@
 ],
 "metaheuristics": [
 	{
-		"id": 0,
-		"name": "grc",
+		"id": 98,
+		"name": "multiple_best_improvement",
 		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
+			"no_improvement": { 
+				"iterations_no_improv": 1,
+				"seconds": 15
 			}
 		},
 		"acceptance_criteria": {
 			"better": {}
 		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 0
-	},
-	{
-		"id": 1,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 1
-	},
-	{
-		"id": 2,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 2
-	},
-	{
-		"id": 3,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 3
-	},
-	{
-		"id": 4,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 4
-	},
-	{
-		"id": 5,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 5
-	},
-	{
-		"id": 6,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 6
-	},
-	{
-		"id": 7,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 7
-	},
-	{
-		"id": 8,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 8
-	},
-	{
-		"id": 9,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 9
-	},
-	{
-		"id": 10,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 10
-	},
-	{
-		"id": 11,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 11
-	},
-	{
-		"id": 12,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 12
-	},
-	{
-		"id": 13,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 13
-	},
-	{
-		"id": 14,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 14
-	},
-	{
-		"id": 15,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 15
-	},
-	{
-		"id": 16,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 16
-	},
-	{
-		"id": 17,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 17
-	},
-	{
-		"id": 18,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 18
-	},
-	{
-		"id": 19,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 19
-	},
-	{
-		"id": 20,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 20
-	},
-	{
-		"id": 21,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 21
-	},
-	{
-		"id": 22,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 22
-	},
-	{
-		"id": 23,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 23
-	},
-	{
-		"id": 24,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 24
-	},
-	{
-		"id": 25,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 25
-	},
-	{
-		"id": 26,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 26
-	},
-	{
-		"id": 27,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 27
-	},
-	{
-		"id": 28,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 28
-	},
-	{
-		"id": 29,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 29
-	},
-	{
-		"id": 30,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 30
-	},
-	{
-		"id": 31,
-		"name": "grc",
-		"stop_criteria": {
-			"workers_unassigned": {
-				"num_unassigned_workers": 0
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {
-			"greediness": 1,
-			"order_moves": "false"
-		},
-		"neighborhood_selection": 31
-	},
-	{
-		"id": 32,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
 		"parameters": {},
-		"neighborhood_selection": 32,
+		"neighborhood_selection": 69,
 		"destination_pool": 0
 	},
 	{
-		"id": 33,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 33,
-		"destination_pool": 0
-	},
-	{
-		"id": 34,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 34,
-		"destination_pool": 0
-	},
-	{
-		"id": 35,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 35,
-		"destination_pool": 0
-	},
-	{
-		"id": 36,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 36,
-		"destination_pool": 0
-	},
-	{
-		"id": 37,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 37,
-		"destination_pool": 0
-	},
-	{
-		"id": 38,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 38,
-		"destination_pool": 0
-	},
-	{
-		"id": 39,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 39,
-		"destination_pool": 0
-	},
-	{
-		"id": 40,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 40,
-		"destination_pool": 0
-	},
-	{
-		"id": 41,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 41,
-		"destination_pool": 0
-	},
-	{
-		"id": 42,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 42,
-		"destination_pool": 0
-	},
-	{
-		"id": 43,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 43,
-		"destination_pool": 0
-	},
-	{
-		"id": 44,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 44,
-		"destination_pool": 0
-	},
-	{
-		"id": 45,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 45,
-		"destination_pool": 0
-	},
-	{
-		"id": 46,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 46,
-		"destination_pool": 0
-	},
-	{
-		"id": 47,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 47,
-		"destination_pool": 0
-	},
-	{
-		"id": 48,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 48,
-		"destination_pool": 0
-	},
-	{
-		"id": 49,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 49,
-		"destination_pool": 0
-	},
-	{
-		"id": 50,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 50,
-		"destination_pool": 0
-	},
-	{
-		"id": 51,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 51,
-		"destination_pool": 0
-	},
-	{
-		"id": 52,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 52,
-		"destination_pool": 0
-	},
-	{
-		"id": 53,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 53,
-		"destination_pool": 0
-	},
-	{
-		"id": 54,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 54,
-		"destination_pool": 0
-	},
-	{
-		"id": 55,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 55,
-		"destination_pool": 0
-	},
-	{
-		"id": 56,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 56,
-		"destination_pool": 0
-	},
-	{
-		"id": 57,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 57,
-		"destination_pool": 0
-	},
-	{
-		"id": 58,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 58,
-		"destination_pool": 0
-	},
-	{
-		"id": 59,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 59,
-		"destination_pool": 0
-	},
-	{
-		"id": 60,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 60,
-		"destination_pool": 0
-	},
-	{
-		"id": 61,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 61,
-		"destination_pool": 0
-	},
-	{
-		"id": 62,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 62,
-		"destination_pool": 0
-	},
-	{
-		"id": 63,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 63,
-		"destination_pool": 0
-	},
-	{
-		"id": 64,
-		"name": "grasp",
-		"stop_criteria": {
-			"multiple_stop_criteria": {
-				"stop_when_any": "true",
-				"stop_criterias": [
-					{
-						"time_iteration": {
-							"iterations": 1
-						}
-					},
-					{
-						"max_cycle_time": {
-							"cycle_time_limit": 20000
-						}
-					}
-				]
-			}
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"metaheuristics_used": [0, 32],
-		"parameters": {},
-		"neighborhood_selection": 0,
-		"execution_order": 0,
-		"destination_pool": 0
-	},
-	{
-		"id": 96,
-		"name": "multiple_best_improvement",
-		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
-		},
-		"parameters": {},
-		"neighborhood_selection": 68,
-		"destination_pool": 0
-	},
-	{
-		"id":97,
-		"name": "tabu",
+		"id":99,
+		"name": "hga",
 		"stop_criteria": {
 			"time_iteration": {
-				"iterations": 1000,
 				"seconds": 300
 			}
 		},
 		"acceptance_criteria": {
 			"better": {}
 		},
-		"neighborhood_selection": 70,
 		"parameters": {
-			"intensification_criteria": {
-				"time_iteration": {
-					"iterations": 300
+			"population_size": 100,
+			"elite_fraction": 0.5,
+			"mutant_fraction": 0.0,
+			"bias": 0.5,
+			"local_seach": 98,
+			"decoder_stop_criteria": {
+				"multiple_stop_criteria": {
+					"stop_when_any": "true",
+					"stop_criterias": [
+						{
+							"workers_unassigned": {
+								"num_unassigned_workers": 0
+							}
+						},
+						{
+							"max_cycle_time": {
+								"cycle_time_limit": 15000
+							}
+						}
+					]
 				}
-			},
-			"second_neighborhood_selection": 69,
-			"intensification_neighborhood_selection": 66,
-			"diversification_neighborhood_selection": 67,
-			"intensification_local_search": 96,
-			"diversification_local_search": 96
+			}
 		},
-		"execution_order": 1,
-		"origin_pool": 0,
+		"execution_order": 0,
 		"destination_pool": 0
 	}
 ]

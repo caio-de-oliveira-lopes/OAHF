@@ -1,0 +1,3 @@
+Description of the best-so-far configuration:
+   .ID. StopCriteriaSeconds populationSize eliteFraction mutantFraction bias
+78   78                 180             25           0.1            0.0  0.7

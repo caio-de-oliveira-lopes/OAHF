@@ -19,6 +19,7 @@ class HGA(BRKGA):
         elite_fraction: float,
         mutant_fraction: float,
         bias: float,
+        decoder_stop_criteria: Optional[StopCriteria],
         local_search: MetaHeuristic,
         origin_pool: Optional[Pool] = None,
         destination_pool: Optional[Pool] = None,
@@ -47,6 +48,7 @@ class HGA(BRKGA):
             elite_fraction,
             mutant_fraction,
             bias,
+            decoder_stop_criteria,
             origin_pool,
             destination_pool,
         )
@@ -63,7 +65,8 @@ class HGA(BRKGA):
             self.elite_fraction,
             self.mutant_fraction,
             self.bias,
-            self.local_search.copy(thread),  # Ensuring local search is copied
+            self.decoder_stop_criteria.copy() if self.decoder_stop_criteria is not None else None,
+            self.local_search.copy(thread),  # type: ignore
             self.origin_pool.copy() if self.origin_pool is not None else None,
             self.destination_pool.copy() if self.destination_pool is not None else None,
         )

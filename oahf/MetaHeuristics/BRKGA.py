@@ -27,6 +27,7 @@ class BRKGA(MetaHeuristic):
         elite_fraction: float,
         mutant_fraction: float,
         bias: float,
+        decoder_stop_criteria: Optional[StopCriteria],
         origin_pool: Optional[Pool] = None,
         destination_pool: Optional[Pool] = None,
     ) -> None:
@@ -59,7 +60,8 @@ class BRKGA(MetaHeuristic):
         self.elite_fraction = elite_fraction
         self.mutant_fraction = mutant_fraction
         self.bias = bias
-        self.local_seach: Optional[MetaHeuristic] = None
+        self.decoder_stop_criteria = decoder_stop_criteria
+        self.local_search: Optional[MetaHeuristic] = None
         self.use_progress_bar = (
             isinstance(stop_criteria, StopTimeIterationCriteria)
             and stop_criteria.max_iterations is not None
@@ -76,6 +78,7 @@ class BRKGA(MetaHeuristic):
             self.elite_fraction,
             self.mutant_fraction,
             self.bias,
+            self.decoder_stop_criteria.copy() if self.decoder_stop_criteria is not None else None,
             self.origin_pool.copy() if self.origin_pool is not None else None,
             self.destination_pool.copy() if self.destination_pool is not None else None,
         )
@@ -87,13 +90,15 @@ class BRKGA(MetaHeuristic):
     def run_operation(self, origin_pool: Pool, destination_pool: Pool) -> Pool:
         """Executes the meta-heuristic with external control, optimized for computational efficiency."""
 
+        from oahf.Utils.Util import Util
+
         # Cache frequently used attributes
         evaluator = self.evaluator
         acceptance = self.acceptance_criteria
         stop_criteria = self.stop_criteria
         thread_id = self.thread_id
         use_progress_bar = self.use_progress_bar
-        local_search = self.local_seach
+        local_search = self.local_search
         population_size = self.population_size
         name = self.name
 
@@ -111,12 +116,14 @@ class BRKGA(MetaHeuristic):
                 local_search: Optional[MetaHeuristic],
                 origin_solution: Solution,
                 initial_population: List[List[float]],
+                decoder_stop_criteria: Optional[StopCriteria]
             ):
                 super().__init__(
                     n_var=len(initial_population[0]), n_obj=1, xl=0.0, xu=1.0
                 )
                 self.evaluator = evaluator
                 self.local_search = local_search
+                self.decoder_stop_criteria = decoder_stop_criteria
                 self.origin_solution = (
                     origin_solution  # A representative solution from the origin pool.
                 )
@@ -130,6 +137,8 @@ class BRKGA(MetaHeuristic):
                 if isinstance(key, np.ndarray):
                     # Convert to tuple. Alternatively, you could use key.tobytes() if preferred.
                     return tuple(key.tolist())
+                if isinstance(key, list):
+                    return tuple(key)
                 return key
 
             def get_solution_from_key(self, key):
@@ -140,7 +149,7 @@ class BRKGA(MetaHeuristic):
                 hashable_key = self._make_hashable(key)
                 if hashable_key not in self.cache:
                     self.cache[hashable_key] = self.origin_solution.from_random_key(
-                        key, self.local_search, self.evaluator
+                        key, self.local_search, self.evaluator, self.decoder_stop_criteria, destination_pool, self
                     )
                 return self.cache[hashable_key]
 
@@ -155,7 +164,7 @@ class BRKGA(MetaHeuristic):
                     ]
                 )
 
-        problem = PymooProblem(evaluator, local_search, example_sol, initial_population)
+        problem = PymooProblem(evaluator, local_search, example_sol, initial_population, self.decoder_stop_criteria)
 
         # Initialize BRKGA algorithm
         algorithm = CustomBRKGA(
@@ -165,9 +174,10 @@ class BRKGA(MetaHeuristic):
             bias=self.bias,
         )
 
-        # External loop control
-        stop_criteria.reset()
-        acceptance.reset()
+        Util.logger().info("Processing initial population...")
+        # Force evaluation of the initial population by using the custom termination.
+        _ = minimize(problem, algorithm, ("n_gen", 1), seed=thread_id, verbose=False)
+        Util.logger().info(f"Finished processing initial population at {Util.get_duration_from_start_timestamp()}.")
 
         best_solution = origin_pool.get_best(evaluator)
         best_evaluation = evaluator.evaluate(best_solution)
@@ -178,6 +188,10 @@ class BRKGA(MetaHeuristic):
             pbar = tqdm(
                 total=max_iterations, desc=f"{name} Progress", position=0, leave=False
             )
+
+        # External loop control
+        stop_criteria.reset()
+        acceptance.reset()
 
         while not self.stop_on_evaluations([best_evaluation], pbar):
             stop_criteria.increment_counter(pbar)
@@ -191,9 +205,7 @@ class BRKGA(MetaHeuristic):
                 # Get the best solution from this generation
                 best_idx = np.argmin(res.F)  # type: ignore
                 best_key = res.opt.get("X")[best_idx]
-                current_solution = origin_pool.solutions[0].from_random_key(
-                    best_key, local_search, evaluator
-                )
+                current_solution = problem.get_solution_from_key(best_key)
                 current_evaluation = evaluator.evaluate(current_solution)
 
                 destination_pool.add_solution(current_solution, self)

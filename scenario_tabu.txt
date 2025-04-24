@@ -1,4 +1,4 @@
 parameterFile = "C:/Projetos/OAHF/parameters_tabu.txt"
 targetRunner = "C:/Projetos/OAHF/target_runner.bat"
-maxExperiments = 5000
-trainInstancesDir = "C:/Projetos/OAHF/Instances/alwabp"
+maxExperiments = 1000
+trainInstancesDir = "C:/Projetos/OAHF/Instances/alwabp/training_instances"

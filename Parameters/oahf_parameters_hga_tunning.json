@@ -1,0 +1,9 @@
+{
+    "file_name": "var_large_tricky_instance_n=100_23",
+    "input_path": "C:\\Projetos\\OAHF\\Instances\\alwabp\\training_instances",
+    "output_path": "C:\\Projetos\\OAHF\\Outputs\\tunning\\hga",
+    "cycle_time_path": "C:\\Projetos\\OAHF\\Parameters\\recommeded_maximum_mean_cycle_time.json",
+    "heuristic_definition_file": "C:\\Projetos\\OAHF\\Parameters\\heuristic_definition_hga_modified.json",
+    "input_type": "AlwabpSolution",
+    "random_seed": 1
+}

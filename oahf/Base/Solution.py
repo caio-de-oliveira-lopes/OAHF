@@ -170,6 +170,9 @@ class Solution(Entity, ABC):
         random_keys: numpy.ndarray,
         local_seach: Optional["MetaHeuristic"],
         evaluator: "Evaluator",
+        decoder_stop_criteria: Optional["StopCriteria"],
+        destination_pool: Optional["Pool"],
+        calling_mh: Optional["MetaHeuristic"]
     ) -> "Solution":
         """
         Reconstructs the solution from a random-keys representation.

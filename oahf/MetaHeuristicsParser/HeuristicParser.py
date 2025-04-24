@@ -148,11 +148,11 @@ class HeuristicParser:
             if changed_mh:
                 if not first:
                     Util.logger().info(
-                        f"Ending execution at {Util.get_duration_from_start_timestamp()}"
+                        f"Ending execution at {Util.get_duration_from_start_timestamp()}."
                     )
                 print(Util.line())
                 Util.logger().info(
-                    f"Started {mh.name} at {Util.get_duration_from_start_timestamp()}"
+                    f"Started {mh.name} at {Util.get_duration_from_start_timestamp()}."
                 )
                 first = False
                 last_mh = mh.name
@@ -170,7 +170,7 @@ class HeuristicParser:
 
         print(Util.line())
         Util.logger().info(
-            f"Total Execution Time: {Util.get_duration_from_start_timestamp()}"
+            f"Total Execution Time: {Util.get_duration_from_start_timestamp()}."
         )
 
         self.fix_all_solutions_in_pools()
@@ -596,10 +596,11 @@ class HeuristicParser:
                         else None
                     )
 
-                    population_size: int = m["parameters"].get("population_size", 100)
-                    elite_fraction: float = m["parameters"].get("elite_fraction", 0.2)
-                    mutant_fraction: float = m["parameters"].get("mutant_fraction", 0.1)
-                    bias: float = m["parameters"].get("bias", 0.7)
+                    population_size: int = int(m["parameters"].get("population_size", 100))
+                    elite_fraction: float = float(m["parameters"].get("elite_fraction", 0.2))
+                    mutant_fraction: float = float(m["parameters"].get("mutant_fraction", 0.1))
+                    bias: float = float(m["parameters"].get("bias", 0.7)) 
+                    decoder_stop_criteria = self.parse_stop_criteria(m["parameters"]["decoder_stop_criteria"])
 
                     meta = BRKGA(
                         thread_id,
@@ -610,6 +611,7 @@ class HeuristicParser:
                         elite_fraction,
                         mutant_fraction,
                         bias,
+                        decoder_stop_criteria,
                         origin_pool,
                         destination_pool,
                     )
@@ -630,10 +632,11 @@ class HeuristicParser:
                         else None
                     )
 
-                    population_size: int = m["parameters"].get("population_size", 100)
-                    elite_fraction: float = m["parameters"].get("elite_fraction", 0.2)
-                    mutant_fraction: float = m["parameters"].get("mutant_fraction", 0.1)
-                    bias: float = m["parameters"].get("bias", 0.7)
+                    population_size: int = int(m["parameters"].get("population_size", 100))
+                    elite_fraction: float = float(m["parameters"].get("elite_fraction", 0.2))
+                    mutant_fraction: float = float(m["parameters"].get("mutant_fraction", 0.1))
+                    bias: float = float(m["parameters"].get("bias", 0.7))                   
+                    decoder_stop_criteria = self.parse_stop_criteria(m["parameters"]["decoder_stop_criteria"])
                     local_search = self.metaheuristics[m["parameters"]["local_seach"]]
 
                     meta = HGA(
@@ -645,6 +648,7 @@ class HeuristicParser:
                         elite_fraction,
                         mutant_fraction,
                         bias,
+                        decoder_stop_criteria,
                         local_search,
                         origin_pool,
                         destination_pool,

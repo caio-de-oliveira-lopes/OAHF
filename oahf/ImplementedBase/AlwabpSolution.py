@@ -18,7 +18,7 @@ from oahf.Base.Movement import Movement
 from oahf.Base.MultipleMovement import MultipleMovement
 from oahf.Base.Solution import Solution
 from oahf.Base.ThreadManager import ThreadManager
-from oahf.ImplementedBase import AlwabpRemovalMovement
+from oahf.ImplementedBase import AlwabpRemovalMovement, NoStopCriteria
 from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils import EnumUtil
@@ -2322,6 +2322,9 @@ class AlwabpSolution(Solution):
         random_keys: np.ndarray,
         local_seach: Optional["MetaHeuristic"],
         evaluator: "AlwabpEvaluator",
+        decoder_stop_criteria: Optional["StopCriteria"],
+        destination_pool: Optional["Pool"],
+        calling_mh: Optional["MetaHeuristic"]
     ) -> "AlwabpSolution":
         new_solution = self.copy()
         new_solution.reset()
@@ -2334,7 +2337,6 @@ class AlwabpSolution(Solution):
         if not isinstance(evaluator, AlwabpEvaluator):
             return new_solution
 
-        from oahf.Base.MultipleStopCriteria import MultipleStopCriteria
         from oahf.ImplementedBase.AlwabpWorkerOrientedInsertNS import (
             AlwabpWorkerOrientedInsertNS,
         )
@@ -2342,12 +2344,6 @@ class AlwabpSolution(Solution):
             BetterAcceptanceCriteria,
         )
         from oahf.ImplementedBase.ListSelection import ListSelection
-        from oahf.ImplementedBase.MaxCycleTimeStopCriteria import (
-            MaxCycleTimeStopCriteria,
-        )
-        from oahf.ImplementedBase.WorkersUnassignedStopCriteria import (
-            WorkersUnassignedStopCriteria,
-        )
         from oahf.MetaHeuristics.GRC import GRC
 
         def break_into_task_ordering_rule_dict(
@@ -2373,12 +2369,10 @@ class AlwabpSolution(Solution):
         new_solution.default_graph_orientation = GraphOrientation.FORWARD
 
         greediness = 1
-        stop_criteria = MultipleStopCriteria(
-            True, WorkersUnassignedStopCriteria(0), MaxCycleTimeStopCriteria(500)
-        )
+        stop_criteria = decoder_stop_criteria or NoStopCriteria()
         acceptance_criteria = BetterAcceptanceCriteria()
         neighborhood = AlwabpWorkerOrientedInsertNS(
-            TaskOrderingRule.MAX_IF, GraphOrientation.FORWARD, 0
+            TaskOrderingRule.MAX_F, GraphOrientation.FORWARD, 0
         )
         task_ordering_rule_dict = break_into_task_ordering_rule_dict(
             random_keys, number_of_tasks, number_of_workers
@@ -2391,10 +2385,13 @@ class AlwabpSolution(Solution):
         acceptance_criteria.reset()
 
         while not stop_criteria.stop_on_evaluations([evaluator.evaluate(new_solution)]):
-            ns.reset(0)
+            grc.get_neighborhood_selection().reset(0) # type: ignore
             constructed_sol = grc.run(new_solution)
 
             if constructed_sol and constructed_sol.validate_aspects():
+                if destination_pool:
+                    destination_pool.add_solution(constructed_sol, calling_mh)
+
                 if local_seach:
                     constructed_sol = local_seach.run(constructed_sol)
 
