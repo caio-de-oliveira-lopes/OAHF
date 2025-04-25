@@ -22,7 +22,7 @@ def modify_heuristic_iterations(
     for heuristic in config.get("metaheuristics", []):
         if heuristic.get("id") == heuristic_id:
             # Update iterations candidate value
-            heuristic["parameters"]["iterations"] = iterations_value
+            heuristic["stop_criteria"]["time_iteration"]["iterations"] = iterations_value
             found = True
             if intensification_value is not None:
                 heuristic["parameters"]["intensification_criteria"]["time_iteration"]["iterations"] = intensification_value
