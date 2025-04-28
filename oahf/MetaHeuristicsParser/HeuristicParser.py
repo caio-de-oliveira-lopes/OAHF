@@ -63,6 +63,7 @@ from oahf.MetaHeuristics.GRC import GRC
 from oahf.MetaHeuristics.HGA import HGA
 from oahf.MetaHeuristics.JobRotationLPSelector import JobRotationLPSelector
 from oahf.MetaHeuristics.MultipleBestImprovement import MultipleBestImprovement
+from oahf.MetaHeuristics.PILS import PILS
 from oahf.MetaHeuristics.TabuSearch import TabuSearch
 from oahf.Utils.EnumUtil import EnumUtil
 from oahf.Utils.Util import Util
@@ -714,7 +715,37 @@ class HeuristicParser:
                         destination_pool,
                     )
                 elif m["name"].lower() == "pils":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    acceptance_criteria = self.parse_acceptance_criteria(
+                        m["acceptance_criteria"]
+                    )
+                    origin_pool = (
+                        self.solution_pools[m["origin_pool"]]
+                        if "origin_pool" in m
+                        else None
+                    )
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
 
+                    pattern_sizes: List[int] = list(m["parameters"].get("pattern_sizes", []))
+                    top_k: int = int(m["parameters"].get("top_k", 10))
+                    injection_probability: float = float(m["parameters"].get("injection_probability", 0.5))
+
+                    meta = PILS(
+                        thread_id, 
+                        stop_criteria, 
+                        evaluator, 
+                        acceptance_criteria, 
+                        pattern_sizes, 
+                        top_k, 
+                        injection_probability, 
+                        origin_pool, 
+                        destination_pool
+                    )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")
                 self.metaheuristics[m["id"]] = meta
