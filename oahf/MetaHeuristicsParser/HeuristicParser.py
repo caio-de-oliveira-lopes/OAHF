@@ -713,6 +713,8 @@ class HeuristicParser:
                         origin_pool,
                         destination_pool,
                     )
+                elif m["name"].lower() == "pils":
+
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")
                 self.metaheuristics[m["id"]] = meta

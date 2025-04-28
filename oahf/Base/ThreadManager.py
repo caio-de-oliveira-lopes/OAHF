@@ -84,3 +84,7 @@ class ThreadManager:
             for future in as_completed(futures):
                 future.result()  # This will block until the first future is done
                 break  # Exit after the first completed future
+
+    @classmethod
+    def get_random_obj(cls, thread_id: int) -> random.Random:
+        return cls._random_keys[thread_id]

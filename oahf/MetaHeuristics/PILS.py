@@ -1,18 +1,18 @@
 from typing import Dict, List, Tuple, Optional
 import heapq
-import random
 
 from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.Evaluator import Evaluator
+from oahf.Base.ThreadManager import ThreadManager
 
 # Define a pattern as a tuple of task IDs
 Pattern = Tuple[int, ...]
 
 class PILS(MetaHeuristic):
     """
-    Pattern Injection Local Search for ALWABP.
+    Pattern Injection Local Search.
     Mines frequent task-sequence patterns from elite solutions and injects them
     as high-order moves into current solutions.
     """
@@ -62,6 +62,7 @@ class PILS(MetaHeuristic):
         raise NotImplementedError("Use run_operation() method for this class.")
 
     def run_operation(self, origin_pool: Pool, destination_pool: Pool) -> Pool:
+        random_obj = ThreadManager.get_random_obj(self.thread_id)
         # 1) Mine patterns from the current pool of solutions
         self._mine_patterns(origin_pool.solutions)
 
@@ -74,8 +75,8 @@ class PILS(MetaHeuristic):
             # Try injecting patterns of each size
             for p in self.pattern_sizes:
                 # Sample up to top_k patterns
-                for freq, pat in random.sample(self.patterns[p], min(len(self.patterns[p]), self.top_k)):
-                    if random.random() > self.injection_probability:
+                for freq, pat in random_obj.sample(self.patterns[p], min(len(self.patterns[p]), self.top_k)):
+                    if ThreadManager.get_next_float(self.thread_id, 0, 1) > self.injection_probability:
                         continue
                     # Perform injection on a copy
                     candidate = curr.copy()
