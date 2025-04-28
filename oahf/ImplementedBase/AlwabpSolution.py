@@ -2400,3 +2400,36 @@ class AlwabpSolution(Solution):
                 new_solution.validate_aspects()
 
         return constructed_sol  # type: ignore
+
+    def extract_patterns(self, size: int) -> List[Tuple[int, ...]]:
+        """
+        Extract all contiguous subsequences of tasks of given size
+        across all stations in the solution.
+        """
+        patterns = []
+        for station in self.stations:
+            tasks = self.station_tasks_assignment[station]
+            for i in range(len(tasks) - size + 1):
+                patterns.append(tuple(tasks[i:i+size]))
+        return patterns
+
+    def inject_pattern(self, pattern: Tuple[int, ...]) -> bool:
+        """
+        Remove the tasks in `pattern` from their current stations and
+        reinsert them as a block into the station with the smallest cycle time.
+        Returns True if all insertions succeed, False otherwise.
+        """
+        # 1) Remove tasks silently
+        for task in pattern:
+            st = self.find_station_for_task(task)
+            if st is not None:
+                self.remove_task_from_station(task, st)
+        # 2) Choose target station
+        target = min(self.stations, key=lambda s: self._station_cycle_time_memo[s])
+        # 3) Insert tasks in order
+        for task in pattern:
+            if not self.add_task_to_station(task, target):
+                return False
+        # 4) Reorder tasks and finalize
+        self.order_solution_tasks()
+        return True

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import numpy
 
@@ -243,6 +243,16 @@ class Solution(Entity, ABC):
         Returns:
             List[List[float]]: A population of randomly generated keys.
         """
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
+
+    def extract_patterns(self, size: int) -> List[Tuple[int, ...]]:
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
+
+    def inject_pattern(self, pattern: Tuple[int, ...]) -> bool:
         raise NotImplementedError(
             "Abstract Method: must be implemented by child classes."
         )

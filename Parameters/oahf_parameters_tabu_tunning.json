@@ -1,5 +1,5 @@
 {
-    "file_name": "var_medium_very_tricky_instance_n=50_22",
+    "file_name": "var_medium_very_tricky_instance_n=50_8",
     "input_path": "C:\\Projetos\\OAHF\\Instances\\alwabp\\training_instances",
     "output_path": "C:\\Projetos\\OAHF\\Outputs\\tunning\\tabu",
     "cycle_time_path": "C:\\Projetos\\OAHF\\Parameters\\recommeded_maximum_mean_cycle_time.json",
