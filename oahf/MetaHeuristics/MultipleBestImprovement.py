@@ -66,6 +66,7 @@ class MultipleBestImprovement(MetaHeuristic):
         self.acceptance_criteria.reset()
 
         if self.neighborhood_selection:
+            self.neighborhood_selection.reset(self.thread_id)
 
             while not self.stop_on_evaluations([best_eval]):
 

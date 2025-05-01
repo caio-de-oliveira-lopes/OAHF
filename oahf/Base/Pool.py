@@ -117,6 +117,38 @@ class Pool(Entity, ABC):
                 return best
         return None
 
+    
+    def get_n_best(self, n: int, evaluator: Optional[Evaluator] = None) -> List[Solution]:
+        """
+        Get the top-n best solutions from the pool based on evaluation.
+        The evaluator is optional; if the pool already has its own evaluator, it'll be used if None is passed.
+
+        Parameters:
+            n (int): Number of top solutions to return.
+            evaluator (Optional[Evaluator]): Evaluator to be used for comparison.
+
+        Returns:
+            List[Solution]: List of up to n best solutions, sorted from best to worst.
+        """
+        evaluator = evaluator or self.evaluator
+
+        if evaluator and self.any():
+            # Pair each solution with its evaluation
+            evaluated_solutions = [(solution, evaluator.evaluate(solution)) for solution in self]
+
+            # Custom sort using better_than
+            def better_eval(pair1, pair2):
+                return -1 if pair1[1].better_than(pair2[1]) else 1 if pair2[1].better_than(pair1[1]) else 0
+
+            # Use sorted with custom comparator
+            from functools import cmp_to_key
+            sorted_evaluated = sorted(evaluated_solutions, key=cmp_to_key(better_eval))
+
+            # Extract top-n solutions
+            return [solution for solution, _ in sorted_evaluated[:n]]
+
+        return []
+
     def to_dict(self) -> dict:
         """
         Converts the pool data into a dictionary format.

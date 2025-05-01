@@ -256,3 +256,8 @@ class Solution(Entity, ABC):
         raise NotImplementedError(
             "Abstract Method: must be implemented by child classes."
         )
+
+    def get_default_max_patterns_injected(self) -> int:
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )

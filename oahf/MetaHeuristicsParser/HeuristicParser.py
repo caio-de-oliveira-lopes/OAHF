@@ -2,7 +2,7 @@
 import json
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Set, Union
 
 from oahf.Base import AcceptanceCriteria
 from oahf.Base.Constraint import Constraint
@@ -731,9 +731,13 @@ class HeuristicParser:
                         else None
                     )
 
-                    pattern_sizes: List[int] = list(m["parameters"].get("pattern_sizes", []))
-                    top_k: int = int(m["parameters"].get("top_k", 10))
-                    injection_probability: float = float(m["parameters"].get("injection_probability", 0.5))
+                    pattern_sizes: Set[int] = set(m["parameters"].get("pattern_sizes", []))
+                    frequency_lb: float = float(m["parameters"].get("frequency_lb", 0.3))
+                    elite_threshold: float = float(m["parameters"].get("elite_threshold", 0.2))
+                    elite_injection_ratio: float = float(m["parameters"].get("elite_injection_ratio", 0.2))
+                    max_patterns_mined: Optional[int] = m["parameters"].get("max_patterns_mined", None)
+                    max_patterns_injected: Optional[int] = m["parameters"].get("max_patterns_injected", None)
+                    local_search = self.metaheuristics[m["parameters"]["local_seach"]]
 
                     meta = PILS(
                         thread_id, 
@@ -741,8 +745,12 @@ class HeuristicParser:
                         evaluator, 
                         acceptance_criteria, 
                         pattern_sizes, 
-                        top_k, 
-                        injection_probability, 
+                        frequency_lb,
+                        elite_threshold,
+                        elite_injection_ratio,
+                        max_patterns_mined,
+                        max_patterns_injected,
+                        local_search,
                         origin_pool, 
                         destination_pool
                     )

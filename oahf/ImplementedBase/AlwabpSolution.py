@@ -2385,7 +2385,6 @@ class AlwabpSolution(Solution):
         acceptance_criteria.reset()
 
         while not stop_criteria.stop_on_evaluations([evaluator.evaluate(new_solution)]):
-            grc.get_neighborhood_selection().reset(0) # type: ignore
             constructed_sol = grc.run(new_solution)
 
             if constructed_sol and constructed_sol.validate_aspects():
@@ -2401,35 +2400,38 @@ class AlwabpSolution(Solution):
 
         return constructed_sol  # type: ignore
 
+    def get_default_max_patterns_injected(self) -> int:
+        return self._number_of_stations
+
     def extract_patterns(self, size: int) -> List[Tuple[int, ...]]:
         """
-        Extract all contiguous subsequences of tasks of given size
+        Extract all unordered task combinations of given size
         across all stations in the solution.
         """
+        from itertools import combinations
         patterns = []
         for station in self.stations:
             tasks = self.station_tasks_assignment[station]
-            for i in range(len(tasks) - size + 1):
-                patterns.append(tuple(tasks[i:i+size]))
+            if len(tasks) >= size:
+                for combo in combinations(tasks, size):
+                    patterns.append(tuple(sorted(combo)))
         return patterns
 
     def inject_pattern(self, pattern: Tuple[int, ...]) -> bool:
         """
-        Remove the tasks in `pattern` from their current stations and
-        reinsert them as a block into the station with the smallest cycle time.
-        Returns True if all insertions succeed, False otherwise.
+        Remove tasks in `pattern` and reinsert as a block
+        into the station with smallest cycle time.
         """
-        # 1) Remove tasks silently
+        # Remove all pattern tasks
         for task in pattern:
             st = self.find_station_for_task(task)
             if st is not None:
                 self.remove_task_from_station(task, st)
-        # 2) Choose target station
+        # Choose target station (most idle)
         target = min(self.stations, key=lambda s: self._station_cycle_time_memo[s])
-        # 3) Insert tasks in order
+        # Insert tasks
         for task in pattern:
             if not self.add_task_to_station(task, target):
                 return False
-        # 4) Reorder tasks and finalize
         self.order_solution_tasks()
         return True

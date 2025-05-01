@@ -83,6 +83,9 @@ class GRC(MetaHeuristic):
         curr_sol = sol.copy() if sol is not None else sol
         best_eval = self.evaluator.evaluate(sol)
 
+        if self.neighborhood_selection:
+            self.neighborhood_selection.reset(self.thread_id)
+
         ns: Optional[Neighborhood] = self.neighborhood_selection.get_next(self.thread_id)  # type: ignore
 
         self.stop_criteria.reset()
