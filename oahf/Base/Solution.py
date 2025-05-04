@@ -252,7 +252,7 @@ class Solution(Entity, ABC):
             "Abstract Method: must be implemented by child classes."
         )
 
-    def inject_pattern(self, pattern: Tuple[int, ...]) -> bool:
+    def generate_moves_to_inject_pattern(self, pattern: Tuple[int, ...]) -> List["Movement"]:
         raise NotImplementedError(
             "Abstract Method: must be implemented by child classes."
         )

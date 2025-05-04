@@ -15,7 +15,7 @@
     <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
     <IsWindowsApplication>False</IsWindowsApplication>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>"C:\Projetos\OAHF\Parameters\oahf_parameters_hga_tunning.json"</CommandLineArguments>
+    <CommandLineArguments>"C:\Projetos\OAHF\Parameters\oahf_parameters.json"</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

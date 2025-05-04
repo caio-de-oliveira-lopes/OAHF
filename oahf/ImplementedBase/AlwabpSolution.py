@@ -2417,21 +2417,31 @@ class AlwabpSolution(Solution):
                     patterns.append(tuple(sorted(combo)))
         return patterns
 
-    def inject_pattern(self, pattern: Tuple[int, ...]) -> bool:
+    def generate_moves_to_inject_pattern(self, pattern: Tuple[int, ...]) -> List[Movement]:
         """
         Remove tasks in `pattern` and reinsert as a block
         into the station with smallest cycle time.
         """
+        from oahf.ImplementedBase.AlwabpRemovalMovement import AlwabpRemovalMovement
+        from oahf.ImplementedBase.AlwabpInsertionMovement import AlwabpInsertionMovement
+        from oahf.Base.MultipleMovement import MultipleMovement
+        from oahf.Base.Movement import Movement
+
+        moves: List[Movement] = []
+
+        removal_moves = []
         # Remove all pattern tasks
         for task in pattern:
             st = self.find_station_for_task(task)
             if st is not None:
-                self.remove_task_from_station(task, st)
-        # Choose target station (most idle)
-        target = min(self.stations, key=lambda s: self._station_cycle_time_memo[s])
-        # Insert tasks
-        for task in pattern:
-            if not self.add_task_to_station(task, target):
-                return False
-        self.order_solution_tasks()
-        return True
+                removal_moves.append(AlwabpRemovalMovement(task, None, st, self))
+
+        # Generate possibilities of insertion movements
+        for st in self.stations:
+            complete_movement = list(removal_moves)
+            # Insert tasks
+            for task in pattern:
+                complete_movement.append(AlwabpInsertionMovement(task, None, st, self))
+            moves.append(MultipleMovement(self, complete_movement, None))
+
+        return moves

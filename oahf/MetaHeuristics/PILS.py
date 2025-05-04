@@ -1,3 +1,4 @@
+import math
 from typing import Dict, List, Tuple, Optional, Set
 import heapq
 
@@ -81,11 +82,13 @@ class PILS(MetaHeuristic):
         raise NotImplementedError("Use run_operation() method for this class.")
 
     def run_operation(self, origin_pool: Pool, destination_pool: Pool) -> Pool:
+        from oahf.Base.Movement import Movement
+        
         rng = ThreadManager.get_random_obj(self.thread_id)
 
         # snapshot to avoid self-modification
         origin_snapshot = origin_pool.copy()
-        pool_size = len(origin_snapshot.solutions)
+        pool_size = origin_snapshot.count()
 
         # split elite vs regular
         n_elite = max(1, int(self.elite_threshold * pool_size))
@@ -103,30 +106,44 @@ class PILS(MetaHeuristic):
             if self.max_patterns_injected is None:
                 self.max_patterns_injected = sol.get_default_max_patterns_injected()
 
-            # injection counts
-            elite_count = int(self.elite_injection_ratio * self.max_patterns_injected)
-            regular_count = self.max_patterns_injected - elite_count
+            # determine base injection counts
+            base_elite = math.ceil(self.elite_injection_ratio * self.max_patterns_injected)
+            base_regular = self.max_patterns_injected - base_elite
             for p in self.pattern_sizes:
+                e_candidates = list(self.elite_patterns[p])
+                r_candidates = list(self.regular_patterns[p])
 
-                # sample elite patterns
-                e_candidates = self.elite_patterns[p]
-                for freq, pat in rng.sample(e_candidates, min(len(e_candidates), elite_count)):
-                    candidate = sol.copy()
-                    if candidate.inject_pattern(pat):
-                        out_pool.add_solution(candidate, self)
+                # actual samples
+                use_elite = min(len(e_candidates), base_elite)
+                use_regular = min(len(r_candidates), base_regular)
+                # sample those
+                sampled_e = rng.sample(e_candidates, use_elite) if use_elite > 0 else []
+                sampled_r = rng.sample(r_candidates, use_regular) if use_regular > 0 else []
+
+                # if not enough regular, fill with additional elites
+                total_selected = use_elite + use_regular
+                if total_selected < self.max_patterns_injected:
+                    remaining = self.max_patterns_injected - total_selected
+                    # exclude already chosen elites
+                    remaining_elite_pool = [p for p in e_candidates if p not in sampled_e]
+                    extra = min(len(remaining_elite_pool), remaining)
+                    sampled_e += rng.sample(remaining_elite_pool, extra) if extra > 0 else []
+
+
+                all_samples = sampled_e + sampled_r
+                # inject sampled elite patterns
+                for freq, pat in all_samples:
+                    generated_moves: List[Movement] = sol.generate_moves_to_inject_pattern(pat)
+                    for move in generated_moves:
+                        if move.apply():
+                            out_pool.add_solution(sol, self)
                         
-                        if self.local_search:
-                            out_pool.add_solution(self.local_search.run(candidate), self)
+                            if self.local_search:
+                                out_pool.add_solution(self.local_search.run(sol), self)
 
-                # sample regular patterns
-                r_candidates = self.regular_patterns[p]
-                for freq, pat in rng.sample(r_candidates, min(len(r_candidates), regular_count)):
-                    candidate = sol.copy()
-                    if candidate.inject_pattern(pat):
-                        out_pool.add_solution(candidate, self)
+                        # Always unapply move to avoid unnecessary copies of solution object (can cause overhead)
+                        move.unapply()
 
-                        if self.local_search:
-                            out_pool.add_solution(self.local_search.run(candidate), self)
         return out_pool
 
     def _mine_patterns(
@@ -141,27 +158,29 @@ class PILS(MetaHeuristic):
 
         # tally elite patterns
         for sol in elite_solutions:
-            if hasattr(sol, 'extract_patterns'):
-                for p in self.pattern_sizes:
-                    for pat in sol.extract_patterns(p):
-                        elite_counts[p][pat] = elite_counts[p].get(pat, 0) + 1
+            for p in self.pattern_sizes:
+                for pat in sol.extract_patterns(p):
+                    elite_counts[p][pat] = elite_counts[p].get(pat, 0) + 1
 
-        # tally regular patterns (excluding elite)
+        # so that elite_counts include both elite and regular occurrences for those patterns
         for sol in regular_solutions:
-            if hasattr(sol, 'extract_patterns'):
-                for p in self.pattern_sizes:
-                    for pat in sol.extract_patterns(p):
-                        if pat not in elite_counts[p]:
-                            reg_counts[p][pat] = reg_counts[p].get(pat, 0) + 1
+            for p in self.pattern_sizes:
+                for pat in sol.extract_patterns(p):
+                    if pat in elite_counts[p]:
+                        # increment existing elite pattern count
+                        elite_counts[p][pat] += 1
+                    else:
+                        # count for regular patterns (those never in elite)
+                        reg_counts[p][pat] = reg_counts[p].get(pat, 0) + 1
 
         # build top-K mine heaps with frequency_lb filter
-        min_freq = lambda: max(1, int(self.frequency_lb * pool_size))
+        min_freq = max(1, int(self.frequency_lb * pool_size))
         for p in self.pattern_sizes:
 
             # elites
             heap_e: List[Tuple[int, Pattern]] = []
             for pat, freq in elite_counts[p].items():
-                if freq < min_freq():
+                if freq < min_freq:
                     continue
                 if self.max_patterns_mined is None or len(heap_e) < self.max_patterns_mined:
                     heapq.heappush(heap_e, (freq, pat))
@@ -172,7 +191,7 @@ class PILS(MetaHeuristic):
             # regulars
             heap_r: List[Tuple[int, Pattern]] = []
             for pat, freq in reg_counts[p].items():
-                if freq < min_freq():
+                if freq < min_freq:
                     continue
                 if self.max_patterns_mined is None or len(heap_r) < self.max_patterns_mined:
                     heapq.heappush(heap_r, (freq, pat))
