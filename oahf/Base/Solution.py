@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Set, Tuple
 import numpy
 
 from oahf.Base.Entity import Entity
+from oahf.Base.StopCriteria import StopCriteria
 
 
 class Solution(Entity, ABC):
@@ -263,6 +264,16 @@ class Solution(Entity, ABC):
         )
 
     def get_default_max_pattern_sizes(self) -> Set[int]:
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
+
+    def get_default_limit_stop_criteria(self) -> StopCriteria:
+        "Abstract Method: must be implemented by child classes."
+        from oahf.ImplementedBase.AlwabpSolution import NoStopCriteria
+        return NoStopCriteria()
+
+    def increase_bounds(self) -> None:
         raise NotImplementedError(
             "Abstract Method: must be implemented by child classes."
         )

@@ -10,7 +10,7 @@ class PrecedenceConstraint(Constraint):
     _penalty = 60.0  # Default penalty value; can be adjusted.
     _precedence_violations_memo: Dict[int, int] = {}
 
-    def evaluate(self, solution: "Solution") -> "ConstraintEvaluation":
+    def evaluate(self, solution: "Solution", cache: bool) -> "ConstraintEvaluation":
         """
         Method to evaluate the precedence constraint based on a solution.
         :param solution: A Solution object (AlwabpSolution).
@@ -18,7 +18,7 @@ class PrecedenceConstraint(Constraint):
         """
 
         if isinstance(solution, AlwabpSolution):
-            number_of_violations = self.count_precedence_violations(solution)
+            number_of_violations = self.count_precedence_violations(solution, cache)
             penalty = PrecedenceConstraint._penalty * number_of_violations
 
             # It's a soft constraint, so it always return feasible
@@ -42,7 +42,7 @@ class PrecedenceConstraint(Constraint):
         """
         cls._penalty = value
 
-    def count_precedence_violations(self, solution: AlwabpSolution) -> int:
+    def count_precedence_violations(self, solution: AlwabpSolution, cache: bool) -> int:
         """
         Counts the number of precedence violations in the current solution.
 
@@ -60,7 +60,7 @@ class PrecedenceConstraint(Constraint):
         memo = PrecedenceConstraint._precedence_violations_memo
 
         # Return cached result if already computed
-        if (cached_result := memo.get(sol_hash)) is not None:
+        if cache and (cached_result := memo.get(sol_hash)) is not None:
             return cached_result
 
         # Cache frequently accessed attributes

@@ -9,7 +9,7 @@ from oahf.Base.StopCriteria import StopCriteria
 class Constraint(Entity, ABC):
 
     @abstractmethod
-    def evaluate(self, solution: "Solution") -> "ConstraintEvaluation":
+    def evaluate(self, solution: "Solution", cache: bool) -> "ConstraintEvaluation":
         """
         Abstract method to evaluate the constraint based on a solution.
         :param solution: A Solution object.
@@ -18,7 +18,7 @@ class Constraint(Entity, ABC):
         pass
 
     def evaluate_with_stop_criteria(
-        self, solution: "Solution", stop_criteria: "StopCriteria"
+        self, solution: "Solution", stop_criteria: "StopCriteria", cache: bool
     ) -> "ConstraintEvaluation":
         """
         Virtual method to evaluate the constraint, optionally considering stop criteria.
@@ -26,7 +26,7 @@ class Constraint(Entity, ABC):
         :param stop_criteria: A StopCriteria object.
         :return: A ConstraintEvaluation object (default behavior is to ignore stop criteria).
         """
-        return self.evaluate(solution)
+        return self.evaluate(solution, cache)
 
     @classmethod
     @abstractmethod

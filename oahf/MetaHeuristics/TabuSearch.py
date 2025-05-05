@@ -8,10 +8,11 @@ from oahf.Base.AcceptanceCriteria import AcceptanceCriteria
 from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Movement import Movement
+from oahf.Base.MultipleStopCriteria import MultipleStopCriteria
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
-from oahf.ImplementedBase import ListSelection
+from oahf.ImplementedBase import ListSelection, MaxCycleTimeStopCriteria
 from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
     AlwaysAcceptAcceptanceCriteria,
 )
@@ -222,6 +223,8 @@ class TabuSearch(MetaHeuristic):
                                     acceptance,
                                     self.second_level_ns,
                                 )
+
+                                best_improv.named_parent = self
                                 previous_curr_sol = curr_sol
                                 curr_sol = best_improv.run(curr_sol)
                                 curr_eval = evaluator.evaluate(curr_sol)
@@ -258,7 +261,6 @@ class TabuSearch(MetaHeuristic):
 
                         move.unapply()
 
-                stop_criteria.increment_counter(pbar)
                 intensification_criteria.increment_counter()
 
                 if best_move:
@@ -306,7 +308,9 @@ class TabuSearch(MetaHeuristic):
                     while search := selected_ns.get_next(thread_id):
                         perturbation = Pertubation(
                             thread_id,
-                            StopTimeIterationCriteria(iterations=1),
+                            MultipleStopCriteria(True, 
+                                                 StopTimeIterationCriteria(iterations=1), 
+                                                 curr_sol.get_default_limit_stop_criteria()),
                             evaluator,
                             ListSelection(False, search.copy()),
                             AlwaysAcceptAcceptanceCriteria(),
@@ -320,21 +324,28 @@ class TabuSearch(MetaHeuristic):
                             perturbation,
                             selected_ls,
                         )
-                        pool.add_solution(perturbation_ls.run(curr_sol), self)
+                        
+                        perturbation_ls.named_parent = self
+                        perturbation.named_parent = perturbation_ls
+                        selected_ls.named_parent = perturbation_ls
+
+                        perturbated_sol = perturbation_ls.run(curr_sol)
+                        perturbated_evaluation = self.evaluator.evaluate(perturbated_sol)
+                        if not (perturbated_evaluation.infeasible() or perturbated_evaluation.has_penalty()):
+                            pool.add_solution(perturbated_sol, self)
+                            if destination_pool:
+                                destination_pool.add_solution(perturbated_sol, self)
 
                     curr_sol = pool.get_best(evaluator)
                     curr_eval = evaluator.evaluate(curr_sol)
                     if (
                         destination_pool
-                        and not curr_eval.infeasible()
-                        and not curr_eval.has_penalty()
+                        and not (curr_eval.infeasible() or curr_eval.has_penalty())
                     ):
                         destination_pool.add_solution(curr_sol, self)
 
                     if (
-                        curr_sol
-                        and not curr_eval.infeasible()
-                        and not curr_eval.has_penalty()
+                        curr_sol and not (curr_eval.infeasible() or curr_eval.has_penalty())
                         and acceptance.accept(best_eval, curr_eval, curr_sol)
                         and curr_sol != best_sol
                     ):
@@ -344,7 +355,8 @@ class TabuSearch(MetaHeuristic):
                 if curr_sol != best_sol:
                     curr_sol = best_sol.copy()
 
-                ns.allow_infeasible_movements = False
+                ns.allow_infeasible_movements = False                
+                stop_criteria.increment_counter(pbar)
 
             except Exception as ex:
                 LogManager.something_went_wrong(self.__class__.__name__, ex)

@@ -88,7 +88,7 @@ class Pool(Entity, ABC):
         if isinstance(mh, MetaHeuristic):
             if solution.id not in self._solution_info:
                 self._solution_info[solution.id] = {}
-            self._solution_info[solution.id]["metaheuristic"] = f"{type(mh).__name__} - Line number: {line_number}"
+            self._solution_info[solution.id]["metaheuristic"] = Util.describe_metaheuristic(mh, line_number)
             self._solution_info[solution.id][
                 "execution_time"
             ] = Util.get_duration_from_start_timestamp()

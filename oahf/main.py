@@ -52,7 +52,7 @@ def main(args=sys.argv[1:]) -> None:
             # DEBUG TO CHECK IF ANY INFEASIBLE SOLUTIONS WERE ADDED
             #for pool in heuristic_parser.solution_pools.values():
             #    for solution in pool:
-            #        evaluation = evaluator.evaluate(solution)
+            #        evaluation = evaluator.evaluate(solution, cache = False)
             #        if evaluation.infeasible() or evaluation.has_penalty():
             #            print("INFEASIBLE SOLUTION ADDED TO THE POOL")
 

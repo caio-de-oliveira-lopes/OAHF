@@ -10,14 +10,14 @@ class WorkerTaskConstraint(Constraint):
     _penalty = 60.0  # Default penalty value; can be adjusted.
     _worker_task_violations_memo: Dict[int, int] = {}
 
-    def evaluate(self, solution: "Solution") -> "ConstraintEvaluation":
+    def evaluate(self, solution: "Solution", cache: bool) -> "ConstraintEvaluation":
         """
         Method to evaluate the worker-task constraint based on a solution.
         :param solution: A Solution object (AlwabpSolution).
         :return: A ConstraintEvaluation object.
         """
         if isinstance(solution, AlwabpSolution):
-            number_of_violations = self.count_worker_task_violations(solution)
+            number_of_violations = self.count_worker_task_violations(solution, cache)
             penalty = WorkerTaskConstraint._penalty * number_of_violations
 
             # It's a soft constraint, so it always return feasible
@@ -41,7 +41,7 @@ class WorkerTaskConstraint(Constraint):
         """
         cls._penalty = value
 
-    def count_worker_task_violations(self, solution: "AlwabpSolution") -> int:
+    def count_worker_task_violations(self, solution: "AlwabpSolution", cache: bool) -> int:
         """
         Counts the number of worker-task violations in the current solution.
 
@@ -56,7 +56,7 @@ class WorkerTaskConstraint(Constraint):
         memo = WorkerTaskConstraint._worker_task_violations_memo
 
         # Return cached result if already computed
-        if (cached_result := memo.get(sol_hash)) is not None:
+        if cache and (cached_result := memo.get(sol_hash)) is not None:
             return cached_result
 
         violation_count = 0

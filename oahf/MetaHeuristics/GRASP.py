@@ -86,6 +86,9 @@ class GRASP(MetaHeuristic):
         construction = self.meta_heuristics_used[0]
         local_search = self.meta_heuristics_used[1]
 
+        # Setting parent MetaHeuristic
+        local_search.named_parent = self
+
         curr_pool = origin_pool.copy()
         best_sol = curr_pool.get_best(self.evaluator)
         best_eval = self.evaluator.evaluate(best_sol)

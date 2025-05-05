@@ -58,6 +58,8 @@ class BestImprovement(MetaHeuristic):
         best_eval = evaluator.evaluate(best_sol)
         stop_criteria.reset()
         acceptance.reset()
+        if self.neighborhood_selection:
+            self.neighborhood_selection.reset(self.thread_id)
 
         while (ns := neighborhood_selection.get_next(thread_id)) and not self.stop_on_evaluations([best_eval]):  # type: ignore
             try:

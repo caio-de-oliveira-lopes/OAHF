@@ -5,7 +5,7 @@ from oahf.Base.Solution import Solution
 
 class MaxCycleTimeConstraint(Constraint):
 
-    def evaluate(self, solution: "Solution") -> "ConstraintEvaluation":
+    def evaluate(self, solution: "Solution", cache: bool) -> "ConstraintEvaluation":
         """
         Method to evaluate the max cycle time constraint based on a solution.
         :param solution: A Solution object (Alwabp).

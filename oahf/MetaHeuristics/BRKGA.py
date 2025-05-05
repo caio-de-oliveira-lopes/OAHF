@@ -102,6 +102,10 @@ class BRKGA(MetaHeuristic):
         population_size = self.population_size
         name = self.name
 
+        if local_search:
+            # Setting parent MetaHeuristic
+            local_search.named_parent = self
+
         # Randomly generate initial population
         example_sol = origin_pool.get_solution_at(0)
         initial_population = type(example_sol).generate_random_keys(

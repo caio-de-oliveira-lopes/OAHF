@@ -97,6 +97,10 @@ class PILS(MetaHeuristic):
         if len(self.pattern_sizes) == 0:
             self.pattern_sizes = example_sol.get_default_max_pattern_sizes()
 
+        # Setting parent MetaHeuristic
+        if self.local_search:
+            self.local_search.named_parent = self
+
         while not self.stop_on_evaluations([]):
             # snapshot to avoid self-modification
             origin_snapshot = origin_pool.copy()

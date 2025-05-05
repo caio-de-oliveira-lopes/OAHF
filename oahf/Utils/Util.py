@@ -1,12 +1,13 @@
 import hashlib
 import json
+import math
 import multiprocessing
 import os
 import re
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import ClassVar, List, Optional, Type
+from typing import ClassVar, Dict, List, Optional, Type
 
 from oahf.Base.Solution import Solution
 from oahf.Logger.Logger import Logger
@@ -276,3 +277,27 @@ class Util:
         minutes, seconds = divmod(remainder, 60)
 
         return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+
+    @classmethod
+    def describe_metaheuristic(cls, mh: "MetaHeuristic", line_number: int):
+        # collect each meta-heuristic’s class name
+        names = []
+        current = mh
+        while current is not None:
+            names.append(type(current).__name__)
+            current = getattr(current, 'named_parent', None)
+        # join them in the order “child – parent – grandparent …”
+        names.reverse()
+        full_name = " => ".join(names)
+        return f"{full_name} - Line Number: {line_number}"
+
+    @classmethod
+    def max_finite_execution_time(cls, task_execution_times: Dict[int, List[float]]) -> float:
+        max_time = -math.inf  # Lowest possible value
+    
+        for task_times in task_execution_times.values():
+            for time in task_times:
+                if time != math.inf:
+                    max_time = max(max_time, time)
+    
+        return max_time

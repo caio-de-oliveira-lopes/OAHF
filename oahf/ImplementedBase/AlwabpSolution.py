@@ -14,6 +14,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
 
+from oahf.Base import StopCriteria
 from oahf.Base.Movement import Movement
 from oahf.Base.MultipleMovement import MultipleMovement
 from oahf.Base.Solution import Solution
@@ -310,6 +311,10 @@ class AlwabpSolution(Solution):
         """
         self.cycle_time_limit = self.get_max_cycle_time()
 
+    def increase_bounds(self) -> None:
+        if self.cycle_time_limit:
+            self.cycle_time_limit = self.cycle_time_limit + 1
+
     def reset(self) -> None:
         """
         Resets the solution state.
@@ -561,18 +566,9 @@ class AlwabpSolution(Solution):
             cycle_time (Optional[float]): The cycle time to use for bounding execution times.
         """
         self._bounded_task_execution_times = copy.deepcopy(self._task_execution_times)
+        from oahf.Utils.Util import Util
 
-        def max_finite_execution_time(task_execution_times: Dict[int, List[float]]) -> float:
-            max_time = -math.inf  # Lowest possible value
-    
-            for task_times in task_execution_times.values():
-                for time in task_times:
-                    if time != math.inf:
-                        max_time = max(max_time, time)
-    
-            return max_time
-
-        max_value = max_finite_execution_time(self._task_execution_times)
+        max_value = Util.max_finite_execution_time(self._task_execution_times)
 
         for task in self.tasks:
             float_array = np.array(self._bounded_task_execution_times[task])
@@ -2457,3 +2453,8 @@ class AlwabpSolution(Solution):
                 moves.append(MultipleMovement(self, complete_movement, None))
 
         return moves
+
+    def get_default_limit_stop_criteria(self) -> StopCriteria:
+        from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
+        from oahf.Utils.Util import Util
+        return MaxCycleTimeStopCriteria(int(Util.max_finite_execution_time(self._task_execution_times)))

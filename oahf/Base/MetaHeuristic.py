@@ -63,6 +63,7 @@ class MetaHeuristic(Entity, ABC):
         self.origin_pool: Optional[Pool] = origin_pool
         self.destination_pool: Optional[Pool] = destination_pool
         self.parent_metaheuristic: Optional["MetaHeuristic"] = None
+        self.named_parent: Optional["MetaHeuristic"] = None
         self.log_solutions: bool = False
         self.start_time: int = 0
         self.end_time: int = 0
@@ -117,7 +118,7 @@ class MetaHeuristic(Entity, ABC):
         self, evs: Iterable["Evaluation"], pbar: Optional[tqdm] = None
     ) -> bool:
         """Determine if the heuristic should stop based on evaluations."""
-        if evs is not None:
+        if evs:
             stop = self.stop_criteria.stop_on_evaluations(evs) or (
                 self.parent_metaheuristic is not None
                 and self.parent_metaheuristic.stop_on_evaluations(evs, pbar)
@@ -126,7 +127,7 @@ class MetaHeuristic(Entity, ABC):
                 pbar.close()
 
             return stop
-        return False
+        return self.stop_criteria.stop() or (self.parent_metaheuristic is not None and self.parent_metaheuristic.stop())
 
     @abstractmethod
     def copy(self, thread: int) -> "MetaHeuristic":

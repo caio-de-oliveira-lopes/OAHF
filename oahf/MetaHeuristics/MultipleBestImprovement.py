@@ -90,10 +90,10 @@ class MultipleBestImprovement(MetaHeuristic):
                         improved_sol = best_improv.run(best_sol)
                         curr_eval = self.evaluator.evaluate(improved_sol)
                         if not (curr_eval.infeasible() or curr_eval.has_penalty()):
-                            best_pool.add_solution(improved_sol, self, line_number = 93)
+                            best_pool.add_solution(improved_sol, self)
 
                             if self.destination_pool:
-                                self.destination_pool.add_solution(improved_sol, self, line_number = 96)
+                                self.destination_pool.add_solution(improved_sol, self)
 
                     except Exception as ex:
                         LogManager.something_went_wrong(self.__class__.__name__, ex)

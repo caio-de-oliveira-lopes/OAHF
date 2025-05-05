@@ -69,6 +69,9 @@ class Pertubation(MetaHeuristic):
 
         self.stop_criteria.reset()
 
+        if self.neighborhood_selection:
+            self.neighborhood_selection.reset(self.thread_id)
+
         while not self.stop_on_evaluations([best_eval]):
             ns = None
 
@@ -85,20 +88,13 @@ class Pertubation(MetaHeuristic):
 
                 if build:
                     move = ns.get_move()
-                    self.stop_criteria.increment_counter()
                     while move is not None and not self.stop_on_evaluations(
                         [best_eval]
                     ):
                         worked = move.apply()
                         if worked:
                             curr_eval = self.evaluator.evaluate(curr_sol)
-                            if (
-                                self.acceptance_criteria.accept(
-                                    best_eval, curr_eval, curr_sol
-                                )
-                                and self.accept_infeasible
-                                or not curr_eval.infeasible()
-                            ):
+                            if self.acceptance_criteria.accept(best_eval, curr_eval, curr_sol):
                                 best_sol = curr_sol.copy()
                                 return best_sol
                             else:

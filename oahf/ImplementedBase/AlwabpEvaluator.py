@@ -17,7 +17,7 @@ class AlwabpEvaluator(Evaluator):
         """
         super().__init__(stop_on_first, *constraints)
 
-    def evaluate(self, sol: Optional["AlwabpSolution"]) -> "Evaluation":
+    def evaluate(self, sol: Optional["AlwabpSolution"], cache: bool = True) -> "Evaluation":
         """
         Abstract method to evaluate a Solution.
         :param sol: A Solution object to evaluate.
@@ -29,7 +29,7 @@ class AlwabpEvaluator(Evaluator):
             sol.default_graph_orientation = GraphOrientation.FORWARD
 
             solution_eval = AlwabpEvaluation(
-                (constraint.evaluate(sol) for constraint in self._constraints),
+                (constraint.evaluate(sol, cache) for constraint in self._constraints),
                 sol.get_max_cycle_time(),
                 sol.cycle_time_limit,
                 len(sol.unassigned_tasks),
