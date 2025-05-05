@@ -87,10 +87,13 @@ class MultipleBestImprovement(MetaHeuristic):
                             ListSelection(False, ns),
                         )
 
-                        best_pool.add_solution(best_improv.run(best_sol), self, False)
+                        improved_sol = best_improv.run(best_sol)
+                        curr_eval = self.evaluator.evaluate(improved_sol)
+                        if not (curr_eval.infeasible() or curr_eval.has_penalty()):
+                            best_pool.add_solution(improved_sol, self, line_number = 93)
 
-                        if self.destination_pool:
-                            self.destination_pool.add_solution(best_sol, self)
+                            if self.destination_pool:
+                                self.destination_pool.add_solution(improved_sol, self, line_number = 96)
 
                     except Exception as ex:
                         LogManager.something_went_wrong(self.__class__.__name__, ex)
@@ -104,8 +107,9 @@ class MultipleBestImprovement(MetaHeuristic):
                 curr_eval = self.evaluator.evaluate(curr_sol)
 
                 if self.acceptance_criteria.accept(best_eval, curr_eval, curr_sol):
-                    best_sol = curr_sol.copy()
-                    best_eval = curr_eval
-                    self.neighborhood_selection.reset(self.thread_id)
+                    if not (curr_eval.infeasible() or curr_eval.has_penalty()):
+                        best_sol = curr_sol.copy()
+                        best_eval = curr_eval
+                        self.neighborhood_selection.reset(self.thread_id)
 
         return best_sol

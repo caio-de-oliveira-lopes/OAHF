@@ -117,7 +117,7 @@ class MetaHeuristic(Entity, ABC):
         self, evs: Iterable["Evaluation"], pbar: Optional[tqdm] = None
     ) -> bool:
         """Determine if the heuristic should stop based on evaluations."""
-        if evs:
+        if evs is not None:
             stop = self.stop_criteria.stop_on_evaluations(evs) or (
                 self.parent_metaheuristic is not None
                 and self.parent_metaheuristic.stop_on_evaluations(evs, pbar)

@@ -691,18 +691,6 @@
 				}
 			}
 		}
-	},
-	{
-		"id": 1,
-		"name": "list_pool",
-		"parameters": {
-			"evaluator": {
-				"job_rotation_alwabp_evaluator": {
-					"stop_on_first": "true",
-					"constraints": {}
-				}
-			}
-		}
 	}
 ],
 "metaheuristics": [
@@ -2302,13 +2290,9 @@
 		"id": 70,
 		"name": "pils",
 		"stop_criteria": {
-			"no_improvement": { "iterations_no_improv": 1 }
-		},
-		"acceptance_criteria": {
-			"better": {}
+			"time_iteration": { "iterations": 1 }
 		},
 		"parameters": {
-			"pattern_sizes": [3, 5, 10],
 			"frequency_lb": 0.5,
 			"elite_threshold": 0.2,
 			"elite_injection_ratio": 0.2,			

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import numpy
 
@@ -258,6 +258,11 @@ class Solution(Entity, ABC):
         )
 
     def get_default_max_patterns_injected(self) -> int:
+        raise NotImplementedError(
+            "Abstract Method: must be implemented by child classes."
+        )
+
+    def get_default_max_pattern_sizes(self) -> Set[int]:
         raise NotImplementedError(
             "Abstract Method: must be implemented by child classes."
         )

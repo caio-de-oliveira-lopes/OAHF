@@ -114,8 +114,6 @@
     <Compile Include="oahf\MetaHeuristics\HGA.py" />
     <Compile Include="oahf\MetaHeuristics\JobRotationLPSelector.py" />
     <Compile Include="oahf\MetaHeuristics\MultipleBestImprovement.py" />
-    <Compile Include="oahf\MetaHeuristics\GeneticAlgorithm.py" />
-    <Compile Include="oahf\MetaHeuristics\ParallelILS.py" />
     <Compile Include="oahf\MetaHeuristics\Pertubation.py" />
     <Compile Include="oahf\MetaHeuristics\ILS.py" />
     <Compile Include="oahf\MetaHeuristics\GRC.py" />

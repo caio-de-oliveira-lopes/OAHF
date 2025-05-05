@@ -49,6 +49,13 @@ def main(args=sys.argv[1:]) -> None:
 
             heuristic_parser.write_pools()
 
+            # DEBUG TO CHECK IF ANY INFEASIBLE SOLUTIONS WERE ADDED
+            #for pool in heuristic_parser.solution_pools.values():
+            #    for solution in pool:
+            #        evaluation = evaluator.evaluate(solution)
+            #        if evaluation.infeasible() or evaluation.has_penalty():
+            #            print("INFEASIBLE SOLUTION ADDED TO THE POOL")
+
             if final_solution:
                 final_solution.write_json()
                 print(final_solution)

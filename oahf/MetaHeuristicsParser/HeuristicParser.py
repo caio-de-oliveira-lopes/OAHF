@@ -169,6 +169,10 @@ class HeuristicParser:
             # Use garbage collector
             gc.collect()
 
+        # Print last mh ending
+        if last_mh != None:
+            Util.logger().info(f"Ending execution at {Util.get_duration_from_start_timestamp()}.")
+
         print(Util.line())
         Util.logger().info(
             f"Total Execution Time: {Util.get_duration_from_start_timestamp()}."
@@ -717,9 +721,6 @@ class HeuristicParser:
                 elif m["name"].lower() == "pils":
                     thread_id = 0
                     stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
-                    acceptance_criteria = self.parse_acceptance_criteria(
-                        m["acceptance_criteria"]
-                    )
                     origin_pool = (
                         self.solution_pools[m["origin_pool"]]
                         if "origin_pool" in m
@@ -741,9 +742,8 @@ class HeuristicParser:
 
                     meta = PILS(
                         thread_id, 
-                        stop_criteria, 
-                        evaluator, 
-                        acceptance_criteria, 
+                        stop_criteria, # type: ignore
+                        evaluator,
                         pattern_sizes, 
                         frequency_lb,
                         elite_threshold,

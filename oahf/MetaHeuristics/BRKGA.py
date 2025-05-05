@@ -208,7 +208,8 @@ class BRKGA(MetaHeuristic):
                 current_solution = problem.get_solution_from_key(best_key)
                 current_evaluation = evaluator.evaluate(current_solution)
 
-                destination_pool.add_solution(current_solution, self)
+                if not (current_evaluation.infeasible() or current_evaluation.has_penalty()):
+                    destination_pool.add_solution(current_solution, self)
 
                 # Accept new solution if it improves the best one
                 if acceptance.accept(

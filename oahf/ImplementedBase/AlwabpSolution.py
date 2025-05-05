@@ -118,6 +118,7 @@ class AlwabpSolution(Solution):
             number_of_stations (int): Total number of stations.
         """
         super().__init__()  # Calls Entity.__init__ via Solution
+        self.name = "AlwabpSolution"
 
         # Initialize tasks, workers, and stations as immutable tuples.
         self.tasks: Tuple[int, ...] = tuple(range(1, number_of_tasks + 1))
@@ -651,18 +652,27 @@ class AlwabpSolution(Solution):
             int: The computed hash value.
         """
         if not self._hash_memo:
-            combined_hash = 0
-            for station, tasks in self.station_tasks_assignment.items():
-                # Combine the hashes for the station, its worker assignment,
-                # and the tasks (using a sum over task hashes as an example).
-                station_data_hash = (
-                    hash(station) ^
-                    hash(self.station_worker_assignment[station]) ^
-                    sum(hash(task) for task in tasks)
-                )
-                combined_hash ^= station_data_hash  # XOR is commutative.
-            # Include the graph orientation in the final hash.
-            self._hash_memo = combined_hash ^ hash(self.default_graph_orientation)
+            flat: list[Optional[int]] = []
+
+            # Iterate stations in a deterministic order
+            for station in sorted(self.station_tasks_assignment):
+                tasks = self.station_tasks_assignment[station]
+                # Sort tasks once and pack into a tuple
+                sorted_tasks: Tuple[int, ...] = tuple(sorted(tasks))
+            
+                # Append station ID
+                flat.append(station)
+                # Extend with the sorted tasks
+                flat.extend(sorted_tasks)
+                # Append the worker assigned to that station
+                flat.append(self.station_worker_assignment[station])
+
+            # Finally include the graph orientation flag
+            flat.append(self.default_graph_orientation.value)
+
+            # Compute hash only once over the entire flattened tuple
+            self._hash_memo = hash(tuple(flat))
+
         return self._hash_memo
 
     def __str__(self) -> str:
@@ -2389,7 +2399,9 @@ class AlwabpSolution(Solution):
 
             if constructed_sol and constructed_sol.validate_aspects():
                 if destination_pool:
-                    destination_pool.add_solution(constructed_sol, calling_mh)
+                    current_evaluation = evaluator.evaluate(constructed_sol) # type: ignore
+                    if not (current_evaluation.infeasible() or current_evaluation.has_penalty()):
+                        destination_pool.add_solution(constructed_sol, calling_mh)
 
                 if local_seach:
                     constructed_sol = local_seach.run(constructed_sol)
@@ -2402,6 +2414,9 @@ class AlwabpSolution(Solution):
 
     def get_default_max_patterns_injected(self) -> int:
         return self._number_of_stations
+
+    def get_default_max_pattern_sizes(self) -> Set[int]:
+        return set([int(self._number_of_tasks / (self._number_of_stations * 2))])
 
     def extract_patterns(self, size: int) -> List[Tuple[int, ...]]:
         """
@@ -2429,19 +2444,16 @@ class AlwabpSolution(Solution):
 
         moves: List[Movement] = []
 
-        removal_moves = []
-        # Remove all pattern tasks
-        for task in pattern:
-            st = self.find_station_for_task(task)
-            if st is not None:
-                removal_moves.append(AlwabpRemovalMovement(task, None, st, self))
-
         # Generate possibilities of insertion movements
-        for st in self.stations:
-            complete_movement = list(removal_moves)
+        for station in self.stations:
+            complete_movement = []
             # Insert tasks
             for task in pattern:
-                complete_movement.append(AlwabpInsertionMovement(task, None, st, self))
-            moves.append(MultipleMovement(self, complete_movement, None))
+                current_station = self.find_station_for_task(task)
+                if current_station != station:
+                    complete_movement.append(AlwabpRemovalMovement(task, None, current_station, self))
+                    complete_movement.append(AlwabpInsertionMovement(task, None, station, self))
+            if complete_movement:
+                moves.append(MultipleMovement(self, complete_movement, None))
 
         return moves

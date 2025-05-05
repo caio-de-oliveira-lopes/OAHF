@@ -49,10 +49,11 @@ class ListPool(Pool):
         self,
         solution: Optional[Solution],
         mh: Optional[MetaHeuristic],
-        only_feasible: bool = True,
+        only_feasible: bool = True,        
+        line_number: Optional[int] = None
     ) -> bool:
         """Add a solution to the pool."""
-        return super().add_solution(solution, mh, only_feasible)
+        return super().add_solution(solution, mh, only_feasible, line_number)
 
     def get_list(self) -> List[Solution]:
         """Get a list of solutions in the pool."""

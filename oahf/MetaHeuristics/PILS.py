@@ -6,7 +6,9 @@ from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.Base.Evaluator import Evaluator
+from oahf.Base.StopCriteria import StopCriteria
 from oahf.Base.ThreadManager import ThreadManager
+from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import AlwaysAcceptAcceptanceCriteria
 
 # Define a pattern as a tuple of task IDs
 Pattern = Tuple[int, ...]
@@ -20,9 +22,8 @@ class PILS(MetaHeuristic):
     def __init__(
         self,
         thread_id: int,
-        stop_criteria,
+        stop_criteria: StopCriteria,
         evaluator: Evaluator,
-        acceptance_criteria,
         pattern_sizes: Set[int],
         frequency_lb: float,
         elite_threshold: float,
@@ -37,14 +38,14 @@ class PILS(MetaHeuristic):
             thread_id,
             stop_criteria,
             evaluator,
-            acceptance_criteria,
+            AlwaysAcceptAcceptanceCriteria(),
             None,
             [],
             origin_pool,
             destination_pool,
         )
         # unique pattern lengths
-        self.pattern_sizes: Set[int] = set(pattern_sizes)
+        self.pattern_sizes: Set[int] = pattern_sizes
         # relative lower bound for pattern frequency (0.0–1.0)
         self.frequency_lb = frequency_lb
         # fraction of pool to consider as elite
@@ -66,7 +67,6 @@ class PILS(MetaHeuristic):
             thread_id,
             self.stop_criteria.copy(),
             self.evaluator,
-            self.acceptance_criteria.copy(),
             self.pattern_sizes,
             self.frequency_lb,
             self.elite_threshold,
@@ -85,64 +85,85 @@ class PILS(MetaHeuristic):
         from oahf.Base.Movement import Movement
         
         rng = ThreadManager.get_random_obj(self.thread_id)
+        
+        # Use first solution just to get extra data if needed
+        example_sol = origin_pool.solutions[0]
 
-        # snapshot to avoid self-modification
-        origin_snapshot = origin_pool.copy()
-        pool_size = origin_snapshot.count()
+        # Using default behavior when missing max_patterns_injected
+        if self.max_patterns_injected is None:
+            self.max_patterns_injected = example_sol.get_default_max_patterns_injected()
 
-        # split elite vs regular
-        n_elite = max(1, int(self.elite_threshold * pool_size))
-        elite_sols = origin_snapshot.get_n_best(n_elite, self.evaluator)
-        regular_sols = [s for s in origin_snapshot.solutions if s not in elite_sols]
+        # Using default behavior when missing pattern_sizes
+        if len(self.pattern_sizes) == 0:
+            self.pattern_sizes = example_sol.get_default_max_pattern_sizes()
 
-        # mine patterns separately
-        self._mine_patterns(elite_sols, regular_sols, pool_size)
+        while not self.stop_on_evaluations([]):
+            # snapshot to avoid self-modification
+            origin_snapshot = origin_pool.copy()
+            pool_size = origin_snapshot.count()
 
-        # prepare output pool
-        out_pool = destination_pool or origin_pool.copy()
-        for sol in origin_snapshot.solutions:
+            # split elite vs regular
+            n_elite = max(1, int(self.elite_threshold * pool_size))
+            elite_sols = origin_snapshot.get_n_best(n_elite, self.evaluator)
+            regular_sols = [s for s in origin_snapshot.solutions if s not in elite_sols]
 
-            # Using default behavior when missing max_patterns_injected
-            if self.max_patterns_injected is None:
-                self.max_patterns_injected = sol.get_default_max_patterns_injected()
+            # mine patterns separately
+            self._mine_patterns(elite_sols, regular_sols, pool_size)
 
-            # determine base injection counts
-            base_elite = math.ceil(self.elite_injection_ratio * self.max_patterns_injected)
-            base_regular = self.max_patterns_injected - base_elite
-            for p in self.pattern_sizes:
-                e_candidates = list(self.elite_patterns[p])
-                r_candidates = list(self.regular_patterns[p])
+            # prepare output pool
+            out_pool = destination_pool or origin_pool.copy()
+            for solution in origin_snapshot.solutions:
 
-                # actual samples
-                use_elite = min(len(e_candidates), base_elite)
-                use_regular = min(len(r_candidates), base_regular)
-                # sample those
-                sampled_e = rng.sample(e_candidates, use_elite) if use_elite > 0 else []
-                sampled_r = rng.sample(r_candidates, use_regular) if use_regular > 0 else []
+                # determine base injection counts
+                base_elite = math.ceil(self.elite_injection_ratio * self.max_patterns_injected)
+                base_regular = self.max_patterns_injected - base_elite
+                for p in self.pattern_sizes:
+                    e_candidates = list(self.elite_patterns[p])
+                    r_candidates = list(self.regular_patterns[p])
 
-                # if not enough regular, fill with additional elites
-                total_selected = use_elite + use_regular
-                if total_selected < self.max_patterns_injected:
-                    remaining = self.max_patterns_injected - total_selected
-                    # exclude already chosen elites
-                    remaining_elite_pool = [p for p in e_candidates if p not in sampled_e]
-                    extra = min(len(remaining_elite_pool), remaining)
-                    sampled_e += rng.sample(remaining_elite_pool, extra) if extra > 0 else []
+                    # actual samples
+                    use_elite = min(len(e_candidates), base_elite)
+                    use_regular = min(len(r_candidates), base_regular)
+                    # sample those
+                    sampled_e = rng.sample(e_candidates, use_elite) if use_elite > 0 else []
+                    sampled_r = rng.sample(r_candidates, use_regular) if use_regular > 0 else []
+
+                    # if not enough regular, fill with additional elites
+                    total_selected = use_elite + use_regular
+                    if total_selected < self.max_patterns_injected:
+                        remaining = self.max_patterns_injected - total_selected
+                        # exclude already chosen elites
+                        remaining_elite_pool = [p for p in e_candidates if p not in sampled_e]
+                        extra = min(len(remaining_elite_pool), remaining)
+                        sampled_e += rng.sample(remaining_elite_pool, extra) if extra > 0 else []
 
 
-                all_samples = sampled_e + sampled_r
-                # inject sampled elite patterns
-                for freq, pat in all_samples:
-                    generated_moves: List[Movement] = sol.generate_moves_to_inject_pattern(pat)
-                    for move in generated_moves:
-                        if move.apply():
-                            out_pool.add_solution(sol, self)
+                    all_samples = sampled_e + sampled_r
+                    # inject sampled elite patterns
+                    for freq, pat in all_samples:
+                        generated_moves: List[Movement] = solution.generate_moves_to_inject_pattern(pat)
+                        for move in generated_moves:
+                            if move.apply():
+
+                                current_evaluation = self.evaluator.evaluate(solution)
+                                if not (current_evaluation.infeasible() or current_evaluation.has_penalty()):
+                                    out_pool.add_solution(solution.copy(), self)
                         
-                            if self.local_search:
-                                out_pool.add_solution(self.local_search.run(sol), self)
+                                if self.local_search:
+                                    improved_solution = self.local_search.run(solution)
+                                    current_evaluation = self.evaluator.evaluate(improved_solution)
+                                    if not (current_evaluation.infeasible() or current_evaluation.has_penalty()):
+                                        out_pool.add_solution(improved_solution, self)
 
-                        # Always unapply move to avoid unnecessary copies of solution object (can cause overhead)
-                        move.unapply()
+                            # Always unapply move to avoid unnecessary copies of solution object (can cause overhead)
+                            move.unapply()
+
+                            # Stoping check placed here to contemplate the time stop criteria
+                            if self.stop_on_evaluations([]):
+                                break
+
+            # Increment stop_criteria counter only at the end
+            self.stop_criteria.increment_counter()
 
         return out_pool
 

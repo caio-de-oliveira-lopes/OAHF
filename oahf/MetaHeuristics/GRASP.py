@@ -116,8 +116,6 @@ class GRASP(MetaHeuristic):
                     best_eval = curr_eval
                     best_sol = curr_sol
                     destination_pool.add_solution(best_sol, self)
-                    # Optionally log the best evaluation
-                    # print(best_eval)
 
             self.stop_criteria.increment_counter()
 

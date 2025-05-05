@@ -72,6 +72,7 @@ class Pool(Entity, ABC):
         solution: Optional[Solution],
         mh: Optional["MetaHeuristic"],
         only_feasible: bool = True,
+        line_number: Optional[int] = None
     ) -> bool:
         """Add a solution to the pool (to be implemented by subclasses)."""
         if (
@@ -87,7 +88,7 @@ class Pool(Entity, ABC):
         if isinstance(mh, MetaHeuristic):
             if solution.id not in self._solution_info:
                 self._solution_info[solution.id] = {}
-            self._solution_info[solution.id]["metaheuristic"] = type(mh).__name__
+            self._solution_info[solution.id]["metaheuristic"] = f"{type(mh).__name__} - Line number: {line_number}"
             self._solution_info[solution.id][
                 "execution_time"
             ] = Util.get_duration_from_start_timestamp()
