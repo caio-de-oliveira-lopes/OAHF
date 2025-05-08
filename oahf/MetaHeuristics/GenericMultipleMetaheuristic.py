@@ -1,154 +1,119 @@
-import time
 from typing import List, Optional
+import gc
 
-from oahf.Base.Evaluator import Evaluator
 from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Pool import Pool
-from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
-from oahf.Base.ThreadManager import ThreadManager
-from oahf.Logger.LogManager import LogManager
-
+from oahf.ImplementedBase.ListPool import ListPool
+from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import AlwaysAcceptAcceptanceCriteria
+from oahf.Utils.Util import Util
 
 class GenericMultipleMetaheuristic(MetaHeuristic):
     def __init__(
         self,
         thread_id: int,
         stop_criteria: StopCriteria,
-        evaluator: Evaluator,
-        meta_heuristics: List[MetaHeuristic],
-        pool: Pool,
-        num_threads: int,
-        repeatable: bool,
-        change_solution: StopCriteria,
-        acceptance_criteria,
+        evaluator,
+        metaheuristics: List[MetaHeuristic],
+        origin_pool: Optional[Pool] = None,
+        destination_pool: Optional[Pool] = None,
     ):
         """
-        Initializes the GenericMultipleMetaheuristic.
-        :param thread_id: Identifier for the thread.
-        :param stop: Stopping criteria for the metaheuristic.
-        :param evaluator: Evaluator to assess solutions.
-        :param meta_heuristics: Array of metaheuristic instances.
-        :param pool: Pool for solutions.
-        :param num_threads: Number of threads to use.
-        :param repeatable: Indicates if the process is repeatable.
-        :param change_solution: Criteria to change the solution.
-        :param criteria: Acceptance criteria for new solutions.
+        A wrapper MH that sequentially executes a list of metaheuristics
+        until stop criteria is met.
         """
+
         super().__init__(
             thread_id,
             stop_criteria,
             evaluator,
-            acceptance_criteria,
-            None,
-            meta_heuristics,
+            AlwaysAcceptAcceptanceCriteria(),
+            neighborhood_selection=None,
+            meta_heuristics_used=metaheuristics,
+            origin_pool=origin_pool,
+            destination_pool=destination_pool,
         )
-        self.solution_pool = pool
-        self.mhs = [
-            [None for _ in range(num_threads)] for _ in range(len(meta_heuristics))
-        ]
-        self.num_threads = num_threads
-        self.repeatable = repeatable
-        self.change_solution_criteria = change_solution
 
-    def copy(self, thread: int) -> "MetaHeuristic":
-        copied_metaheuristics = [m.copy(thread) for m in self.meta_heuristics_used]
+    def copy(self, thread: int) -> "GenericMultipleMetaheuristic":
         return GenericMultipleMetaheuristic(
             thread,
             self.stop_criteria.copy(),
             self.evaluator,
-            copied_metaheuristics,
-            self.solution_pool.copy(),
-            self.num_threads,
-            self.repeatable,
-            self.change_solution_criteria.copy(),
-            self.acceptance_criteria.copy(),
+            [mh.copy(thread) for mh in self.meta_heuristics_used],
+            self.origin_pool.copy() if self.origin_pool else None,
+            self.destination_pool.copy() if self.destination_pool else None,
         )
 
-    def main_run(self, thread_id: int, solutions: List, mhs: List) -> None:
-        mh = mhs[thread_id]
-        curr_sol = solutions[thread_id]
-        curr_sol = mh.run_operation(curr_sol, self)
-        solutions[thread_id] = curr_sol
+    def run(self, sol):
+        """
+        Optional single solution interface: just wrap it in a ListPool.
+        """
+        pool = ListPool([sol], None, self.evaluator)
+        out = ListPool([], None, self.evaluator)
+        return self.run_operation(pool, out).get_best(self.evaluator)
 
-    def run(self, sol: Solution) -> Solution:
-        solutions_current: List[Optional[Solution]] = (
-            [sol.copy() for _ in range(self.num_threads)]
-            if sol
-            else [None] * self.num_threads
-        )
-        best_eval = self.evaluator.evaluate(sol)
+    def run_operation(
+        self,
+        origin_pool: Pool,
+        destination_pool: Optional[Pool] = None,
+        parent: Optional[MetaHeuristic] = None,
+    ) -> Pool:
+        """
+        Sequentially invokes each MH in metaheuristics_used until stopping.
+        """
+        self.parent_metaheuristic = parent
 
-        self.stop_criteria.set_progress_report(0.1)
-        threads_not_finished = set()
+        # Set up destination pool
+        dest = destination_pool if destination_pool else ListPool([], None, self.evaluator)
 
-        while not self.stop_on_evaluations([best_eval]):
-            self.change_solution_criteria.reset()
+        # Reset stop criteria
+        self.stop_criteria.reset()
 
-            for m in range(len(self.meta_heuristics_used)):
-                change_sol = self.change_solution_criteria.stop()
-                if change_sol:
-                    for i in range(self.num_threads):
-                        if i not in threads_not_finished:
-                            solutions_current[i] = self.solution_pool.get_solution_at(
-                                ThreadManager.get_next(
-                                    self.thread_id, 0, self.solution_pool.count()
-                                )
-                            ).copy()
+        last_name = None
+        first = True
 
-                    self.change_solution_criteria.reset()
-
-                self.change_solution_criteria.increment_counter()
-
-                if self.repeatable:
-                    tasks = [None] * self.num_threads
-
-                for i in range(self.num_threads):
-                    if i not in threads_not_finished:
-                        if i == 0:
-                            self.stop_criteria.increment_counter()
-                        x = i
-                        m2 = m
-                        threads_not_finished.add(x)
-                        tasks[i] = ThreadManager.for_each(
-                            x,
-                            [x],
-                            lambda _: self.main_run(x, solutions_current, self.mhs[m2]),
+        # Loop until any stop criterion trips
+        while not self.stop_on_evaluations([]):
+            for mh in self.meta_heuristics_used:
+                # Only log when MH changes
+                if mh.name != last_name:
+                    if not first:
+                        Util.logger().info(
+                            f"Finished {last_name} at {Util.get_duration_from_start_timestamp()}."
                         )
-
-                if self.repeatable:
-                    # Wait for all threads to finish
-                    ThreadManager.main_for_wait_all(
-                        self.num_threads,
-                        lambda x: self.main_run(x, solutions_current, self.mhs[m]),
+                    Util.logger().info(Util.line())
+                    Util.logger().info(
+                        f"Starting {mh.name} at {Util.get_duration_from_start_timestamp()}."
                     )
-                else:
-                    # Wait for any thread to finish
-                    ThreadManager.main_for_wait_any(
-                        self.num_threads,
-                        lambda x: self.main_run(x, solutions_current, self.mhs[m]),
-                    )
+                    first = False
+                    last_name = mh.name
 
-                for i in range(self.num_threads):
-                    if i in threads_not_finished:
-                        # Assuming tasks[i] would have some mechanism to check if it is done
-                        if tasks[i].done():
-                            threads_not_finished.remove(i)
-                            if self.log_solutions:
-                                LogManager.log_solution(
-                                    self.evaluator.evaluate(solutions_current[i])
-                                )
-                            self.solution_pool.add(solutions_current[i], self.evaluator)
-                            best_eval = self.evaluator.evaluate(
-                                self.solution_pool.get_best(self.evaluator)
-                            )
+                # Optional: Include this mh as its named on for loggin purposes
+                #mh.named_parent = self
 
-            # Simulate a small delay
-            time.sleep(0.1)
+                current_origin_pool = (
+                    mh.origin_pool
+                    if mh.origin_pool is not None
+                    else origin_pool
+                )
 
-        for i in range(len(self.meta_heuristics_used)):
-            self.meta_heuristics_used[i] = self.mhs[i][
-                0
-            ]  # Update to the first in the array
+                # Execute and get new pool
+                mh.run_operation(current_origin_pool, mh.destination_pool, self)
 
-        return self.solution_pool.get_best(self.evaluator)
+                # Force Python to reclaim temporary objects
+                gc.collect()
+
+                # If at any point we met our stopping criterion, bail out
+                if self.stop_on_evaluations([]):
+                    break
+
+            # Optionally increment a counter for composite iterations
+            self.stop_criteria.increment_counter()
+
+        # Final logging
+        if last_name is not None:
+            Util.logger().info(
+                f"Ending execution of {last_name} at {Util.get_duration_from_start_timestamp()}."
+            )
+
+        return dest

@@ -116,7 +116,7 @@ class PILS(MetaHeuristic):
 
             # prepare output pool
             out_pool = destination_pool or origin_pool.copy()
-            for solution in origin_snapshot.solutions:
+            for solution in rng.sample(origin_snapshot.solutions, len(origin_snapshot.solutions)):
 
                 # determine base injection counts
                 base_elite = math.ceil(self.elite_injection_ratio * self.max_patterns_injected)

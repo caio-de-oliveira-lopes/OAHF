@@ -64,9 +64,7 @@ class JobRotationLPSelector(MetaHeuristic):
         )
 
     def run(self, sol: Solution) -> Solution:
-        raise NotImplementedError(
-            "Abstract Method: must be implemented by child classes."
-        )
+        raise NotImplementedError("Use run_operation() method for this class.")
 
     def run_operation(
         self,
@@ -209,4 +207,4 @@ class JobRotationLPSelector(MetaHeuristic):
             return result
         except Exception as ex:
             LogManager.something_went_wrong(self.__class__.__name__, ex)
-            raise
+            return result

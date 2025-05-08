@@ -60,10 +60,12 @@ from oahf.MetaHeuristics.BRKGA import BRKGA
 from oahf.MetaHeuristics.FirstImprovement import FirstImprovement
 from oahf.MetaHeuristics.GRASP import GRASP
 from oahf.MetaHeuristics.GRC import GRC
+from oahf.MetaHeuristics.GenericMultipleMetaheuristic import GenericMultipleMetaheuristic
 from oahf.MetaHeuristics.HGA import HGA
 from oahf.MetaHeuristics.JobRotationLPSelector import JobRotationLPSelector
 from oahf.MetaHeuristics.MultipleBestImprovement import MultipleBestImprovement
 from oahf.MetaHeuristics.PILS import PILS
+from oahf.MetaHeuristics.RetryingMetaheuristic import RetryingMetaheuristic
 from oahf.MetaHeuristics.TabuSearch import TabuSearch
 from oahf.Utils.EnumUtil import EnumUtil
 from oahf.Utils.Util import Util
@@ -754,6 +756,60 @@ class HeuristicParser:
                         origin_pool, 
                         destination_pool
                     )
+                elif m["name"].lower() == "generic_multiple_metaheuristic":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    origin_pool = (
+                        self.solution_pools[m["origin_pool"]]
+                        if "origin_pool" in m
+                        else None
+                    )
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
+
+                    metaheuristics = [self.metaheuristics[mh_id] for mh_id in m["parameters"]["metaheuristics"]]
+
+                    meta = GenericMultipleMetaheuristic(
+                        thread_id,
+                        stop_criteria, # type: ignore
+                        evaluator,
+                        metaheuristics,
+                        origin_pool,
+                        destination_pool
+                        )
+                elif m["name"].lower() == "retrying_metaheuristic":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    acceptance_criteria = self.parse_acceptance_criteria(
+                        m["acceptance_criteria"]
+                    )
+                    origin_pool = (
+                        self.solution_pools[m["origin_pool"]]
+                        if "origin_pool" in m
+                        else None
+                    )
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
+
+                    main_metaheuristic = self.metaheuristics[m["parameters"]["main_metaheuristic"]]
+                    local_searches = [self.metaheuristics[mh_id] for mh_id in m["parameters"]["local_searches"]]
+
+                    meta = RetryingMetaheuristic(
+                        thread_id,
+                        stop_criteria, # type: ignore
+                        evaluator,
+                        main_metaheuristic,
+                        local_searches,
+                        acceptance_criteria, # type: ignore
+                        origin_pool,
+                        destination_pool
+                        )
                 else:
                     raise ValueError(f"Unavailable metaheuristic: {m['name']}")
                 self.metaheuristics[m["id"]] = meta

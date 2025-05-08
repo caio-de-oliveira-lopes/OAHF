@@ -39,7 +39,7 @@ class JobRotationAlwabpEvaluation(Evaluation):
             bool: True if current evaluation is better, otherwise False.
         """
         if not isinstance(ev, JobRotationAlwabpEvaluation):
-            return super().better_or_equal_to(ev)
+            return super().better_than(ev)
 
         if self.infeasible() and not ev.infeasible():
             return False

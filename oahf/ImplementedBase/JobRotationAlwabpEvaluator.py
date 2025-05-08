@@ -16,7 +16,7 @@ class JobRotationAlwabpEvaluator(Evaluator):
         """
         super().__init__(stop_on_first, *constraints)
 
-    def evaluate(self, sol: Optional["JobRotationAlwabpSolution"]) -> "Evaluation":
+    def evaluate(self, sol: Optional["JobRotationAlwabpSolution"], cache: bool) -> "Evaluation":
         """
         Abstract method to evaluate a Solution.
         :param sol: A Solution object to evaluate.
@@ -24,7 +24,7 @@ class JobRotationAlwabpEvaluator(Evaluator):
         """
         if isinstance(sol, JobRotationAlwabpSolution):
             return JobRotationAlwabpEvaluation(
-                (constraint.evaluate(sol) for constraint in self._constraints),
+                (constraint.evaluate(sol, cache) for constraint in self._constraints),
                 sol.calculate_total_distinct_tasks(),
                 sol.get_average_cycle_time(),
             )

@@ -122,6 +122,7 @@
     <Compile Include="oahf\MetaHeuristics\FirstImprovement.py" />
     <Compile Include="oahf\MetaHeuristics\BestImprovement.py" />
     <Compile Include="oahf\MetaHeuristics\PerturbationDrivenLocalSearch.py" />
+    <Compile Include="oahf\MetaHeuristics\RetryingMetaheuristic.py" />
     <Compile Include="oahf\MetaHeuristics\TabuSearch.py" />
     <Compile Include="oahf\MetaHeuristics\__init__.py" />
     <Compile Include="oahf\Utils\EnumUtil.py" />
