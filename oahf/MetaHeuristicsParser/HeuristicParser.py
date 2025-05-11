@@ -151,7 +151,7 @@ class HeuristicParser:
             if changed_mh:
                 if not first:
                     Util.logger().info(
-                        f"Ending execution at {Util.get_duration_from_start_timestamp()}."
+                        f"Ending execution of {last_mh} at {Util.get_duration_from_start_timestamp()}."
                     )
                 print(Util.line())
                 Util.logger().info(
@@ -173,7 +173,7 @@ class HeuristicParser:
 
         # Print last mh ending
         if last_mh != None:
-            Util.logger().info(f"Ending execution at {Util.get_duration_from_start_timestamp()}.")
+            Util.logger().info(f"Ending execution of {last_mh} at {Util.get_duration_from_start_timestamp()}.")
 
         print(Util.line())
         Util.logger().info(
@@ -298,10 +298,7 @@ class HeuristicParser:
                         for id in n["parameters"]["reconstruct"]["neighborhood_ids"]
                     ]
                     ns = ListSelection(False, *neighborhoods)
-                    order_moves = (
-                        str(n["parameters"]["reconstruct"]["order_moves"]).lower()
-                        == "true"
-                    )
+                    order_moves = n["parameters"]["reconstruct"].get("order_moves", False)
 
                     grc = GRC(
                         thread_id,
@@ -338,7 +335,7 @@ class HeuristicParser:
 
             for n in self.definition["neighborhood_selections"]:
                 if n["name"].lower() == "list_selection":
-                    circular = n["parameters"]["circular"].lower() == "true"
+                    circular = n["parameters"].get("circular", False)
                     neighborhoods = [
                         self.neighborhoods[id] for id in n["neighborhood_ids"]
                     ]
@@ -402,13 +399,13 @@ class HeuristicParser:
         try:
             if "alwabp_evaluator" in evaluator_dict:
                 config = evaluator_dict["alwabp_evaluator"]
-                stop_on_first = config.get("stop_on_first", "true").lower() == "true"
+                stop_on_first = config.get("stop_on_first", True)
                 constraints = self.parse_constraints(config.get("constraints", {}))
                 return AlwabpEvaluator(stop_on_first, *constraints)
 
             elif "job_rotation_alwabp_evaluator" in evaluator_dict:
                 config = evaluator_dict["job_rotation_alwabp_evaluator"]
-                stop_on_first = config.get("stop_on_first", "true").lower() == "true"
+                stop_on_first = config.get("stop_on_first", True)
                 constraints = self.parse_constraints(config.get("constraints", {}))
                 return JobRotationAlwabpEvaluator(stop_on_first, *constraints)
             else:
@@ -460,7 +457,7 @@ class HeuristicParser:
                         m["acceptance_criteria"]
                     )
                     ns = self.neighborhood_selections[m["neighborhood_selection"]]
-                    order_moves = m["parameters"]["order_moves"].lower() == "true"
+                    order_moves = m["parameters"]["order_moves"]
                     destination_pool = (
                         self.solution_pools[m["destination_pool"]]
                         if "destination_pool" in m
@@ -797,13 +794,15 @@ class HeuristicParser:
                         else None
                     )
 
+                    use_destination_pool_evaluator = m["parameters"].get("use_destination_pool_evaluator", False)
+                    mh_evaluator = destination_pool.evaluator if destination_pool is not None and use_destination_pool_evaluator else evaluator
                     main_metaheuristic = self.metaheuristics[m["parameters"]["main_metaheuristic"]]
                     local_searches = [self.metaheuristics[mh_id] for mh_id in m["parameters"]["local_searches"]]
 
                     meta = RetryingMetaheuristic(
                         thread_id,
                         stop_criteria, # type: ignore
-                        evaluator,
+                        mh_evaluator,
                         main_metaheuristic,
                         local_searches,
                         acceptance_criteria, # type: ignore
@@ -857,10 +856,7 @@ class HeuristicParser:
             elif "no_stop" in criteria:
                 return NoStopCriteria()
             elif "multiple_stop_criteria" in criteria:
-                stop_when_any = (
-                    criteria["multiple_stop_criteria"]["stop_when_any"].lower()
-                    == "true"
-                )
+                stop_when_any = criteria["multiple_stop_criteria"].get("stop_when_any", True)
                 multiple_criterias = [
                     parsed
                     for other_criteria in criteria["multiple_stop_criteria"][
@@ -888,9 +884,7 @@ class HeuristicParser:
                     if "perc_improvement" in criteria["no_improvement"]
                     else None
                 )
-                show_report = (
-                    criteria["no_improvement"].get("show_report", "").lower() == "true"
-                )
+                show_report = criteria["no_improvement"].get("show_report", False)
                 return StopNoImprovement(
                     iterations_no_improv, seconds, iterations, perc_improv, show_report
                 )

@@ -87,8 +87,9 @@ class BRKGA(MetaHeuristic):
         """Runs the meta-heuristic on a single solution. Not implemented in this class."""
         raise NotImplementedError("Use run_operation() method for this class.")
 
-    def run_operation(self, origin_pool: Pool, destination_pool: Pool) -> Pool:
+    def run_operation(self, origin_pool: Pool, destination_pool: Pool, parent: Optional["MetaHeuristic"] = None) -> Pool:
         """Executes the meta-heuristic with external control, optimized for computational efficiency."""
+        self.parent_metaheuristic = parent
 
         from oahf.Utils.Util import Util
 
@@ -157,7 +158,7 @@ class BRKGA(MetaHeuristic):
                 current_evaluation = evaluator.evaluate(current_solution)
 
                 if not (current_evaluation.infeasible() or current_evaluation.has_penalty()):
-                    destination_pool.add_solution(current_solution, self)
+                    destination_pool.add_solution(current_solution.copy(), self)
 
                 # Accept new solution if it improves the best one
                 if acceptance.accept(

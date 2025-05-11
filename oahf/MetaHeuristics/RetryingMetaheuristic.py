@@ -65,6 +65,7 @@ class RetryingMetaheuristic(MetaHeuristic):
         destination_pool: Optional[Pool] = None,
         parent: Optional[MetaHeuristic] = None,
     ) -> Pool:
+        self.parent_metaheuristic = parent
         if destination_pool is None:
             raise Exception("Missing destination pool")
 
@@ -78,23 +79,40 @@ class RetryingMetaheuristic(MetaHeuristic):
         # Loop: try main, then if not accepted, apply LS and retry
         while not self.stop_on_evaluations([]):
             # Run main metaheuristic
-            Util.logger().info(f"Running main Metaheuristic {self.main_mh.name}...")
-            self.main_mh.run_operation(origin_pool, destination_pool)
+            Util.logger().info(f"Running Metaheuristic {self.main_mh.name} at {Util.get_duration_from_start_timestamp()}.")
+            self.main_mh.run_operation(origin_pool, destination_pool, self)
 
             curr_sol = destination_pool.get_best(self.evaluator)
             curr_eval = self.evaluator.evaluate(curr_sol)
             # Check acceptance
             if self.acceptance_criteria.accept(best_eval, curr_eval, curr_sol): # type: ignore
-                destination_pool.add_solution(curr_sol, self)
-                best_sol = curr_sol
+                if not (curr_eval.infeasible() or curr_eval.has_penalty()):
+                    destination_pool.add_solution(curr_sol, self.main_mh)
+                    best_sol = curr_sol
+                    break
+
+            # Stoping check placed here to contemplate the time stop criteria
+            if self.stop_on_evaluations([]):
                 break
 
             # Otherwise apply next local search
             ls_mh = self.local_search_list[self._ls_index]
             self._ls_index = (self._ls_index + 1) % len(self.local_search_list)
-            Util.logger().info(f"Acceptance Criteria not met, applying local search {ls_mh.name}...")
+            Util.logger().info(f"Acceptance Criteria not met, applying local search {ls_mh.name} at {Util.get_duration_from_start_timestamp()}.")
             ls_mh.named_parent = self.main_mh
-            ls_mh.run_operation(ls_mh.origin_pool if ls_mh.origin_pool is not None else origin_pool, ls_mh.destination_pool)
+            ls_mh.run_operation(ls_mh.origin_pool if ls_mh.origin_pool is not None else origin_pool, ls_mh.destination_pool, self)
+
+            # Stoping check placed here to contemplate the time stop criteria
+            if self.stop_on_evaluations([]):
+                break
+
+            # Run the main metaheuristic again
+            Util.logger().info(f"Retrying Metaheuristic {self.main_mh.name} at {Util.get_duration_from_start_timestamp()}.")
+            self.main_mh.run_operation(origin_pool, destination_pool, self)
+            curr_sol = destination_pool.get_best(self.evaluator)
+            curr_eval = self.evaluator.evaluate(curr_sol)
+            if not (curr_eval.infeasible() or curr_eval.has_penalty()):
+                destination_pool.add_solution(curr_sol, self)
 
             self.stop_criteria.increment_counter()
 

@@ -12,13 +12,12 @@ from oahf.Base.MultipleStopCriteria import MultipleStopCriteria
 from oahf.Base.NeighborhoodSelection import NeighborhoodSelection
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
-from oahf.ImplementedBase import ListSelection, MaxCycleTimeStopCriteria
+from oahf.ImplementedBase import ListSelection
 from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
     AlwaysAcceptAcceptanceCriteria,
 )
 from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
-from oahf.ImplementedBase.StopNoImprovement import StopNoImprovement
 from oahf.ImplementedBase.StopTimeIterationCriteria import StopTimeIterationCriteria
 from oahf.Logger.LogManager import LogManager
 from oahf.MetaHeuristics.BestImprovement import BestImprovement
@@ -142,8 +141,8 @@ class TabuSearch(MetaHeuristic):
     def run(self, sol: Solution) -> Solution:
         """Executes the Tabu Search on a single solution with optimizations for computational time."""
         # Create initial copies and cache frequently used attributes
-        best_sol = sol.copy()
-        curr_sol = sol.copy()
+        best_sol = sol
+        curr_sol = best_sol.copy()
 
         name = self.name
         evaluator = self.evaluator
@@ -229,19 +228,11 @@ class TabuSearch(MetaHeuristic):
                                 curr_sol = best_improv.run(curr_sol)
                                 curr_eval = evaluator.evaluate(curr_sol)
 
-                                if (
-                                    destination_pool
-                                    and not curr_eval.infeasible()
-                                    and not curr_eval.has_penalty()
-                                ):
+                                if (destination_pool and not (curr_eval.infeasible() or curr_eval.has_penalty())):
                                     destination_pool.add_solution(curr_sol, self)
 
-                                if (
-                                    not curr_eval.infeasible()
-                                    and not curr_eval.has_penalty()
-                                    and acceptance.accept(
-                                        best_eval, curr_eval, curr_sol
-                                    )
+                                if (not (curr_eval.infeasible() or curr_eval.has_penalty()) 
+                                    and acceptance.accept(best_eval, curr_eval, curr_sol)
                                     and curr_sol != best_sol
                                 ):
                                     best_sol = curr_sol.copy()
@@ -261,25 +252,21 @@ class TabuSearch(MetaHeuristic):
 
                         move.unapply()
 
-                intensification_criteria.increment_counter()
+                intensification_criteria.increment_counter()                
+                stop_criteria.increment_counter(pbar)
 
                 if best_move:
                     best_move.apply()
                     curr_eval = evaluator.evaluate(curr_sol)
-                    if (
-                        destination_pool
-                        and not curr_eval.infeasible()
-                        and not curr_eval.has_penalty()
-                    ):
+                    if (destination_pool and not (curr_eval.infeasible() or curr_eval.has_penalty())):
                         destination_pool.add_solution(curr_sol, self)
                     # Update best solution if criteria are met
                     if (
-                        not curr_eval.infeasible()
-                        and not curr_eval.has_penalty()
+                        not (curr_eval.infeasible() or curr_eval.has_penalty())
                         and acceptance.accept(best_eval, curr_eval, curr_sol)
                         and curr_sol != best_sol
                     ):
-                        curr_sol = best_sol.copy()
+                        best_sol = curr_sol.copy()
                         best_eval = curr_eval
 
                     tabu_list.add_element(
@@ -338,10 +325,7 @@ class TabuSearch(MetaHeuristic):
 
                     curr_sol = pool.get_best(evaluator)
                     curr_eval = evaluator.evaluate(curr_sol)
-                    if (
-                        destination_pool
-                        and not (curr_eval.infeasible() or curr_eval.has_penalty())
-                    ):
+                    if (destination_pool and not (curr_eval.infeasible() or curr_eval.has_penalty())):
                         destination_pool.add_solution(curr_sol, self)
 
                     if (
@@ -349,14 +333,13 @@ class TabuSearch(MetaHeuristic):
                         and acceptance.accept(best_eval, curr_eval, curr_sol)
                         and curr_sol != best_sol
                     ):
-                        curr_sol = best_sol.copy()
+                        best_sol = curr_sol.copy()
                         best_eval = curr_eval
 
                 if curr_sol != best_sol:
                     curr_sol = best_sol.copy()
 
-                ns.allow_infeasible_movements = False                
-                stop_criteria.increment_counter(pbar)
+                ns.allow_infeasible_movements = False
 
             except Exception as ex:
                 LogManager.something_went_wrong(self.__class__.__name__, ex)

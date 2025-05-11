@@ -81,9 +81,10 @@ class PILS(MetaHeuristic):
     def run(self, sol: Solution) -> Solution:
         raise NotImplementedError("Use run_operation() method for this class.")
 
-    def run_operation(self, origin_pool: Pool, destination_pool: Pool) -> Pool:
+    def run_operation(self, origin_pool: Pool, destination_pool: Pool, parent: Optional["MetaHeuristic"] = None) -> Pool:
         from oahf.Base.Movement import Movement
         
+        self.parent_metaheuristic = parent
         rng = ThreadManager.get_random_obj(self.thread_id)
         
         # Use first solution just to get extra data if needed
@@ -100,6 +101,11 @@ class PILS(MetaHeuristic):
         # Setting parent MetaHeuristic
         if self.local_search:
             self.local_search.named_parent = self
+            self.local_search.parent_metaheuristic = self
+
+        self.stop_criteria.reset()
+        self.acceptance_criteria.reset()
+        out_pool = destination_pool
 
         while not self.stop_on_evaluations([]):
             # snapshot to avoid self-modification
@@ -111,12 +117,20 @@ class PILS(MetaHeuristic):
             elite_sols = origin_snapshot.get_n_best(n_elite, self.evaluator)
             regular_sols = [s for s in origin_snapshot.solutions if s not in elite_sols]
 
+            # Stoping check placed here to contemplate the time stop criteria
+            if self.stop_on_evaluations([]):
+                break
+
             # mine patterns separately
             self._mine_patterns(elite_sols, regular_sols, pool_size)
 
             # prepare output pool
             out_pool = destination_pool or origin_pool.copy()
             for solution in rng.sample(origin_snapshot.solutions, len(origin_snapshot.solutions)):
+
+                # Stoping check placed here to contemplate the time stop criteria
+                if self.stop_on_evaluations([]):
+                    break
 
                 # determine base injection counts
                 base_elite = math.ceil(self.elite_injection_ratio * self.max_patterns_injected)
@@ -141,6 +155,9 @@ class PILS(MetaHeuristic):
                         extra = min(len(remaining_elite_pool), remaining)
                         sampled_e += rng.sample(remaining_elite_pool, extra) if extra > 0 else []
 
+                    # Stoping check placed here to contemplate the time stop criteria
+                    if self.stop_on_evaluations([]):
+                        break
 
                     all_samples = sampled_e + sampled_r
                     # inject sampled elite patterns
@@ -159,8 +176,8 @@ class PILS(MetaHeuristic):
                                     if not (current_evaluation.infeasible() or current_evaluation.has_penalty()):
                                         out_pool.add_solution(improved_solution, self)
 
-                            # Always unapply move to avoid unnecessary copies of solution object (can cause overhead)
-                            move.unapply()
+                                # Always unapply move to avoid unnecessary copies of solution object (can cause overhead)
+                                move.unapply()
 
                             # Stoping check placed here to contemplate the time stop criteria
                             if self.stop_on_evaluations([]):
@@ -187,6 +204,10 @@ class PILS(MetaHeuristic):
                 for pat in sol.extract_patterns(p):
                     elite_counts[p][pat] = elite_counts[p].get(pat, 0) + 1
 
+        # Stoping check placed here to contemplate the time stop criteria
+        if self.stop_on_evaluations([]):
+            return
+
         # so that elite_counts include both elite and regular occurrences for those patterns
         for sol in regular_solutions:
             for p in self.pattern_sizes:
@@ -201,6 +222,10 @@ class PILS(MetaHeuristic):
         # build top-K mine heaps with frequency_lb filter
         min_freq = max(1, int(self.frequency_lb * pool_size))
         for p in self.pattern_sizes:
+
+            # Stoping check placed here to contemplate the time stop criteria
+            if self.stop_on_evaluations([]):
+                return
 
             # elites
             heap_e: List[Tuple[int, Pattern]] = []

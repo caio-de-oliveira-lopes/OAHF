@@ -73,6 +73,7 @@ class JobRotationLPSelector(MetaHeuristic):
         parent: Optional["MetaHeuristic"] = None,
     ) -> Pool:
         try:
+            self.parent_metaheuristic = parent
             result = destination_pool or ListPool()
             alwabp_solutions = []
 
@@ -93,6 +94,11 @@ class JobRotationLPSelector(MetaHeuristic):
                     "MIPGap", 1e-6
                 )  # Set a very small MIP gap for high precision
                 grb_model.setParam("OutputFlag", 0)
+
+                # adding timeout to respect StopTimeIterationCriteria
+                timeout = self.get_min_timeout_milliseconds()
+                if timeout:
+                    grb_model.setParam("TimeLimit", timeout)
 
                 # Decision variables
                 solution = {}

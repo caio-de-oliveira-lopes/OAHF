@@ -81,7 +81,7 @@ class GenericMultipleMetaheuristic(MetaHeuristic):
                         Util.logger().info(
                             f"Finished {last_name} at {Util.get_duration_from_start_timestamp()}."
                         )
-                    Util.logger().info(Util.line())
+                    print(Util.line())
                     Util.logger().info(
                         f"Starting {mh.name} at {Util.get_duration_from_start_timestamp()}."
                     )
@@ -115,5 +115,6 @@ class GenericMultipleMetaheuristic(MetaHeuristic):
             Util.logger().info(
                 f"Ending execution of {last_name} at {Util.get_duration_from_start_timestamp()}."
             )
+        print(Util.line())
 
         return dest

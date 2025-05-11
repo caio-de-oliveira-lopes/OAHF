@@ -32,6 +32,9 @@ class PrecedenceConstraint(Constraint):
         Adjust the penalty multiplier for the constraint violations.
         :param multiplier: Multiplier for the penalty value.
         """
+        if multiplier < 1 and cls._penalty < 1:
+            return
+
         cls._penalty *= multiplier
 
     @classmethod
@@ -55,37 +58,28 @@ class PrecedenceConstraint(Constraint):
         Returns:
             int: The total number of precedence violations.
         """
-
         sol_hash = solution.solution_hash
         memo = PrecedenceConstraint._precedence_violations_memo
+        if cache and (cached := memo.get(sol_hash)) is not None:
+            return cached
 
-        # Return cached result if already computed
-        if cache and (cached_result := memo.get(sol_hash)) is not None:
-            return cached_result
+        # Flatten edges once
+        graph = solution.immediate_task_precedences[solution.default_graph_orientation]
+        edges = [(u, v) for v, pres in graph.items() for u in pres]
 
-        # Cache frequently accessed attributes
-        precedence_graph = solution.immediate_task_precedences[
-            solution.default_graph_orientation
-        ]
-        task_station_assignment = solution.task_station_assignment
+        assign = solution.task_station_assignment.get
+        count = 0
+        for u, v in edges:
+            station_u = assign(u)
+            station_v = assign(v)
+            # Case 1: Both Allocated: If station_u > station_v, infeasible
+            # Case 2: Only task_u allocated: always feasible
+            # Case 3: Only task_v allocated: always infeasible
+            if (station_u and station_v and station_u > station_v) or (not station_u and station_v):
+                count += 1
 
-        violation_count = 0
-
-        # Iterate through all stations
-        for station, tasks in solution.station_tasks_assignment.items():
-            for task in tasks:
-                precedences = precedence_graph.get(task, [])
-
-                # Check if any precedent task is in a later station
-                for preceding_task in precedences:
-                    preceding_task_station = task_station_assignment.get(preceding_task)
-
-                    if preceding_task_station and preceding_task_station > station:
-                        violation_count += 1
-
-        # Store result in memoization dictionary
-        memo[sol_hash] = violation_count
-        return violation_count
+        memo[sol_hash] = count
+        return count
 
     def infeasible_evaluation(self, penalty: float = 0) -> "ConstraintEvaluation":
         return ConstraintEvaluation(self, True, PrecedenceConstraint._penalty, penalty)

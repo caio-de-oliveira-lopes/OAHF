@@ -63,3 +63,15 @@ class MultipleStopCriteria(StopCriteria):
         """Resets the stopping criteria."""
         for criteria in self.stop_criterias:
             criteria.reset()
+
+    def get_remaining_ms(self) -> Optional[int]:
+        """Return how many ms are left, or None if unlimited."""
+        # collect only the non-None results
+        remaining = [
+            sc.get_remaining_ms() # type: ignore
+            for sc in self.stop_criterias
+            if hasattr(sc, "get_remaining_ms")
+        ]
+        # filter out None
+        non_none = [ms for ms in remaining if ms is not None]
+        return min(non_none, default=None)

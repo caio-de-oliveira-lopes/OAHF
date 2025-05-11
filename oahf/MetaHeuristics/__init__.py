@@ -11,6 +11,7 @@ from .MultipleBestImprovement import MultipleBestImprovement
 from .Pertubation import Pertubation
 from .PerturbationDrivenLocalSearch import PerturbationDrivenLocalSearch
 from .PILS import PILS
+from .RetryingMetaheuristic import RetryingMetaheuristic
 from .TabuSearch import TabuSearch
 
 __all__ = [
@@ -27,5 +28,6 @@ __all__ = [
     "Pertubation",
     "PerturbationDrivenLocalSearch",
     "PILS",
+    "RetryingMetaheuristic",
     "TabuSearch"
 ]

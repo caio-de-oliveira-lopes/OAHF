@@ -78,6 +78,7 @@ class Pool(Entity, ABC):
         if (
             solution is None
             or solution in self._solution_set
+            or solution.id in self._solution_info
             or (only_feasible and not solution.validate_aspects(False))
         ):
             return False

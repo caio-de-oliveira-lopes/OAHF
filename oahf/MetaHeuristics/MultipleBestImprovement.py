@@ -59,7 +59,7 @@ class MultipleBestImprovement(MetaHeuristic):
     def run(self, sol: Solution) -> Solution:
         """Executes the best improvement strategy on the given solution."""
         best_sol = sol.copy()
-        curr_sol = sol.copy()
+        curr_sol = best_sol
         best_eval = self.evaluator.evaluate(best_sol)
 
         self.stop_criteria.reset()

@@ -16,7 +16,7 @@ class JobRotationAlwabpEvaluator(Evaluator):
         """
         super().__init__(stop_on_first, *constraints)
 
-    def evaluate(self, sol: Optional["JobRotationAlwabpSolution"], cache: bool) -> "Evaluation":
+    def evaluate(self, sol: Optional["JobRotationAlwabpSolution"], cache: bool = True) -> "Evaluation":
         """
         Abstract method to evaluate a Solution.
         :param sol: A Solution object to evaluate.

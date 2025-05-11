@@ -98,3 +98,13 @@ class StopTimeIterationCriteria(StopCriteria):
         """Returns the elapsed time as a string."""
         elapsed = time.time() - self.sw_start
         return str(elapsed)
+
+    def get_remaining_ms(self) -> Optional[int]:
+        """Return how many ms are left, or None if unlimited."""
+        if self.milliseconds is None:
+            return None
+
+        elapsed = int((time.time() - self.sw_start) * 1000)
+        remaining = self.milliseconds - elapsed
+        # don’t go negative
+        return remaining if remaining > 0 else 0

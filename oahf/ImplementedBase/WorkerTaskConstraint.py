@@ -31,6 +31,9 @@ class WorkerTaskConstraint(Constraint):
         Adjust the penalty multiplier for the constraint violations.
         :param multiplier: Multiplier for the penalty value.
         """
+        if multiplier < 1 and cls._penalty < 1:
+            return
+
         cls._penalty *= multiplier
 
     @classmethod
@@ -55,30 +58,35 @@ class WorkerTaskConstraint(Constraint):
         sol_hash = solution.solution_hash
         memo = WorkerTaskConstraint._worker_task_violations_memo
 
-        # Return cached result if already computed
-        if cache and (cached_result := memo.get(sol_hash)) is not None:
-            return cached_result
+        # Return cached result if available
+        if cache and (cached := memo.get(sol_hash)) is not None:
+            return cached
 
-        violation_count = 0
-        station_worker_assignment = solution.station_worker_assignment
-        task_executable_by_worker = solution.tasks_executed_by_worker
-        station_tasks_assignment = solution.station_tasks_assignment
+        # Local bindings for speed
+        sta_to_worker = solution.station_worker_assignment
+        station_tasks = solution.station_tasks_assignment
+        tasks_by_worker = solution.tasks_executed_by_worker
+        _get_worker = sta_to_worker.get
 
-        # Iterate through all stations
-        for station, tasks in station_tasks_assignment.items():
-            worker = station_worker_assignment.get(station)
-
+        # Batch all assigned tasks by worker
+        worker_to_tasks: dict = {}
+        for station, tasks in station_tasks.items():
+            worker = _get_worker(station)
             if worker is not None:
-                executable_tasks = task_executable_by_worker[worker]
+                worker_to_tasks.setdefault(worker, []).extend(tasks)
 
-                # Use set difference for faster violation counting
-                violation_count += sum(
-                    1 for task in tasks if task not in executable_tasks
-                )
+        # Count violations using set-difference per worker
+        violations = 0
+        for worker, assigned_tasks in worker_to_tasks.items():
+            executable = tasks_by_worker[worker]
+            # Convert to set once
+            assigned_set = set(assigned_tasks)
+            # All non-executable tasks
+            violations += len(assigned_set - executable)
 
-        # Store result in memoization dictionary
-        memo[sol_hash] = violation_count
-        return violation_count
+        # Memoize and return
+        memo[sol_hash] = violations
+        return violations
 
     def infeasible_evaluation(self, penalty: float = 0) -> "ConstraintEvaluation":
         """

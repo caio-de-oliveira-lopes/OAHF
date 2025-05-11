@@ -725,6 +725,7 @@ class AlwabpSolution(Solution):
                 "number_of_workers": self._number_of_workers,
                 "number_of_stations": self._number_of_stations,
                 "max_cycle_time": int(self.get_max_cycle_time()),
+                "graph_orientation": self.default_graph_orientation.name,
                 "task_allocations_per_station": [],
                 "unassigned_tasks": (
                     self.unassigned_tasks if self.unassigned_tasks else []
@@ -2397,10 +2398,10 @@ class AlwabpSolution(Solution):
                 if destination_pool:
                     current_evaluation = evaluator.evaluate(constructed_sol) # type: ignore
                     if not (current_evaluation.infeasible() or current_evaluation.has_penalty()):
-                        destination_pool.add_solution(constructed_sol, calling_mh)
+                        destination_pool.add_solution(constructed_sol.copy(), calling_mh)
 
-                if local_seach:
-                    constructed_sol = local_seach.run(constructed_sol)
+                        if local_seach:
+                            constructed_sol = local_seach.run(constructed_sol)
 
                 break
             else:

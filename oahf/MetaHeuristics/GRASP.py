@@ -73,7 +73,7 @@ class GRASP(MetaHeuristic):
         """
         raise NotImplementedError("Use run_operation() method for this class.")
 
-    def run_operation(self, origin_pool: Pool, destination_pool: Pool) -> Pool:
+    def run_operation(self, origin_pool: Pool, destination_pool: Pool, parent: Optional["MetaHeuristic"] = None) -> Pool:
         """Executes the GRASP meta-heuristic.
 
         Args:
@@ -83,6 +83,7 @@ class GRASP(MetaHeuristic):
         Returns:
             Pool: The output_pool of solutions found during execution.
         """
+        self.parent_metaheuristic = parent
         construction = self.meta_heuristics_used[0]
         local_search = self.meta_heuristics_used[1]
 

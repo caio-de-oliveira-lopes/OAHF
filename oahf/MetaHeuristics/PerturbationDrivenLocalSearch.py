@@ -69,8 +69,8 @@ class PerturbationDrivenLocalSearch(MetaHeuristic):
 
                 # Perform local search using BestImprovement
                 improved_sol = self.local_search.run(perturbed_sol)
+                improved_eval = self.evaluator.evaluate(improved_sol)
                 if not improved_sol or not improved_sol.validate_aspects():
-                    improved_eval = self.evaluator.evaluate(improved_sol)
                     if self.stop_on_evaluations([improved_eval]):
                         break
                     else:

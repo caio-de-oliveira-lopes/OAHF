@@ -129,6 +129,28 @@ class MetaHeuristic(Entity, ABC):
             return stop
         return self.stop_criteria.stop() or (self.parent_metaheuristic is not None and self.parent_metaheuristic.stop())
 
+    def get_min_timeout_milliseconds(self) -> Optional[int]:
+        """
+        Return the smallest remaining-time (in ms) from this metaheuristic
+        and any parent. If none impose a time limit, returns None.
+        """
+        remaining_times = []
+
+        # 1) Check self
+        crit = self.stop_criteria
+        if hasattr(crit, "get_remaining_ms"):
+            rem = crit.get_remaining_ms() # type: ignore
+            if rem is not None:
+                remaining_times.append(rem)
+
+        # 2) Recurse into parent
+        if self.parent_metaheuristic is not None:
+            parent_rem = self.parent_metaheuristic.get_min_timeout_milliseconds()
+            if parent_rem is not None:
+                remaining_times.append(parent_rem)
+
+        return min(remaining_times, default=None)
+
     @abstractmethod
     def copy(self, thread: int) -> "MetaHeuristic":
         """Creates a copy of the current MetaHeuristic instance."""

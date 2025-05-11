@@ -279,7 +279,7 @@ class Util:
         return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
 
     @classmethod
-    def describe_metaheuristic(cls, mh: "MetaHeuristic", line_number: int):
+    def describe_metaheuristic(cls, mh: "MetaHeuristic", line_number: Optional[int]):
         # collect each meta-heuristic’s class name
         names = []
         current = mh

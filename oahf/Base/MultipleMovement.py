@@ -24,18 +24,12 @@ class MultipleMovement(Movement):
         return sum(movement.get_cost() for movement in self.movements)
 
     def apply(self) -> bool:
-        """Apply each movement and return whether all movements were successful."""
-        for movement in self.movements:
-            if not movement.apply():
-                return False
-        return True
+        """Apply each movement; stop and return False on the first failure."""
+        return all(m.apply() for m in self.movements)
 
     def unapply(self) -> bool:
-        """Unapply each movement in reverse order and return whether all movements were successfully unapplied."""
-        for movement in reversed(self.movements):
-            if not movement.unapply():
-                return False
-        return True
+        """Unapply movements in reverse; stop and return False on the first failure."""
+        return all(m.unapply() for m in reversed(self.movements))
 
     def set_unapply_inconsistent(self):
         """Override this method as it is not implemented in this class."""

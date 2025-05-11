@@ -45,8 +45,8 @@ class BestImprovement(MetaHeuristic):
     def run(self, sol: Solution) -> Solution:
         """Executes the best improvement strategy on the given solution."""
         # Initial solution copies
-        best_sol = sol.copy()
-        curr_sol = sol.copy()
+        best_sol = sol
+        curr_sol = best_sol.copy()
 
         # Cache frequently used attributes
         evaluator = self.evaluator
