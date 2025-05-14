@@ -28,7 +28,7 @@ class FirstImprovement(MetaHeuristic):
             thread_id, stop_criteria, evaluator, acceptance_criteria, ns.copy()
         )
 
-    def copy(self, thread: int) -> "MetaHeuristic":
+    def copy(self, thread: int) -> "FirstImprovement":
         """Creates a copy of the current FirstImprovement instance."""
         return FirstImprovement(
             thread,

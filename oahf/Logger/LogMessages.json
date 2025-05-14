@@ -1,0 +1,12 @@
+{
+  "BUILD_MODEL_ERROR": "The solver was unable to build a model for the inputted problem.",
+  "DUPLICATED_CONSTRAINT": "Trying to add duplicated constraint {0} to the model's structure.",
+  "DUPLICATED_VARIABLE": "Trying to add duplicated variable {0} to the model's structure.",
+  "INVALID_ACTION": "Unable to {0}: {1}.",
+  "LOG_SOLUTION": "Current Solution: {0}",
+  "OPTIMIZATION_ERROR": "The solver was unable to optimize the model.",
+  "OUTPUT_WRITING_ERROR": "Error while writing output: {0}",
+  "SOMETHING_WENT_WRONG": "Something went wrong while trying to use {0}. Error: {1}",
+  "UNABLE_TO_GET_NEIGHBORHOOD": "Unable to get neighborhood search.",
+  "VARIABLE_NOT_FOUND": "Variable {0} was not found when searched by name at {1}."
+}

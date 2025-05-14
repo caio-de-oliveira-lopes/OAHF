@@ -54,7 +54,7 @@ class HGA(BRKGA):
         )
         self.local_search = local_search
 
-    def copy(self, thread: int) -> "MetaHeuristic":
+    def copy(self, thread: int) -> "HGA":
         """Creates a copy of the current HGA instance, including local search."""
         return HGA(
             thread,

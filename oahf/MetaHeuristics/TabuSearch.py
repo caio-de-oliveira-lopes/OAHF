@@ -92,8 +92,9 @@ class TabuSearch(MetaHeuristic):
             isinstance(stop_criteria, StopTimeIterationCriteria)
             and stop_criteria.max_iterations is not None
         )
+        self.intensification = True
 
-    def copy(self, thread: int) -> "MetaHeuristic":
+    def copy(self, thread: int) -> "TabuSearch":
         """Creates a copy of the current TabuSearch instance."""
         return TabuSearch(
             thread,
@@ -160,13 +161,15 @@ class TabuSearch(MetaHeuristic):
         # Reset criteria and structures
         stop_criteria.reset()
         acceptance.reset()
-        intensification_criteria.reset()
-        type(best_sol).reset_intensification_diversification_structures()
+
+        # To increase the usage of these criterias we do not reset in case of multiple callings for TabuSearch
+        #intensification_criteria.reset()
+        #type(best_sol).reset_intensification_diversification_structures()
+        #self.intensification = True
 
         counter = 0
-        intensification = True
-
         pbar = None
+
         if self.use_progress_bar:
             max_iterations = stop_criteria.max_iterations  # type: ignore
             pbar = tqdm(
@@ -281,15 +284,15 @@ class TabuSearch(MetaHeuristic):
 
                     selected_ns = (
                         self.intensification_ns.copy()
-                        if intensification
+                        if self.intensification
                         else self.diversification_ns.copy()
                     )
                     selected_ls = (
                         self.intensification_ls.copy(thread_id)
-                        if intensification
+                        if self.intensification
                         else self.diversification_ls.copy(thread_id)
                     )
-                    intensification = not intensification
+                    self.intensification = not self.intensification
 
                     pool = ListPool(solutions=[curr_sol])
                     while search := selected_ns.get_next(thread_id):

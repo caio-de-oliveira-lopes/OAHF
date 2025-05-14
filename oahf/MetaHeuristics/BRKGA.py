@@ -67,7 +67,7 @@ class BRKGA(MetaHeuristic):
             and stop_criteria.max_iterations is not None
         )
 
-    def copy(self, thread: int) -> "MetaHeuristic":
+    def copy(self, thread: int) -> "BRKGA":
         """Creates a copy of the current BRKGA instance."""
         return BRKGA(
             thread,

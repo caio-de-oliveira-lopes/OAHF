@@ -103,6 +103,9 @@ class AlwabpSolution(Solution):
     _hash_worker_insertion_map: Dict[int, int] = {}
     _hash_worker_removal_map: Dict[int, int] = {}
 
+    _task_station_frequency: Dict[int, Dict[int, int]] = {}
+    _worker_station_frequency: Dict[int, Dict[int, int]] = {}
+
     def __init__(
         self, number_of_tasks: int, number_of_workers: int, number_of_stations: int
     ) -> None:

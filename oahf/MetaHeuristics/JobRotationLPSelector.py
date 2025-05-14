@@ -76,9 +76,10 @@ class JobRotationLPSelector(MetaHeuristic):
             self.parent_metaheuristic = parent
             result = destination_pool or ListPool()
             alwabp_solutions = []
+            best_alwabp_sol = self.origin_pool.get_best()
 
             # Filter only AlwabpSolutions from the origin pool
-            for solution in origin_pool.get_list():
+            for solution in origin_pool:
                 if isinstance(solution, AlwabpSolution):
                     alwabp_solutions.append(solution)
                     solution.default_graph_orientation = GraphOrientation.FORWARD
@@ -161,6 +162,9 @@ class JobRotationLPSelector(MetaHeuristic):
                         for j in range(number_of_solutions)
                     )
                 )
+
+                if best_alwabp_sol is not None and isinstance(best_alwabp_sol, AlwabpSolution):
+                    self.cycle_time_limit = best_alwabp_sol.get_max_cycle_time()
 
                 if self.tolerance_percentage is not None:
                     grb_model.addConstr(

@@ -99,9 +99,8 @@ class RetryingMetaheuristic(MetaHeuristic):
             ls_mh = self.local_search_list[self._ls_index]
             self._ls_index = (self._ls_index + 1) % len(self.local_search_list)
             Util.logger().info(f"Acceptance Criteria not met, applying local search {ls_mh.name} at {Util.get_duration_from_start_timestamp()}.")
-            ls_mh.named_parent = self.main_mh
             ls_mh.run_operation(ls_mh.origin_pool if ls_mh.origin_pool is not None else origin_pool, ls_mh.destination_pool, self)
-
+            Util.logger().info(f"Finishing local search {ls_mh.name} at {Util.get_duration_from_start_timestamp()}.")
             # Stoping check placed here to contemplate the time stop criteria
             if self.stop_on_evaluations([]):
                 break

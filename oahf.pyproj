@@ -132,7 +132,6 @@
     <Compile Include="oahf\__init__.py" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="oahf\Logger\LogMessages.resx" />
     <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
