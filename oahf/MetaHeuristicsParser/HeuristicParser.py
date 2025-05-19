@@ -66,6 +66,8 @@ from oahf.MetaHeuristics.JobRotationLPSelector import JobRotationLPSelector
 from oahf.MetaHeuristics.MultipleBestImprovement import MultipleBestImprovement
 from oahf.MetaHeuristics.PILS import PILS
 from oahf.MetaHeuristics.RetryingMetaheuristic import RetryingMetaheuristic
+from oahf.MetaHeuristics.SinglePeriodJobRotationLocalSearch import SinglePeriodJobRotationLocalSearch
+from oahf.MetaHeuristics.SubperiodJobRotationLocalSearch import SubperiodJobRotationLocalSearch
 from oahf.MetaHeuristics.TabuSearch import TabuSearch
 from oahf.Utils.EnumUtil import EnumUtil
 from oahf.Utils.Util import Util
@@ -798,6 +800,7 @@ class HeuristicParser:
                     mh_evaluator = destination_pool.evaluator if destination_pool is not None and use_destination_pool_evaluator else evaluator
                     main_metaheuristic = self.metaheuristics[m["parameters"]["main_metaheuristic"]]
                     local_searches = [self.metaheuristics[mh_id] for mh_id in m["parameters"]["local_searches"]]
+                    retry_on_same_iteration = bool(m["parameters"]["retry_on_same_iteration"])
 
                     meta = RetryingMetaheuristic(
                         thread_id,
@@ -806,6 +809,61 @@ class HeuristicParser:
                         main_metaheuristic,
                         local_searches,
                         acceptance_criteria, # type: ignore
+                        retry_on_same_iteration,
+                        origin_pool,
+                        destination_pool
+                        )
+                elif m["name"].lower() == "single_period_job_rotation_local_search":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    origin_pool = (
+                        self.solution_pools[m["origin_pool"]]
+                        if "origin_pool" in m
+                        else None
+                    )
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
+                    alwabp_solution_pool = (
+                        self.solution_pools[m["parameters"]["alwabp_solution_pool"]]
+                        if "alwabp_solution_pool" in m["parameters"]
+                        else None
+                    )
+
+                    meta = SinglePeriodJobRotationLocalSearch(
+                        thread_id,
+                        stop_criteria, # type: ignore
+                        evaluator,
+                        alwabp_solution_pool,
+                        origin_pool,
+                        destination_pool
+                        )
+                elif m["name"].lower() == "subperiod_job_rotation_local_search":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    origin_pool = (
+                        self.solution_pools[m["origin_pool"]]
+                        if "origin_pool" in m
+                        else None
+                    )
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
+                    alwabp_solution_pool = (
+                        self.solution_pools[m["parameters"]["alwabp_solution_pool"]]
+                        if "alwabp_solution_pool" in m["parameters"]
+                        else None
+                    )
+
+                    meta = SubperiodJobRotationLocalSearch(
+                        thread_id,
+                        stop_criteria, # type: ignore
+                        evaluator,
+                        alwabp_solution_pool,
                         origin_pool,
                         destination_pool
                         )

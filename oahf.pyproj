@@ -110,6 +110,7 @@
     <Compile Include="oahf\Logger\__init__.py" />
     <Compile Include="oahf\MetaHeuristicsParser\HeuristicParser.py" />
     <Compile Include="oahf\MetaHeuristics\BRKGA.py" />
+    <Compile Include="oahf\MetaHeuristics\JobRotationLPLocalSearch.py" />
     <Compile Include="oahf\MetaHeuristics\PILS.py" />
     <Compile Include="oahf\MetaHeuristics\HGA.py" />
     <Compile Include="oahf\MetaHeuristics\JobRotationLPSelector.py" />
@@ -123,6 +124,8 @@
     <Compile Include="oahf\MetaHeuristics\BestImprovement.py" />
     <Compile Include="oahf\MetaHeuristics\PerturbationDrivenLocalSearch.py" />
     <Compile Include="oahf\MetaHeuristics\RetryingMetaheuristic.py" />
+    <Compile Include="oahf\MetaHeuristics\SinglePeriodJobRotationLocalSearch.py" />
+    <Compile Include="oahf\MetaHeuristics\SubperiodJobRotationLocalSearch.py" />
     <Compile Include="oahf\MetaHeuristics\TabuSearch.py" />
     <Compile Include="oahf\MetaHeuristics\__init__.py" />
     <Compile Include="oahf\Utils\EnumUtil.py" />

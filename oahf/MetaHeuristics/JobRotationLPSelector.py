@@ -91,13 +91,24 @@ class JobRotationLPSelector(MetaHeuristic):
 
                 # Initialize the Gurobi model directly
                 grb_model = gp.Model("JobRotationLPSelector")
-                grb_model.setParam(
-                    "MIPGap", 1e-6
-                )  # Set a very small MIP gap for high precision
+
+                # SECTION TO AVOID MULTIPLE OUTPUTS REGARDING PRECISION
+                import sys, os
+
+                # Mute stdout
+                old_stdout = sys.stdout
+                sys.stdout = open(os.devnull, "w")
+
+                grb_model.setParam("MIPGap", Util.eps())
+
+                # Restore
+                sys.stdout.close()
+                sys.stdout = old_stdout
                 grb_model.setParam("OutputFlag", 0)
+                # ENDING SPECIAL SPECTION
 
                 # adding timeout to respect StopTimeIterationCriteria
-                timeout = self.get_min_timeout_milliseconds()
+                timeout = self.get_min_timeout_milliseconds() / 1000.0
                 if timeout:
                     grb_model.setParam("TimeLimit", timeout)
 
@@ -119,10 +130,8 @@ class JobRotationLPSelector(MetaHeuristic):
                 )
 
                 # Set the objective function
-                epsilon = 1e-6
                 grb_model.setObjective(
-                    gp.quicksum(z[w, t] for w in workers for t in tasks)
-                    - epsilon * cycle_time_average,
+                    gp.quicksum(z[w, t] for w in workers for t in tasks),
                     GRB.MAXIMIZE,
                 )
 
@@ -166,20 +175,26 @@ class JobRotationLPSelector(MetaHeuristic):
                 if best_alwabp_sol is not None and isinstance(best_alwabp_sol, AlwabpSolution):
                     self.cycle_time_limit = best_alwabp_sol.get_max_cycle_time()
 
+                # Updating max tolerance allowed for average cycle time
+                JobRotationAlwabpSolution._max_tolerance = self.cycle_time_limit * (1 + self.tolerance_percentage)
+
                 if self.tolerance_percentage is not None:
                     grb_model.addConstr(
                         cycle_time_average
-                        <= self.cycle_time_limit * (1 + self.tolerance_percentage),
+                        <= JobRotationAlwabpSolution._max_tolerance,
                         name="cycle_time_tolerance_constraint",
                     )
+
+                # Reset StopCriteria in case of using StopTimeIterationCriteria
+                self.stop_criteria.reset()
 
                 # Optimize the model
                 grb_model.optimize()
 
-                # Check if the solution is valid (could be OPTIMAL, SUBOPTIMAL)
-                valid_status_codes = {GRB.OPTIMAL, GRB.SUBOPTIMAL}
+                # Check if the solution is valid (could be OPTIMAL, SUBOPTIMAL or TIME_LIMIT)
+                valid_status_codes = {GRB.OPTIMAL, GRB.SUBOPTIMAL, GRB.TIME_LIMIT}
 
-                if grb_model.status in valid_status_codes:
+                if grb_model.status in valid_status_codes and grb_model.SolCount > 0:
                     solve_seconds = grb_model.Runtime
                     optimality_gap = grb_model.MIPGap
                     simplex_iterations = grb_model.IterCount
@@ -205,7 +220,7 @@ class JobRotationLPSelector(MetaHeuristic):
                 )
                 for i in range(self.number_of_periods):
                     for j in range(number_of_solutions):
-                        if solution[i, j].x > 0.5:  # type: ignore
+                        if solution[i, j].x > Util.eps():  # type: ignore
                             job_rotation_solution.assign_solution_to_period(
                                 i, alwabp_solutions[j]
                             )

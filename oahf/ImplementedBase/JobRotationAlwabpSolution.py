@@ -7,6 +7,8 @@ from oahf.Utils.Util import Util
 
 
 class JobRotationAlwabpSolution(Solution):
+    _max_tolerance = 0
+
     def __init__(self, number_of_periods: int, lp_execution_data: LpExecutionData):
         super().__init__()
         self.number_of_periods = number_of_periods
@@ -93,6 +95,7 @@ class JobRotationAlwabpSolution(Solution):
         copy_solution.period_solutions = [
             solution.copy() if solution else None for solution in self.period_solutions
         ]
+        copy_solution.max_tolerance_used = self.max_tolerance_used
         return copy_solution
 
     def decompose_solution(self, k: int):
