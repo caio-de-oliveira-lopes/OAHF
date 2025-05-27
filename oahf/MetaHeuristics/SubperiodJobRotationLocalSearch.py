@@ -75,7 +75,7 @@ class SubperiodJobRotationLocalSearch(JobRotationLPLocalSearch):
                     original_x = int(var.Start > Util.eps())
                     if t != b:
                         # (36) Fix x_s_w_i_t to its original value for t != b
-                        grb_model.addConstr(var == original_x, name=f"lsjr2_fix_x_{name}")
+                        grb_model.addConstr(var == original_x, name=f"lsjr2_fix_{name}")
 
                 elif name.startswith("y_"):
                     # Format: y_s_w_t
@@ -83,7 +83,7 @@ class SubperiodJobRotationLocalSearch(JobRotationLPLocalSearch):
                     s, w, t = map(int, (s, w, t))
                     original_y = int(var.Start > Util.eps())
                     # (37) Fix y_s_w_t to its original value for all t
-                    grb_model.addConstr(var == original_y, name=f"lsjr2_fix_y_{name}")
+                    grb_model.addConstr(var == original_y, name=f"lsjr2_fix_{name}")
 
             # Reset StopCriteria in case of using StopTimeIterationCriteria
             self.stop_criteria.reset()
@@ -116,6 +116,11 @@ class SubperiodJobRotationLocalSearch(JobRotationLPLocalSearch):
                     self.name,
                     f"Gurobi failed to solve the problem. Status: {grb_model.status}",
                 )
+                #grb_model.computeIIS()
+                #grb_model.write(fr"C:\Projetos\OAHF\Outputs\{grb_model.ModelName}_subperiod_{b}_conflicts.ilp")
+                #for t in range(total_periods):
+                #    print(f"Period {t} cycle time: {solution.period_solutions[t].get_max_cycle_time()}")
+                #print(f"Limit: {JobRotationAlwabpSolution._max_tolerance}")
                 grb_model.dispose()  # Dispose the model when done
                 continue
 

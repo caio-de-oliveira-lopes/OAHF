@@ -2382,8 +2382,8 @@ class AlwabpSolution(Solution):
         stop_criteria = decoder_stop_criteria or NoStopCriteria()
         acceptance_criteria = BetterAcceptanceCriteria()
         neighborhood = AlwabpWorkerOrientedInsertNS(
-            TaskOrderingRule.MAX_F, GraphOrientation.FORWARD, 0
-        )
+            TaskOrderingRule.MAX_F, GraphOrientation.FORWARD, greediness
+            )
         task_ordering_rule_dict = break_into_task_ordering_rule_dict(
             random_keys, number_of_tasks, number_of_workers
         )

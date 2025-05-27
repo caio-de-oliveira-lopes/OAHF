@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Optional
 
 import gurobipy as gp
@@ -7,6 +6,7 @@ from gurobipy import GRB
 from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
+from oahf.Base.StopCriteria import StopCriteria
 from oahf.Commons.ProblemData import ProblemData
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution, GraphOrientation
 from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
@@ -14,9 +14,7 @@ from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
 )
 from oahf.ImplementedBase.JobRotationAlwabpEvaluator import JobRotationAlwabpEvaluator
 from oahf.ImplementedBase.JobRotationAlwabpSolution import JobRotationAlwabpSolution
-from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.LpExecutionData import LpExecutionData
-from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
 
@@ -26,33 +24,37 @@ class JobRotationLPSelector(MetaHeuristic):
     def __init__(
         self,
         thread_id: int,
+        stop_criteria: StopCriteria,
         number_of_periods: int,
-        gurobi_path: Path,
-        problem_data: ProblemData,
         tolerance_percentage: Optional[float] = None,
         origin_pool: Optional[Pool] = None,
         destination_pool: Optional[Pool] = None,
     ):
         super().__init__(
             thread_id,
-            NoStopCriteria(),
+            stop_criteria,
             JobRotationAlwabpEvaluator(),
             AlwaysAcceptAcceptanceCriteria(),
             origin_pool=origin_pool,
             destination_pool=destination_pool,
         )
         self.number_of_periods = number_of_periods
-        self.gurobi_path = gurobi_path
-        self.problem_data = problem_data
-        self.cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(
-            self.problem_data.cycle_time_path, self.problem_data.file_name
-        )
+        JobRotationAlwabpSolution.add_to_alwabp_pools(origin_pool)
+        JobRotationAlwabpSolution.add_to_job_rotation_pools(destination_pool)
         self.tolerance_percentage = tolerance_percentage
+
+        # For some reason, ternary was not compiling in Cython
+        if tolerance_percentage:
+            tol = 1.0 + tolerance_percentage
+        else:
+            tol = 1.0
+        JobRotationAlwabpSolution.set_tolerance_percentage(tol)
 
     def copy(self, thread: int) -> "JobRotationLPSelector":
         """Creates a copy of the current BestImprovement instance."""
         return JobRotationLPSelector(
             thread,
+            self.stop_criteria.copy(),
             self.number_of_periods,
             self.gurobi_path,
             self.problem_data,
@@ -73,10 +75,12 @@ class JobRotationLPSelector(MetaHeuristic):
         parent: Optional["MetaHeuristic"] = None,
     ) -> Pool:
         try:
+            from oahf.ImplementedBase.ListPool import ListPool
+
             self.parent_metaheuristic = parent
             result = destination_pool or ListPool()
             alwabp_solutions = []
-            best_alwabp_sol = self.origin_pool.get_best()
+            JobRotationAlwabpSolution.update_max_tolerance()
 
             # Filter only AlwabpSolutions from the origin pool
             for solution in origin_pool:
@@ -160,23 +164,13 @@ class JobRotationLPSelector(MetaHeuristic):
                         )
 
                 grb_model.addConstr(
-                    cycle_time_average
+                    cycle_time_average * self.number_of_periods
                     == gp.quicksum(
-                        solution[i, j]
-                        * (
-                            alwabp_solutions[j].get_max_cycle_time()
-                            / self.number_of_periods
-                        )
+                        solution[i, j] * alwabp_solutions[j].get_max_cycle_time()
                         for i in range(self.number_of_periods)
                         for j in range(number_of_solutions)
                     )
                 )
-
-                if best_alwabp_sol is not None and isinstance(best_alwabp_sol, AlwabpSolution):
-                    self.cycle_time_limit = best_alwabp_sol.get_max_cycle_time()
-
-                # Updating max tolerance allowed for average cycle time
-                JobRotationAlwabpSolution._max_tolerance = self.cycle_time_limit * (1 + self.tolerance_percentage)
 
                 if self.tolerance_percentage is not None:
                     grb_model.addConstr(

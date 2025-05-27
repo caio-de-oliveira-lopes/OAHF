@@ -136,7 +136,9 @@ class SinglePeriodJobRotationLocalSearch(JobRotationLPLocalSearch):
                 self.name,
                 f"Gurobi failed to solve the problem. Status: {grb_model.status}",
             )
-            grb_model.dispose()  # Dispose the model when done
+            #grb_model.computeIIS()
+            #grb_model.write(fr"C:\Projetos\OAHF\Outputs\{grb_model.ModelName}_single_period_conflicts.ilp")
+            #grb_model.dispose()  # Dispose the model when done
             return solution
 
         try:

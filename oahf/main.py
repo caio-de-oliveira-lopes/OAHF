@@ -52,9 +52,12 @@ def main(args=sys.argv[1:]) -> None:
             # DEBUG TO CHECK IF ANY INFEASIBLE SOLUTIONS WERE ADDED
             #for pool in heuristic_parser.solution_pools.values():
             #    for solution in pool:
-            #        evaluation = evaluator.evaluate(solution, cache = False)
+            #        previous_eval = pool.evaluator.evaluate(solution)
+            #        evaluation = pool.evaluator.evaluate(solution, cache = False)
             #        if evaluation.infeasible() or evaluation.has_penalty():
-            #            print("INFEASIBLE SOLUTION ADDED TO THE POOL")
+            #            print(f"INFEASIBLE SOLUTION ADDED TO THE POOL! ID: {solution.output_id}")
+            #            if not(previous_eval.infeasible() or previous_eval.has_penalty()):
+            #                print(f"Possibly a hashing problem.")
 
             if final_solution:
                 final_solution.write_json()

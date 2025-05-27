@@ -168,6 +168,9 @@ class MetaHeuristic(Entity, ABC):
             for neighborhood in self.neighborhood_selection.get_all():
                 neighborhood.reset(sol)
 
+    def set_neighborhood_selection(self, ns: NeighborhoodSelection):
+        self.neighborhood_selection = ns.copy()
+
     def get_neighborhood_selection(self) -> Optional["NeighborhoodSelection"]:
         """Retrieve the neighborhood selection strategy."""
         return self.neighborhood_selection

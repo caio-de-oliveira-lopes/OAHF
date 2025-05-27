@@ -6,6 +6,7 @@ from .GRASP import GRASP
 from .GRC import GRC
 from .HGA import HGA
 from .ILS import ILS
+from .IterativeConstruction import IterativeConstruction
 from .JobRotationLPLocalSearch import JobRotationLPLocalSearch
 from .JobRotationLPSelector import JobRotationLPSelector
 from .MultipleBestImprovement import MultipleBestImprovement
@@ -26,6 +27,7 @@ __all__ = [
     "GRC",
     "HGA",
     "ILS",
+    "IterativeConstruction",
     "JobRotationLPLocalSearch",
     "JobRotationLPSelector",
     "MultipleBestImprovement",

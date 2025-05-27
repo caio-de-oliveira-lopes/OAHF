@@ -57,6 +57,8 @@ class JobRotationLPLocalSearch(MetaHeuristic, ABC):
     ) -> Pool:
         """Run the heuristic on a given pool of solutions."""
         try:
+            JobRotationAlwabpSolution.update_max_tolerance()
+
             self.parent_metaheuristic = parent
             self.stop_criteria.reset()
             if self.neighborhood_selection:
@@ -169,10 +171,12 @@ class JobRotationLPLocalSearch(MetaHeuristic, ABC):
         # Ct[t] = cycle time for period t
         Ct = {}
         for t in periods:
+            sol_t = solution.period_solutions[t]
             Ct[t] = grb_model.addVar(
                 vtype=GRB.CONTINUOUS,
                 name=f"C_{t}"
             )
+            Ct[t].Start = sol_t.get_max_cycle_time()
 
         # C = maximum allowed average cycle time across all periods
         C = grb_model.addVar(

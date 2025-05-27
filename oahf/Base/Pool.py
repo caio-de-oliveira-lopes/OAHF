@@ -99,6 +99,32 @@ class Pool(Entity, ABC):
         self._solution_set.add(solution)
         return True
 
+    def remove_solution(self, solution: Solution) -> bool:
+        """
+        Remove a solution from the pool entirely, including all internal records.
+        Returns True if the solution was present and removed, False otherwise.
+        """
+        sol_id = solution.id
+
+        # Check if we actually know about this solution
+        if solution not in self._solution_set and sol_id not in self._solution_info:
+            return False
+
+        # 1. Remove from the list
+        try:
+            self.solutions.remove(solution)
+        except ValueError:
+            pass
+
+        # 2. Remove from the set
+        self._solution_set.discard(solution)
+
+        # 3. Remove any metadata
+        if sol_id in self._solution_info:
+            del self._solution_info[sol_id]
+
+        return True
+
     def get_best(self, evaluator: Optional[Evaluator] = None) -> Optional[Solution]:
         """
         Get the best solution from the pool based on evaluation.

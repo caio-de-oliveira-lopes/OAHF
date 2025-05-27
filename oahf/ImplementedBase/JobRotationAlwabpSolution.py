@@ -1,5 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Set
 
+from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 from oahf.ImplementedBase.LpExecutionData import LpExecutionData
@@ -7,7 +8,10 @@ from oahf.Utils.Util import Util
 
 
 class JobRotationAlwabpSolution(Solution):
+    _tolerance_percentage = 1.0
     _max_tolerance = 0
+    _job_rotation_pools: Set[Pool] = set()
+    _alwabp_pools: Set[Pool] = set()
 
     def __init__(self, number_of_periods: int, lp_execution_data: LpExecutionData):
         super().__init__()
@@ -18,6 +22,75 @@ class JobRotationAlwabpSolution(Solution):
         self._distinct_tasks_memo = {}  # Memorization for distinct tasks per worker
         self.lp_execution_data = lp_execution_data
         self.name = "JobRotationAlwabpSolution"
+        
+    @classmethod
+    def add_to_job_rotation_pools(cls, pool: Optional[Pool]):
+        if pool:
+            cls._job_rotation_pools.add(pool)
+
+    @classmethod
+    def add_to_alwabp_pools(cls, pool: Optional[Pool]):
+        if pool:
+            cls._alwabp_pools.add(pool)
+
+    @classmethod
+    def get_best_alwabp_solution_from_pools(cls):
+        from oahf.Base.MetaHeuristic import ListPool
+        if cls._alwabp_pools:
+            evaluator = list(cls._alwabp_pools)[0].evaluator
+
+        new_pool = ListPool(evaluator = evaluator)
+        for pool in cls._alwabp_pools:
+            new_pool.add_solution(pool.get_best(), None)
+        return new_pool.get_best()
+
+    @classmethod
+    def set_tolerance_percentage(cls, tolerance_percentage: float):
+        cls._tolerance_percentage = tolerance_percentage
+
+    @classmethod
+    def update_max_tolerance(cls):
+        best_alwabp_sol = cls.get_best_alwabp_solution_from_pools()
+        if best_alwabp_sol is not None and isinstance(best_alwabp_sol, AlwabpSolution):
+            cycle_time_limit = best_alwabp_sol.get_max_cycle_time()
+
+        # Updating max tolerance allowed for average cycle time
+        JobRotationAlwabpSolution.set_max_tolerance(cycle_time_limit * cls._tolerance_percentage)
+
+    @classmethod
+    def set_max_tolerance(cls, value: float):
+        if value != cls._max_tolerance:
+            Util.logger().info(f"Updated max cycle time tolerance to {str(value)} at {Util.get_duration_from_start_timestamp()}.")
+            cls._max_tolerance = value
+            cls.check_pool_feasibility()        
+
+    @classmethod
+    def check_pool_feasibility(cls):
+        for pool in cls._job_rotation_pools:
+            cls._prune_by_cycle_time(pool)
+
+    @classmethod
+    def _prune_by_cycle_time(cls, pool: Pool) -> None:
+        """
+        Walk through the pool and remove any JobRotationAlwabpSolution
+        whose average cycle time exceeds the max tolerance.
+        """
+        removal_counter = 0
+        # We copy the list so we are not mutating while iterating
+        for sol in pool.get_list().copy():
+            if isinstance(sol, JobRotationAlwabpSolution):
+                avg_ct = sol.get_average_cycle_time()
+                if avg_ct > cls._max_tolerance:
+                    pool.remove_solution(sol)
+                    removal_counter += 1
+
+        if removal_counter > 0:
+            cls._log_removal(removal_counter, pool.output_id)
+
+    @classmethod
+    def _log_removal(cls, removal_counter: int, pool_id: int):
+        from oahf.Utils.Util import Util
+        Util.logger().info(f"Removed {removal_counter} solutions from pool {pool_id} due to max tolerance update.")
 
     def assign_solution_to_period(self, period: int, solution: AlwabpSolution):
         """
