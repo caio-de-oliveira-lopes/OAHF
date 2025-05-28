@@ -87,6 +87,7 @@ class IterativeConstruction(MetaHeuristic):
         self.parent_metaheuristic = parent
         construction = self.meta_heuristics_used[0]
         best_sol = origin_pool.solutions[0].copy()
+        best_sol.reset(complete_reset=True)
         best_eval = self.evaluator.evaluate(best_sol)
 
         all_ns = self._override_construction_ns or [construction.get_neighborhood_selection()]

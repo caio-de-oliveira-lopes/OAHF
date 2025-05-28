@@ -192,7 +192,7 @@ class JobRotationAlwabpSolution(Solution):
         """Validates specific aspects of the solution."""
         return all(self.period_solutions)
 
-    def reset(self) -> None:
+    def reset(self, complete_reset: bool = False) -> None:
         """Resets the solution to its initial state."""
         self.period_solutions = [None] * self.number_of_periods
         self._distinct_tasks_memo.clear()

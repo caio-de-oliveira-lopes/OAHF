@@ -70,6 +70,10 @@ class RetryingMetaheuristic(MetaHeuristic):
         self.parent_metaheuristic = parent
         if destination_pool is None:
             raise Exception("Missing destination pool")
+        
+        line = Util.line()
+        half = len(line) // 2
+        half_line = line[:half]
 
         # Set up
         best_sol = destination_pool.get_best(self.evaluator)
@@ -98,15 +102,21 @@ class RetryingMetaheuristic(MetaHeuristic):
             if self.stop_on_evaluations([]):
                 break
 
+            last_idx = len(self.local_search_list) - 1
             # Otherwise apply local searches
-            for ls_mh in self.local_search_list:
+            for idx, ls_mh in enumerate(self.local_search_list):
                 # Stoping check placed here to contemplate the time stop criteria
                 if self.stop_on_evaluations([]):
                     break
 
+                print(half_line)
+
                 Util.logger().info(f"Applying local search {ls_mh.name} at {Util.get_duration_from_start_timestamp()}.")
                 ls_mh.run_operation(ls_mh.origin_pool if ls_mh.origin_pool is not None else origin_pool, ls_mh.destination_pool, self)
                 Util.logger().info(f"Finishing local search {ls_mh.name} at {Util.get_duration_from_start_timestamp()}.")
+
+                if idx == last_idx:
+                    print(half_line)
 
             # Stoping check placed here to contemplate the time stop criteria
             if self.stop_on_evaluations([]):

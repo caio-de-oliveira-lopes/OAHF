@@ -83,7 +83,7 @@ class Solution(Entity, ABC):
         return True
 
     @abstractmethod
-    def reset(self) -> None:
+    def reset(self, complete_reset: bool = False) -> None:
         """
         Resets the solution to its initial state.
         """

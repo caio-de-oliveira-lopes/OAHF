@@ -166,6 +166,7 @@ class AlwabpSolution(Solution):
             worker: set() for worker in self.workers
         }
         self._cycle_time_limit: Optional[float] = None
+        self._initial_cycle_time_limit: Optional[float] = None
 
         # Initialize all precedences (immediate and transitive) for tasks.
         self.all_task_precedences: Dict[GraphOrientation, Dict[int, List[int]]] = {  # type: ignore
@@ -239,6 +240,7 @@ class AlwabpSolution(Solution):
         result.workers = self.workers
         result.stations = self.stations
         result._cycle_time_limit = self._cycle_time_limit
+        result._initial_cycle_time_limit = self._initial_cycle_time_limit
         result._default_graph_orientation = self._default_graph_orientation
         result._reverse_default_graph_orientation = (
             self._reverse_default_graph_orientation
@@ -318,7 +320,7 @@ class AlwabpSolution(Solution):
         if self.cycle_time_limit:
             self.cycle_time_limit = self.cycle_time_limit + 1
 
-    def reset(self) -> None:
+    def reset(self, complete_reset: bool = False) -> None:
         """
         Resets the solution state.
 
@@ -334,6 +336,9 @@ class AlwabpSolution(Solution):
         self._station_cycle_time_memo = {station: 0.0 for station in self.stations}
         self._first_unassigned_station = 1
         self._hash_memo = self._empty_sol_hash[self.default_graph_orientation]
+
+        if complete_reset and self._initial_cycle_time_limit:
+            self._cycle_time_limit = self._initial_cycle_time_limit
 
     def process_graph_data(self) -> None:
         """
@@ -453,6 +458,7 @@ class AlwabpSolution(Solution):
             self.print_update(f"Updated cycle time limit to {str(int(value))}.")
         else:
             print(f"Starting with cycle time limit as {str(int(value))}.")
+            self._initial_cycle_time_limit = float(value)
         self._cycle_time_limit = float(value)
 
     @property
@@ -2337,7 +2343,7 @@ class AlwabpSolution(Solution):
         calling_mh: Optional["MetaHeuristic"]
     ) -> "AlwabpSolution":
         new_solution = self.copy()
-        new_solution.reset()
+        new_solution.reset(complete_reset=True)
 
         number_of_tasks = new_solution._number_of_tasks
         number_of_workers = new_solution._number_of_workers

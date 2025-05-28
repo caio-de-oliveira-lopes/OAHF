@@ -99,6 +99,7 @@ class GRASP(MetaHeuristic):
         local_search.named_parent = self
 
         best_sol = origin_pool.solutions[0].copy()
+        best_sol.reset(complete_reset=True)
         best_eval = self.evaluator.evaluate(best_sol)
 
         self.apply_temporary_set_mh_parameters()
