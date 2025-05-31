@@ -600,17 +600,13 @@ class HeuristicParser:
                         if "destination_pool" in m
                         else None
                     )
-                    tolerance_percentage: Optional[float] = (
-                        float(m["parameters"].get("tolerance_percentage", None))
-                        if m["parameters"].get("tolerance_percentage", None)
-                        else None
-                    )
+                    tasks_executed_factor: float = float(m["parameters"].get("tasks_executed_factor", 0.5))
 
                     meta = JobRotationLPSelector(
                         thread_id,
                         stop_criteria,
                         number_of_periods,
-                        tolerance_percentage,
+                        tasks_executed_factor,
                         origin_pool,
                         destination_pool,
                     )
@@ -830,6 +826,7 @@ class HeuristicParser:
                     main_metaheuristic = self.metaheuristics[m["parameters"]["main_metaheuristic"]]
                     local_searches = [self.metaheuristics[mh_id] for mh_id in m["parameters"]["local_searches"]]
                     retry_on_same_iteration = bool(m["parameters"]["retry_on_same_iteration"])
+                    always_run_local_searches = bool(m["parameters"]["always_run_local_searches"])
 
                     meta = RetryingMetaheuristic(
                         thread_id,
@@ -839,6 +836,7 @@ class HeuristicParser:
                         local_searches,
                         acceptance_criteria, # type: ignore
                         retry_on_same_iteration,
+                        always_run_local_searches,
                         origin_pool,
                         destination_pool
                         )
@@ -860,11 +858,13 @@ class HeuristicParser:
                         if "alwabp_solution_pool" in m["parameters"]
                         else None
                     )
+                    tasks_executed_factor: float = float(m["parameters"].get("tasks_executed_factor", 0.5))
 
                     meta = SinglePeriodJobRotationLocalSearch(
                         thread_id,
                         stop_criteria, # type: ignore
                         evaluator,
+                        tasks_executed_factor,
                         alwabp_solution_pool,
                         origin_pool,
                         destination_pool
@@ -887,11 +887,13 @@ class HeuristicParser:
                         if "alwabp_solution_pool" in m["parameters"]
                         else None
                     )
+                    tasks_executed_factor: float = float(m["parameters"].get("tasks_executed_factor", 0.5))
 
                     meta = SubperiodJobRotationLocalSearch(
                         thread_id,
                         stop_criteria, # type: ignore
                         evaluator,
+                        tasks_executed_factor,
                         alwabp_solution_pool,
                         origin_pool,
                         destination_pool

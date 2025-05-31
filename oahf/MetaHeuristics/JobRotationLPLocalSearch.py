@@ -22,6 +22,7 @@ class JobRotationLPLocalSearch(MetaHeuristic, ABC):
         thread_id: int,
         stop_criteria: StopCriteria,
         evaluator: Evaluator,
+        tasks_executed_factor: float,
         alwabp_solution_pool: Optional[Pool] = None,
         origin_pool: Optional[Pool] = None,
         destination_pool: Optional[Pool] = None
@@ -37,6 +38,8 @@ class JobRotationLPLocalSearch(MetaHeuristic, ABC):
             destination_pool
         )
         self.alwabp_solution_pool = alwabp_solution_pool
+        self.tasks_executed_factor = tasks_executed_factor
+        self.cycle_time_factor = 1.0 - self.tasks_executed_factor
         
 
     def copy(self, thread_id: int) -> "JobRotationLPLocalSearch":
@@ -44,6 +47,7 @@ class JobRotationLPLocalSearch(MetaHeuristic, ABC):
             thread_id,
             self.stop_criteria.copy(),
             self.evaluator,
+            self.tasks_executed_factor,
             self.alwabp_solution_pool.copy() if self.alwabp_solution_pool is not None else None,
             self.origin_pool.copy() if self.origin_pool is not None else None,
             self.destination_pool.copy() if self.destination_pool is not None else None,
@@ -57,7 +61,7 @@ class JobRotationLPLocalSearch(MetaHeuristic, ABC):
     ) -> Pool:
         """Run the heuristic on a given pool of solutions."""
         try:
-            JobRotationAlwabpSolution.update_max_tolerance()
+            JobRotationAlwabpSolution.update_current_alwabp_upper_bound()
 
             self.parent_metaheuristic = parent
             self.stop_criteria.reset()
@@ -131,7 +135,7 @@ class JobRotationLPLocalSearch(MetaHeuristic, ABC):
         workers  = base.workers
         tasks    = base.tasks
         N        = base._number_of_tasks
-        cycle_time_limit = JobRotationAlwabpSolution._max_tolerance
+        upper_bound = JobRotationAlwabpSolution._current_alwabp_upper_bound
 
         # Decision variables
         # x[s, w, i, t] = 1 if task i is assigned to worker w at station s during period t
@@ -180,14 +184,25 @@ class JobRotationLPLocalSearch(MetaHeuristic, ABC):
 
         # C = maximum allowed average cycle time across all periods
         C = grb_model.addVar(
-            ub=cycle_time_limit,
             vtype=GRB.CONTINUOUS,
             name="C"
         )
 
-        # Objective: maximize the total number of distinct tasks performed by all workers
+        # Set the objective function
+        # select the first solution from the pool
+        sol = solution.period_solutions[0]
+
+        # 1) positive component: normalized sum of task assignments
+        sum_z = gp.quicksum(z[w, i] for w in workers for i in tasks if (w, i) in z)
+        total_executed = sum([len(sol.tasks_executed_by_worker[w]) for w in workers])
+        part1 = (self.tasks_executed_factor / float(total_executed)) * sum_z
+
+        # 2) negative component: normalized sum of cycle times
+        part2 = (self.cycle_time_factor / upper_bound) * C
+
+        # set and maximize the composite objective: part1 minus part2
         grb_model.setObjective(
-            gp.quicksum(z[w, i] for w in workers for i in tasks if (w, i) in z),
+            part1 - part2,
             GRB.MAXIMIZE
         )
 
@@ -280,7 +295,7 @@ class JobRotationLPLocalSearch(MetaHeuristic, ABC):
 
         # (19) Average cycle time across periods must not exceed C
         grb_model.addConstr(
-            gp.quicksum(Ct[t] for t in periods) <= T * C,
+            gp.quicksum(Ct[t] for t in periods) == T * C,
             name="avg_cycle_time"
         )
 

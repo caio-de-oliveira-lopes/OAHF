@@ -270,7 +270,7 @@ class TabuSearch(MetaHeuristic):
                     best_move.apply()
                     curr_eval = evaluator.evaluate(curr_sol)
                     if (destination_pool and not (curr_eval.infeasible() or curr_eval.has_penalty())):
-                        destination_pool.add_solution(curr_sol, self, line_number=265)
+                        destination_pool.add_solution(curr_sol.copy(), self, line_number=265)
                     # Update best solution if criteria are met
                     if (
                         not (curr_eval.infeasible() or curr_eval.has_penalty())

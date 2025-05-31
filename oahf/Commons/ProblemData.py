@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Type, Union
 
-# Must import solution types here in order for globals() to work
+# Must import solution types here in order for eval() to work
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
 

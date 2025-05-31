@@ -12,6 +12,9 @@ class JobRotationAlwabpSolution(Solution):
     _max_tolerance = 0
     _job_rotation_pools: Set[Pool] = set()
     _alwabp_pools: Set[Pool] = set()
+    _current_alwabp_upper_bound = 1.0
+    _tasks_executed_factor = 0.5
+    _cycle_time_factor = 0.5
 
     def __init__(self, number_of_periods: int, lp_execution_data: LpExecutionData):
         super().__init__()
@@ -38,11 +41,30 @@ class JobRotationAlwabpSolution(Solution):
         from oahf.Base.MetaHeuristic import ListPool
         if cls._alwabp_pools:
             evaluator = list(cls._alwabp_pools)[0].evaluator
+        else:
+            return None  # No pools available
 
         new_pool = ListPool(evaluator = evaluator)
         for pool in cls._alwabp_pools:
             new_pool.add_solution(pool.get_best(), None)
         return new_pool.get_best()
+
+    @classmethod
+    def get_worst_alwabp_solution_from_pools(cls):
+        from oahf.Base.MetaHeuristic import ListPool
+
+        if cls._alwabp_pools:
+            evaluator = list(cls._alwabp_pools)[0].evaluator
+        else:
+            return None  # No pools available
+
+        new_pool = ListPool(evaluator=evaluator)
+        for pool in cls._alwabp_pools:
+            worst_solution = pool.get_worst()
+            if worst_solution is not None:
+                new_pool.add_solution(worst_solution, None)
+
+        return new_pool.get_worst()
 
     @classmethod
     def set_tolerance_percentage(cls, tolerance_percentage: float):
@@ -58,11 +80,33 @@ class JobRotationAlwabpSolution(Solution):
         JobRotationAlwabpSolution.set_max_tolerance(cycle_time_limit * cls._tolerance_percentage)
 
     @classmethod
+    def update_current_alwabp_upper_bound(cls):
+        worst_alwabp_sol = cls.get_worst_alwabp_solution_from_pools()
+        if worst_alwabp_sol is not None and isinstance(worst_alwabp_sol, AlwabpSolution):
+            cycle_time_limit = worst_alwabp_sol.get_max_cycle_time()
+
+        # Updating max tolerance allowed for average cycle time
+        JobRotationAlwabpSolution.set_current_alwabp_upper_bound(cycle_time_limit)
+
+    @classmethod
     def set_max_tolerance(cls, value: float):
         if value != cls._max_tolerance:
             Util.logger().info(f"Updated max cycle time tolerance to {str(value)} at {Util.get_duration_from_start_timestamp()}.")
             cls._max_tolerance = value
-            cls.check_pool_feasibility()        
+            cls.check_pool_feasibility()
+            
+    @classmethod
+    def set_current_alwabp_upper_bound(cls, value: float):
+        if value != cls._current_alwabp_upper_bound:
+            Util.logger().info(f"Updated current Alwabp upper bound to {str(value)} at {Util.get_duration_from_start_timestamp()}.")
+            cls._current_alwabp_upper_bound = value
+            cls.reevaluate_job_rotation_pools()
+
+    @classmethod
+    def reevaluate_job_rotation_pools(cls):
+        for pool in cls._job_rotation_pools:
+            for sol in pool:
+                pool.evaluator.evaluate(sol, cache = False)
 
     @classmethod
     def check_pool_feasibility(cls):

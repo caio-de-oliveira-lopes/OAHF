@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 import gurobipy as gp
 from gurobipy import GRB
@@ -26,7 +26,7 @@ class JobRotationLPSelector(MetaHeuristic):
         thread_id: int,
         stop_criteria: StopCriteria,
         number_of_periods: int,
-        tolerance_percentage: Optional[float] = None,
+        tasks_executed_factor: float,
         origin_pool: Optional[Pool] = None,
         destination_pool: Optional[Pool] = None,
     ):
@@ -39,16 +39,13 @@ class JobRotationLPSelector(MetaHeuristic):
             destination_pool=destination_pool,
         )
         self.number_of_periods = number_of_periods
+        self.tasks_executed_factor = tasks_executed_factor
+        self.cycle_time_factor = 1.0 - self.tasks_executed_factor
+
         JobRotationAlwabpSolution.add_to_alwabp_pools(origin_pool)
         JobRotationAlwabpSolution.add_to_job_rotation_pools(destination_pool)
-        self.tolerance_percentage = tolerance_percentage
-
-        # For some reason, ternary was not compiling in Cython
-        if tolerance_percentage:
-            tol = 1.0 + tolerance_percentage
-        else:
-            tol = 1.0
-        JobRotationAlwabpSolution.set_tolerance_percentage(tol)
+        JobRotationAlwabpSolution._tasks_executed_factor = self.tasks_executed_factor
+        JobRotationAlwabpSolution._cycle_time_factor = self.cycle_time_factor
 
     def copy(self, thread: int) -> "JobRotationLPSelector":
         """Creates a copy of the current BestImprovement instance."""
@@ -56,9 +53,7 @@ class JobRotationLPSelector(MetaHeuristic):
             thread,
             self.stop_criteria.copy(),
             self.number_of_periods,
-            self.gurobi_path,
-            self.problem_data,
-            self.tolerance_percentage,
+            self.tasks_executed_factor,
             origin_pool=self.origin_pool.copy() if self.origin_pool else None,
             destination_pool=(
                 self.destination_pool.copy() if self.destination_pool else None
@@ -79,8 +74,8 @@ class JobRotationLPSelector(MetaHeuristic):
 
             self.parent_metaheuristic = parent
             result = destination_pool or ListPool()
-            alwabp_solutions = []
-            JobRotationAlwabpSolution.update_max_tolerance()
+            alwabp_solutions: List[AlwabpSolution] = []
+            JobRotationAlwabpSolution.update_current_alwabp_upper_bound()
 
             # Filter only AlwabpSolutions from the origin pool
             for solution in origin_pool:
@@ -92,6 +87,7 @@ class JobRotationLPSelector(MetaHeuristic):
                 number_of_solutions = len(alwabp_solutions)
                 workers = alwabp_solutions[0].workers
                 tasks = alwabp_solutions[0].tasks
+                upper_bound = JobRotationAlwabpSolution._current_alwabp_upper_bound
 
                 # Initialize the Gurobi model directly
                 grb_model = gp.Model("JobRotationLPSelector")
@@ -134,9 +130,20 @@ class JobRotationLPSelector(MetaHeuristic):
                 )
 
                 # Set the objective function
+                # select the first solution from the pool
+                sol = alwabp_solutions[0]
+
+                # 1) positive component: normalized sum of task assignments
+                sum_z = gp.quicksum(z[w, i] for w in workers for i in tasks)
+                total_executed = sum([len(sol.tasks_executed_by_worker[w]) for w in workers])
+                part1 = (self.tasks_executed_factor / float(total_executed)) * sum_z
+
+                # 2) negative component: normalized sum of cycle times
+                part2 = (self.cycle_time_factor / upper_bound) * cycle_time_average
+                # set and maximize the composite objective: part1 minus part2
                 grb_model.setObjective(
-                    gp.quicksum(z[w, t] for w in workers for t in tasks),
-                    GRB.MAXIMIZE,
+                    part1 - part2,
+                    GRB.MAXIMIZE
                 )
 
                 # Constraints
@@ -171,13 +178,6 @@ class JobRotationLPSelector(MetaHeuristic):
                         for j in range(number_of_solutions)
                     )
                 )
-
-                if self.tolerance_percentage is not None:
-                    grb_model.addConstr(
-                        cycle_time_average
-                        <= JobRotationAlwabpSolution._max_tolerance,
-                        name="cycle_time_tolerance_constraint",
-                    )
 
                 # Reset StopCriteria in case of using StopTimeIterationCriteria
                 self.stop_criteria.reset()

@@ -22,6 +22,7 @@ class SinglePeriodJobRotationLocalSearch(JobRotationLPLocalSearch):
         thread_id: int,
         stop_criteria: StopCriteria,
         evaluator: Evaluator,
+        tasks_executed_factor: float,
         alwabp_solution_pool: Optional[Pool] = None,
         origin_pool: Optional[Pool] = None,
         destination_pool: Optional[Pool] = None
@@ -30,6 +31,7 @@ class SinglePeriodJobRotationLocalSearch(JobRotationLPLocalSearch):
             thread_id,
             stop_criteria,
             evaluator,
+            tasks_executed_factor,
             alwabp_solution_pool,
             origin_pool,
             destination_pool
@@ -40,6 +42,7 @@ class SinglePeriodJobRotationLocalSearch(JobRotationLPLocalSearch):
             thread_id,
             self.stop_criteria.copy(),
             self.evaluator,
+            self.tasks_executed_factor,
             self.alwabp_solution_pool.copy() if self.alwabp_solution_pool is not None else None,
             self.origin_pool.copy() if self.origin_pool is not None else None,
             self.destination_pool.copy() if self.destination_pool is not None else None,

@@ -93,7 +93,7 @@ class GRC(MetaHeuristic):
         while ns and not self.stop_on_evaluations([best_eval]):
 
             if hasattr(ns, "greediness") and not prev_greediness:
-                prev_greediness = ns.greediness
+                prev_greediness = float(ns.greediness)
                 setattr(ns, "greediness", self.greediness)
             try:
                 build = ns.build_neighborhood_operation(self.thread_id, curr_sol)

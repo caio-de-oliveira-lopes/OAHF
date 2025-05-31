@@ -948,9 +948,8 @@
 			},
 			"parameters": {
 				"number_of_periods": 4,
-				"tolerance_percentage": 0.25
+				"tasks_executed_factor": 0.6
 			},
-			"execution_order": 2,
 			"origin_pool": 0,
 			"destination_pool": 1
 		},
@@ -981,7 +980,8 @@
 				}
 			},
 			"parameters": {
-				"alwabp_solution_pool": 0
+				"alwabp_solution_pool": 0,
+				"tasks_executed_factor": 0.6
 			},
 			"origin_pool": 1,
 			"destination_pool": 1
@@ -995,7 +995,8 @@
 				}
 			},
 			"parameters": {
-				"alwabp_solution_pool": 0
+				"alwabp_solution_pool": 0,
+				"tasks_executed_factor": 0.6
 			},
 			"origin_pool": 1,
 			"destination_pool": 1
@@ -1013,8 +1014,10 @@
 				"main_metaheuristic": 10,
 				"local_searches": [11, 12, 13],
 				"use_destination_pool_evaluator": true,
+				"always_run_local_searches": false,
 				"retry_on_same_iteration": true
 			},
+			"execution_order": 2,
 			"origin_pool": 0,
 			"destination_pool": 1
 		},

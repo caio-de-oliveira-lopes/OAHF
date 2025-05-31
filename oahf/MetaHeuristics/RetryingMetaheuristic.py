@@ -21,6 +21,7 @@ class RetryingMetaheuristic(MetaHeuristic):
         local_searches: List[MetaHeuristic],
         acceptance_criteria: AcceptanceCriteria,
         retry_on_same_iteration: bool = False,
+        always_run_local_searches: bool = False,
         origin_pool: Optional[Pool] = None,
         destination_pool: Optional[Pool] = None,
     ):
@@ -40,11 +41,11 @@ class RetryingMetaheuristic(MetaHeuristic):
             origin_pool=origin_pool,
             destination_pool=destination_pool,
         )
-
         self.main_mh = main_metaheuristic
         self.local_search_list = local_searches
         self._ls_index = 0
         self.retry_on_same_iteration = retry_on_same_iteration
+        self.always_run_local_searches = always_run_local_searches
 
     def copy(self, thread: int) -> "RetryingMetaheuristic":
         return RetryingMetaheuristic(
@@ -96,7 +97,8 @@ class RetryingMetaheuristic(MetaHeuristic):
                 if not (curr_eval.infeasible() or curr_eval.has_penalty()):
                     destination_pool.add_solution(curr_sol, self.main_mh)
                     best_sol = curr_sol
-                    break
+                    if not self.always_run_local_searches:
+                        break
 
             # Stoping check placed here to contemplate the time stop criteria
             if self.stop_on_evaluations([]):
