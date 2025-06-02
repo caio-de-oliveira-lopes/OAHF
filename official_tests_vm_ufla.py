@@ -58,13 +58,12 @@ def run_tests(seeds: List[int]):
                     "/home/caio/miniconda3/condabin/conda",
                     "run", "--no-capture-output",
                     "-n", "oahf", "python", "-u",
-                    r"C:\Projetos\OAHF\oahf\main.py",
-                    modified_path
+                    "/home/caio/OAHF/oahf/main.py",
+                    str(modified_path)
                 ]
 
                 subprocess.run(
                     command,
-                    creationflags=subprocess.CREATE_NEW_CONSOLE,
                     check=True
                 )
                 print("Step finished.")
