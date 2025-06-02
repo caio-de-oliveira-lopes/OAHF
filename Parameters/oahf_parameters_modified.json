@@ -1,0 +1,9 @@
+{
+    "file_name": "10_hes",
+    "input_path": "C:\\Projetos\\OAHF\\Instances\\alwabp",
+    "output_path": "C:\\Projetos\\OAHF\\Outputs\\HAJR",
+    "cycle_time_path": "C:\\Projetos\\OAHF\\Parameters\\recommeded_maximum_mean_cycle_time.json",
+    "heuristic_definition_file": "C:\\Projetos\\OAHF\\Parameters\\heuristic_definition_hajr.json",
+    "input_type": "AlwabpSolution",
+    "random_seed": 294165949277890002569088467705991431954
+}
