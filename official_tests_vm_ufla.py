@@ -10,6 +10,8 @@ def run_tests(seeds: List[int]):
     instances_dir = Path("/home/caio/OAHF/Instances/alwabp")
     parameters_path = Path("/home/caio/OAHF/Parameters/oahf_parameters.json")
     modified_path = Path("/home/caio/OAHF/Parameters/oahf_parameters_modified.json")
+    input_path = Path("/home/caio/OAHF/Instances/alwabp")
+    cycle_time_path = Path("/home/caio/OAHF/Parameters/recommeded_maximum_mean_cycle_time.json")
     heuristic_definition_files = [
         Path("/home/caio/OAHF/Parameters/heuristic_definition_hajr.json"),
         Path("/home/caio/OAHF/Parameters/heuristic_definition_iterative_hajr.json")
@@ -23,6 +25,8 @@ def run_tests(seeds: List[int]):
     with open(parameters_path, "r", encoding="utf-8") as f:
         parameters = json.load(f)
 
+    parameters["input_path"] = str(input_path)
+    parameters["cycle_time_path"] = str(cycle_time_path)
     # Iterate over all entries in the instances directory
     for entry in os.listdir(instances_dir):
         entry_path = os.path.join(instances_dir, entry)
