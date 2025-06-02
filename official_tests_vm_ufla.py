@@ -45,8 +45,8 @@ def run_tests(seeds: List[int]):
 
             for algorithm in range(2):
                 # Updating according to the algorithms, 0 being 2013 HAJR and 1 being the Iterative HAJR (new proposal)
-                parameters["output_path"] = optimization_output_paths[algorithm]
-                parameters["heuristic_definition_file"] = heuristic_definition_files[algorithm]
+                parameters["output_path"] = str(optimization_output_paths[algorithm])
+                parameters["heuristic_definition_file"] = str(heuristic_definition_files[algorithm])
 
                 # Write out the modified JSON to the new file
                 with open(modified_path, "w", encoding="utf-8") as out_f:
