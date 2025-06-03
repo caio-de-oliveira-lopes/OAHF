@@ -30,9 +30,11 @@ def run_tests(seeds: List[int]):
 
     parameters["input_path"] = input_path
     parameters["cycle_time_path"] = cycle_time_path
+
+    instances_dir_joined = os.path.join(*instances_dir)
     # Iterate over all entries in the instances directory
-    for entry in os.listdir(instances_dir):
-        entry_path = os.path.join(instances_dir, entry)
+    for entry in os.listdir(instances_dir_joined):
+        entry_path = os.path.join(instances_dir_joined, entry)
 
         # Skip anything that is not a file
         if not os.path.isfile(entry_path):
