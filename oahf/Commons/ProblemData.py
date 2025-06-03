@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import Type, Union
+import os
 
 # Must import solution types here in order for eval() to work
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
@@ -21,13 +22,13 @@ class ProblemData:
 
         # Assign each value to the corresponding class attribute
         self.file_name = data["file_name"]
-        self.input_path = Path(data["input_path"])
-        self.input_file = self.input_path.joinpath(self.file_name)
-        self.output_path = Path(data["output_path"])
-        self.cycle_time_path = Path(data["cycle_time_path"])
-        self.heuristic_definition_file = Path(data["heuristic_definition_file"])
-        self.input_type = Type[eval(data["input_type"])]
+        self.input_path = Path(*data["input_path"])
+        self.input_file = self.input_path / self.file_name
         self.random_seed = data["random_seed"]
+        self.output_path = Path(*data["output_path"]) / f"seed_{str(self.random_seed)}"
+        self.cycle_time_path = Path(*data["cycle_time_path"])
+        self.heuristic_definition_file = Path(*data["heuristic_definition_file"])
+        self.input_type = Type[eval(data["input_type"])]
 
     def __str__(self):
         """Provide a string representation of the ProblemData object."""
