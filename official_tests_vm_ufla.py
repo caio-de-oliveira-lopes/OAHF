@@ -23,7 +23,7 @@ def run_tests(seeds: List[int]):
         ["/", "home", "caio", "OAHF", "Outputs", "Iterative_HAJR"]
     ]
 
-    parameters_joined = os.path.join(parameters_path)
+    parameters_joined = os.path.join(*parameters_path)
     # Load the original JSON once
     with open(parameters_joined, "r", encoding="utf-8") as f:
         parameters = json.load(f)
@@ -76,8 +76,9 @@ def run_tests(seeds: List[int]):
                     )
                     continue
 
+                modified_path_joined = os.path.join(*modified_path)
                 # Write out the modified JSON to the new file
-                with open(modified_path, "w", encoding="utf-8") as out_f:
+                with open(modified_path_joined, "w", encoding="utf-8") as out_f:
                     json.dump(parameters, out_f, ensure_ascii=False, indent=4)
 
                 print(f"Instance: {filename} || Seed: {seed} || Heuristic: {heuristic_definition_files[algorithm]}.")
@@ -87,7 +88,7 @@ def run_tests(seeds: List[int]):
                     "run", "--no-capture-output",
                     "-n", "oahf", "python", "-u",
                     "/home/caio/OAHF/oahf/main.py",
-                    str(modified_path)
+                    str(modified_path_joined)
                 ]
 
                 subprocess.run(
