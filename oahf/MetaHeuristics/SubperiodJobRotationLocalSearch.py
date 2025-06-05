@@ -149,6 +149,7 @@ class SubperiodJobRotationLocalSearch(JobRotationLPLocalSearch):
             if self.destination_pool:
                 self.destination_pool.add_solution(job_rotation_solution, self)
 
+            grb_model.dispose()
             current_solution = job_rotation_solution
         
         best_job_rotation_solution_found = output_pool.get_best()
