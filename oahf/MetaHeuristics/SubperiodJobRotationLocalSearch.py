@@ -133,6 +133,7 @@ class SubperiodJobRotationLocalSearch(JobRotationLPLocalSearch):
                 self.evaluate_and_add_to_alwabp_pool(period_solutions)
             except Exception as ex:
                 LogManager.something_went_wrong(self.__class__.__name__, ex)
+                grb_model.dispose()
                 continue
 
             # Instantiate JobRotationAlwabpSolution
@@ -151,4 +152,5 @@ class SubperiodJobRotationLocalSearch(JobRotationLPLocalSearch):
             current_solution = job_rotation_solution
         
         best_job_rotation_solution_found = output_pool.get_best()
+        grb_model.dispose()
         return best_job_rotation_solution_found

@@ -141,7 +141,7 @@ class SinglePeriodJobRotationLocalSearch(JobRotationLPLocalSearch):
             )
             #grb_model.computeIIS()
             #grb_model.write(fr"C:\Projetos\OAHF\Outputs\{grb_model.ModelName}_single_period_conflicts.ilp")
-            #grb_model.dispose()  # Dispose the model when done
+            grb_model.dispose()  # Dispose the model when done
             return solution
 
         try:
@@ -150,6 +150,7 @@ class SinglePeriodJobRotationLocalSearch(JobRotationLPLocalSearch):
             self.evaluate_and_add_to_alwabp_pool(period_solutions)
         except Exception as ex:
             LogManager.something_went_wrong(self.__class__.__name__, ex)
+            grb_model.dispose()
             return solution
 
         # Instantiate JobRotationAlwabpSolution
@@ -161,4 +162,5 @@ class SinglePeriodJobRotationLocalSearch(JobRotationLPLocalSearch):
                 i, period_solutions[i]
             )
 
+        grb_model.dispose()
         return job_rotation_solution
