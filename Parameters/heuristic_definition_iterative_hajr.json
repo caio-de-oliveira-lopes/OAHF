@@ -787,7 +787,8 @@
 					"stop_criterias": [
 						{
 							"time_iteration": {
-								"iterations": 1
+								"iterations": 1,
+								"seconds": 11
 							}
 						},
 						{
@@ -821,7 +822,8 @@
 					"stop_criterias": [
 						{
 							"time_iteration": {
-								"iterations": 1
+								"iterations": 1,
+								"seconds": 10
 							}
 						},
 						{
