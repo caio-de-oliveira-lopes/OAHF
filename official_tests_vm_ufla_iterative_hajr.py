@@ -8,18 +8,16 @@ import secrets
 def run_tests(seeds: List[int]):
     # Define paths as lists
     instances_dir = ["/", "home", "caio", "OAHF", "Instances", "alwabp"]
-    parameters_path = ["/", "home", "caio", "OAHF", "Parameters", "oahf_parameters.json"]
-    modified_path = ["/", "home", "caio", "OAHF", "Parameters", "oahf_parameters_modified.json"]
+    parameters_path = ["/", "home", "caio", "OAHF", "Parameters", "oahf_parameters_iterative_hajr.json"]
+    modified_path = ["/", "home", "caio", "OAHF", "Parameters", "oahf_parameters_iterative_hajr_modified.json"]
     input_path = ["/", "home", "caio", "OAHF", "Instances", "alwabp"]
     cycle_time_path = ["/", "home", "caio", "OAHF", "Parameters", "recommeded_maximum_mean_cycle_time.json"]
 
     heuristic_definition_files = [
-        ["/", "home", "caio", "OAHF", "Parameters", "heuristic_definition_hajr.json"],
         ["/", "home", "caio", "OAHF", "Parameters", "heuristic_definition_iterative_hajr.json"]
     ]
 
     optimization_output_paths = [
-        ["/", "home", "caio", "OAHF", "Outputs", "HAJR"],
         ["/", "home", "caio", "OAHF", "Outputs", "Iterative_HAJR"]
     ]
 
