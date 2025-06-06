@@ -166,7 +166,7 @@ class HeuristicParser:
             #print(f"{(idx)}/{num_mh}")
             origin_pool = (
                 mh.origin_pool
-                if mh.origin_pool is not None
+                if mh.origin_pool is not None and mh.origin_pool.count() > 0
                 else ListPool([initial_sol], None, evaluator)
             )
             mh.run_operation(origin_pool, mh.destination_pool)
