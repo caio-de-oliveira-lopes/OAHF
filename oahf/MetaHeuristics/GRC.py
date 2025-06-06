@@ -109,9 +109,17 @@ class GRC(MetaHeuristic):
 
                     #num_chosen = max(1, int(len(all_moves) * (1 - self.greediness)))
                     ordered_moves = sorted(all_moves, key=lambda x: x.get_cost())#[:num_chosen]
+                    # Select the first element of the list
+                    if self.greediness > 0:
+                        move_index = 0
+                    else:
+                        # Select a move_index randomly among the available ones using ThreadManager
+                        move_index = ThreadManager.get_next(
+                            self.thread_id, 0, len(ordered_moves) - 1
+                        )
 
                     while ordered_moves and not self.stop_on_evaluations([best_eval]):
-                        move = ordered_moves.pop()
+                        move = ordered_moves.pop(move_index)
                         worked = move.apply()
 
                         if worked:

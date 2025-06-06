@@ -92,11 +92,11 @@ class IterativeConstruction(MetaHeuristic):
 
         all_ns = self._override_construction_ns or [construction.get_neighborhood_selection()]
         for ns in all_ns:
-            self.stop_criteria.reset()
-            self.acceptance_criteria.reset()
-
             curr_pool = ListPool([best_sol])
             construction.set_neighborhood_selection(ns)
+            
+            self.stop_criteria.reset()
+            self.acceptance_criteria.reset()
 
             while not self.stop_on_evaluations([best_eval]):
                 curr_pool = construction.run_operation(curr_pool, None, self)

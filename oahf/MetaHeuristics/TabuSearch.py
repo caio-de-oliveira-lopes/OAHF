@@ -161,6 +161,7 @@ class TabuSearch(MetaHeuristic):
         # Reset criteria and structures
         stop_criteria.reset()
         acceptance.reset()
+        best_eval.reset_penalties()
 
         # To increase the usage of these criterias we do not reset in case of multiple callings for TabuSearch
         #intensification_criteria.reset()
@@ -316,7 +317,9 @@ class TabuSearch(MetaHeuristic):
                         )
                         perturbation_ls = PerturbationDrivenLocalSearch(
                             thread_id,
-                            StopTimeIterationCriteria(iterations=1),
+                            MultipleStopCriteria(True, 
+                                                 StopTimeIterationCriteria(iterations=1), 
+                                                 curr_sol.get_default_limit_stop_criteria()),
                             evaluator,
                             acceptance,
                             perturbation,
@@ -358,7 +361,8 @@ class TabuSearch(MetaHeuristic):
                     curr_sol = best_sol.copy()
                 ns.allow_infeasible_movements = False
 
-        type(best_sol).reset_intensification_diversification_structures()
+        #type(best_sol).reset_intensification_diversification_structures()        
+        best_eval.reset_penalties()
 
         return best_sol
 

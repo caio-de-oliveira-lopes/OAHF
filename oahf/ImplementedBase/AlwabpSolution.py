@@ -2467,4 +2467,4 @@ class AlwabpSolution(Solution):
     def get_default_limit_stop_criteria(self) -> StopCriteria:
         from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
         from oahf.Utils.Util import Util
-        return MaxCycleTimeStopCriteria(int(Util.max_finite_execution_time(self._task_execution_times)))
+        return MaxCycleTimeStopCriteria(int(Util.max_finite_execution_time(self._task_execution_times) * self._number_of_tasks))
