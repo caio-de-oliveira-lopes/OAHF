@@ -50,7 +50,7 @@ def run_tests(seeds: List[int]):
             # Updating random seed
             parameters["random_seed"] = seed
 
-            for algorithm in range(2):
+            for algorithm in range(len(optimization_output_paths)):
                 # Updating according to the algorithms, 0 being 2013 HAJR and 1 being the Iterative HAJR (new proposal)
                 parameters["output_path"] = optimization_output_paths[algorithm]
                 parameters["heuristic_definition_file"] = heuristic_definition_files[algorithm]
