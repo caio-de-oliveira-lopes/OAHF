@@ -82,19 +82,22 @@ def run_tests(seeds: List[int]):
                     json.dump(parameters, out_f, ensure_ascii=False, indent=4)
 
                 print(f"Instance: {filename} || Seed: {seed} || Heuristic: {heuristic_definition_files[algorithm]}.")
-                # CALL THE MAIN FILE TO INITIALIZE THE OPTIMIZATION
-                command = [
-                    "/home/caio/miniconda3/condabin/conda",
-                    "run", "--no-capture-output",
-                    "-n", "oahf", "python", "-u",
-                    "/home/caio/OAHF/oahf/main.py",
-                    str(modified_path_joined)
-                ]
+                try:
+                    # CALL THE MAIN FILE TO INITIALIZE THE OPTIMIZATION
+                    command = [
+                        "/home/caio/miniconda3/condabin/conda",
+                        "run", "--no-capture-output",
+                        "-n", "oahf", "python", "-u",
+                        "/home/caio/OAHF/oahf/main.py",
+                        str(modified_path_joined)
+                    ]
 
-                subprocess.run(
-                    command,
-                    check=True
-                )
+                    subprocess.run(
+                        command,
+                        check=True
+                    )
+                except:
+                    continue
                 print("Step finished.")
                 print("------------------------------------------------------------------------")
 
