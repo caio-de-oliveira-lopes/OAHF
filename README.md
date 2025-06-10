@@ -28,7 +28,7 @@ The **Open Algorithm and Heuristic Framework (OAHF)** is an extensible Python li
 
 ---
 
-### ⚙️ Features
+### Features
 
 - **Customizable Heuristics**: Define neighborhoods, selection strategies, and metaheuristics.
 - **Experiment Automation**: Batch-run multiple instances with different seeds and parameters.
@@ -38,7 +38,7 @@ The **Open Algorithm and Heuristic Framework (OAHF)** is an extensible Python li
 
 ---
 
-### 📦 Requirements
+### Requirements
 
 - **Operating System**: Linux, Windows, or macOS
 - **Python**: 3.12 or higher
@@ -46,7 +46,7 @@ The **Open Algorithm and Heuristic Framework (OAHF)** is an extensible Python li
 
 ---
 
-### 🔧 Installation
+### Installation
 
 #### 1. Clone the repository
 
@@ -77,7 +77,7 @@ pip install -r requirements.txt
 
 ---
 
-### 🔧 Configuration
+### Configuration
 
 All runtime settings are driven by a **parameter JSON** (e.g., `oahf_parameters.json`). Below is a sample structure:
 
@@ -105,7 +105,7 @@ Additional parameter files may include:
 - `recommended_maximum_mean_cycle_time.json`
 ---
 
-### ▶️ Usage
+### Usage
 
 #### Run the Framework
 
@@ -127,7 +127,7 @@ This will:
 
 ---
 
-### 📦 Building & Packaging
+### Building & Packaging
 
 #### Generate a Distributable Package
 
@@ -145,7 +145,7 @@ python setup.py build_ext --inplace
 
 ---
 
-### 🤝 Contributors
+### Contributors
 
 A special thanks to all the people who have contributed to this project:
 
@@ -164,13 +164,13 @@ A special thanks to all the people who have contributed to this project:
 
 ---
 
-### ⚖️ License
+### License
 
 This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-### 🙏 Acknowledgements
+### Acknowledgements
 
 - **Federal University of Lavras (UFLA)** – Computer Science Postgraduate Program.
 - **CAPES, CNPq & FAPEMIG** – Funding agencies supporting research in Brazil.
