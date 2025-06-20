@@ -2,7 +2,7 @@
 import json
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 from oahf.Base import AcceptanceCriteria
 from oahf.Base.Constraint import Constraint
@@ -62,10 +62,13 @@ from oahf.MetaHeuristics.GRASP import GRASP
 from oahf.MetaHeuristics.GRC import GRC
 from oahf.MetaHeuristics.GenericMultipleMetaheuristic import GenericMultipleMetaheuristic
 from oahf.MetaHeuristics.HGA import HGA
+from oahf.MetaHeuristics.IterativeConstruction import IterativeConstruction
 from oahf.MetaHeuristics.JobRotationLPSelector import JobRotationLPSelector
 from oahf.MetaHeuristics.MultipleBestImprovement import MultipleBestImprovement
 from oahf.MetaHeuristics.PILS import PILS
 from oahf.MetaHeuristics.RetryingMetaheuristic import RetryingMetaheuristic
+from oahf.MetaHeuristics.SinglePeriodJobRotationLocalSearch import SinglePeriodJobRotationLocalSearch
+from oahf.MetaHeuristics.SubperiodJobRotationLocalSearch import SubperiodJobRotationLocalSearch
 from oahf.MetaHeuristics.TabuSearch import TabuSearch
 from oahf.Utils.EnumUtil import EnumUtil
 from oahf.Utils.Util import Util
@@ -163,7 +166,7 @@ class HeuristicParser:
             #print(f"{(idx)}/{num_mh}")
             origin_pool = (
                 mh.origin_pool
-                if mh.origin_pool is not None
+                if mh.origin_pool is not None and mh.origin_pool.count() > 0
                 else ListPool([initial_sol], None, evaluator)
             )
             mh.run_operation(origin_pool, mh.destination_pool)
@@ -279,7 +282,7 @@ class HeuristicParser:
                 elif n["name"].lower() == "worker_swap_reconstruct":
                     thread_id = 0
                     greediness = float(
-                        n["parameters"]["reconstruct"].get("greediness", 0.0)
+                        n["parameters"]["reconstruct"].get("greediness", 1.0)
                     )
                     stop_criteria = self.parse_stop_criteria(
                         n["parameters"]["reconstruct"]["stop_criteria"]
@@ -298,7 +301,6 @@ class HeuristicParser:
                         for id in n["parameters"]["reconstruct"]["neighborhood_ids"]
                     ]
                     ns = ListSelection(False, *neighborhoods)
-                    order_moves = n["parameters"]["reconstruct"].get("order_moves", False)
 
                     grc = GRC(
                         thread_id,
@@ -306,8 +308,7 @@ class HeuristicParser:
                         stop_criteria,  # type: ignore
                         evaluator,
                         acceptance_criteria,  # type: ignore
-                        ns,
-                        order_moves,
+                        ns
                     )
                     neighborhood = WorkerSwapReconstructNS(grc, evaluator)
                 elif n["name"].lower() == "alwabp_task_intensification":
@@ -457,7 +458,6 @@ class HeuristicParser:
                         m["acceptance_criteria"]
                     )
                     ns = self.neighborhood_selections[m["neighborhood_selection"]]
-                    order_moves = m["parameters"]["order_moves"]
                     destination_pool = (
                         self.solution_pools[m["destination_pool"]]
                         if "destination_pool" in m
@@ -471,7 +471,6 @@ class HeuristicParser:
                         evaluator,
                         acceptance_criteria,  # type: ignore
                         ns,
-                        order_moves,
                         destination_pool,
                     )
                 elif m["name"].lower() == "grasp":
@@ -492,6 +491,8 @@ class HeuristicParser:
                         if "destination_pool" in m
                         else None
                     )
+                    temporary_set_mh_parameters: Dict[str, Dict[str, Any]] = m["parameters"].get("temporary_set_mh_parameters", {})
+                    override_construction_ns = [self.neighborhood_selections[ns] for ns in m["parameters"].get("override_construction_ns", [])]
 
                     meta = GRASP(
                         thread_id,
@@ -500,6 +501,37 @@ class HeuristicParser:
                         constructions,
                         local_search,
                         acceptance_criteria,  # type: ignore
+                        temporary_set_mh_parameters,
+                        override_construction_ns,
+                        origin_pool,
+                        destination_pool,
+                    )
+                elif m["name"].lower() == "iterative_construction":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    constructions = self.metaheuristics[m["metaheuristics_used"][0]]
+                    acceptance_criteria = self.parse_acceptance_criteria(
+                        m["acceptance_criteria"]
+                    )
+                    origin_pool = (
+                        self.solution_pools[m["origin_pool"]]
+                        if "origin_pool" in m
+                        else None
+                    )
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )                   
+                    override_construction_ns = [self.neighborhood_selections[ns] for ns in m["parameters"].get("override_construction_ns", [])]
+
+                    meta = IterativeConstruction(
+                        thread_id,
+                        stop_criteria,  # type: ignore
+                        evaluator,
+                        constructions,
+                        acceptance_criteria,  # type: ignore
+                        override_construction_ns,
                         origin_pool,
                         destination_pool,
                     )
@@ -556,8 +588,8 @@ class HeuristicParser:
                     )
                 elif m["name"].lower() == "job_rotation_lp_selector":
                     thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
                     number_of_periods = int(m["parameters"].get("number_of_periods", 1))
-                    gurobi_path = Path(m["parameters"].get("gurobi_path", None))
                     origin_pool = (
                         self.solution_pools[m["origin_pool"]]
                         if "origin_pool" in m
@@ -568,18 +600,13 @@ class HeuristicParser:
                         if "destination_pool" in m
                         else None
                     )
-                    tolerance_percentage: Optional[float] = (
-                        float(m["parameters"].get("tolerance_percentage", None))
-                        if m["parameters"].get("tolerance_percentage", None)
-                        else None
-                    )
+                    tasks_executed_factor: float = float(m["parameters"].get("tasks_executed_factor", 0.5))
 
                     meta = JobRotationLPSelector(
                         thread_id,
+                        stop_criteria,
                         number_of_periods,
-                        gurobi_path,
-                        self.problem_data,
-                        tolerance_percentage,
+                        tasks_executed_factor,
                         origin_pool,
                         destination_pool,
                     )
@@ -798,6 +825,8 @@ class HeuristicParser:
                     mh_evaluator = destination_pool.evaluator if destination_pool is not None and use_destination_pool_evaluator else evaluator
                     main_metaheuristic = self.metaheuristics[m["parameters"]["main_metaheuristic"]]
                     local_searches = [self.metaheuristics[mh_id] for mh_id in m["parameters"]["local_searches"]]
+                    retry_on_same_iteration = bool(m["parameters"]["retry_on_same_iteration"])
+                    always_run_local_searches = bool(m["parameters"]["always_run_local_searches"])
 
                     meta = RetryingMetaheuristic(
                         thread_id,
@@ -806,6 +835,66 @@ class HeuristicParser:
                         main_metaheuristic,
                         local_searches,
                         acceptance_criteria, # type: ignore
+                        retry_on_same_iteration,
+                        always_run_local_searches,
+                        origin_pool,
+                        destination_pool
+                        )
+                elif m["name"].lower() == "single_period_job_rotation_local_search":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    origin_pool = (
+                        self.solution_pools[m["origin_pool"]]
+                        if "origin_pool" in m
+                        else None
+                    )
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
+                    alwabp_solution_pool = (
+                        self.solution_pools[m["parameters"]["alwabp_solution_pool"]]
+                        if "alwabp_solution_pool" in m["parameters"]
+                        else None
+                    )
+                    tasks_executed_factor: float = float(m["parameters"].get("tasks_executed_factor", 0.5))
+
+                    meta = SinglePeriodJobRotationLocalSearch(
+                        thread_id,
+                        stop_criteria, # type: ignore
+                        evaluator,
+                        tasks_executed_factor,
+                        alwabp_solution_pool,
+                        origin_pool,
+                        destination_pool
+                        )
+                elif m["name"].lower() == "subperiod_job_rotation_local_search":
+                    thread_id = 0
+                    stop_criteria = self.parse_stop_criteria(m["stop_criteria"])
+                    origin_pool = (
+                        self.solution_pools[m["origin_pool"]]
+                        if "origin_pool" in m
+                        else None
+                    )
+                    destination_pool = (
+                        self.solution_pools[m["destination_pool"]]
+                        if "destination_pool" in m
+                        else None
+                    )
+                    alwabp_solution_pool = (
+                        self.solution_pools[m["parameters"]["alwabp_solution_pool"]]
+                        if "alwabp_solution_pool" in m["parameters"]
+                        else None
+                    )
+                    tasks_executed_factor: float = float(m["parameters"].get("tasks_executed_factor", 0.5))
+
+                    meta = SubperiodJobRotationLocalSearch(
+                        thread_id,
+                        stop_criteria, # type: ignore
+                        evaluator,
+                        tasks_executed_factor,
+                        alwabp_solution_pool,
                         origin_pool,
                         destination_pool
                         )
@@ -827,7 +916,7 @@ class HeuristicParser:
         """
         try:
             if not criteria:
-                return None
+                return NoStopCriteria()
             elif "time_iteration" in criteria:
                 seconds = (
                     float(criteria["time_iteration"].get("seconds"))

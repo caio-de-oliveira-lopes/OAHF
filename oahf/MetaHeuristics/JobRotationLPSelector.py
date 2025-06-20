@@ -1,5 +1,4 @@
-from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import gurobipy as gp
 from gurobipy import GRB
@@ -7,6 +6,7 @@ from gurobipy import GRB
 from oahf.Base.MetaHeuristic import MetaHeuristic
 from oahf.Base.Pool import Pool
 from oahf.Base.Solution import Solution
+from oahf.Base.StopCriteria import StopCriteria
 from oahf.Commons.ProblemData import ProblemData
 from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution, GraphOrientation
 from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
@@ -14,9 +14,7 @@ from oahf.ImplementedBase.AlwaysAcceptAcceptanceCriteria import (
 )
 from oahf.ImplementedBase.JobRotationAlwabpEvaluator import JobRotationAlwabpEvaluator
 from oahf.ImplementedBase.JobRotationAlwabpSolution import JobRotationAlwabpSolution
-from oahf.ImplementedBase.ListPool import ListPool
 from oahf.ImplementedBase.LpExecutionData import LpExecutionData
-from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
 from oahf.Logger.LogManager import LogManager
 from oahf.Utils.Util import Util
 
@@ -26,37 +24,36 @@ class JobRotationLPSelector(MetaHeuristic):
     def __init__(
         self,
         thread_id: int,
+        stop_criteria: StopCriteria,
         number_of_periods: int,
-        gurobi_path: Path,
-        problem_data: ProblemData,
-        tolerance_percentage: Optional[float] = None,
+        tasks_executed_factor: float,
         origin_pool: Optional[Pool] = None,
         destination_pool: Optional[Pool] = None,
     ):
         super().__init__(
             thread_id,
-            NoStopCriteria(),
+            stop_criteria,
             JobRotationAlwabpEvaluator(),
             AlwaysAcceptAcceptanceCriteria(),
             origin_pool=origin_pool,
             destination_pool=destination_pool,
         )
         self.number_of_periods = number_of_periods
-        self.gurobi_path = gurobi_path
-        self.problem_data = problem_data
-        self.cycle_time_limit = Util.get_recommeded_maximum_mean_cycle_time(
-            self.problem_data.cycle_time_path, self.problem_data.file_name
-        )
-        self.tolerance_percentage = tolerance_percentage
+        self.tasks_executed_factor = tasks_executed_factor
+        self.cycle_time_factor = 1.0 - self.tasks_executed_factor
+
+        JobRotationAlwabpSolution.add_to_alwabp_pools(origin_pool)
+        JobRotationAlwabpSolution.add_to_job_rotation_pools(destination_pool)
+        JobRotationAlwabpSolution._tasks_executed_factor = self.tasks_executed_factor
+        JobRotationAlwabpSolution._cycle_time_factor = self.cycle_time_factor
 
     def copy(self, thread: int) -> "JobRotationLPSelector":
         """Creates a copy of the current BestImprovement instance."""
         return JobRotationLPSelector(
             thread,
+            self.stop_criteria.copy(),
             self.number_of_periods,
-            self.gurobi_path,
-            self.problem_data,
-            self.tolerance_percentage,
+            self.tasks_executed_factor,
             origin_pool=self.origin_pool.copy() if self.origin_pool else None,
             destination_pool=(
                 self.destination_pool.copy() if self.destination_pool else None
@@ -73,12 +70,15 @@ class JobRotationLPSelector(MetaHeuristic):
         parent: Optional["MetaHeuristic"] = None,
     ) -> Pool:
         try:
+            from oahf.ImplementedBase.ListPool import ListPool
+
             self.parent_metaheuristic = parent
             result = destination_pool or ListPool()
-            alwabp_solutions = []
+            alwabp_solutions: List[AlwabpSolution] = []
+            JobRotationAlwabpSolution.update_current_alwabp_upper_bound()
 
             # Filter only AlwabpSolutions from the origin pool
-            for solution in origin_pool.get_list():
+            for solution in origin_pool:
                 if isinstance(solution, AlwabpSolution):
                     alwabp_solutions.append(solution)
                     solution.default_graph_orientation = GraphOrientation.FORWARD
@@ -87,16 +87,28 @@ class JobRotationLPSelector(MetaHeuristic):
                 number_of_solutions = len(alwabp_solutions)
                 workers = alwabp_solutions[0].workers
                 tasks = alwabp_solutions[0].tasks
+                upper_bound = JobRotationAlwabpSolution._current_alwabp_upper_bound
 
                 # Initialize the Gurobi model directly
                 grb_model = gp.Model("JobRotationLPSelector")
-                grb_model.setParam(
-                    "MIPGap", 1e-6
-                )  # Set a very small MIP gap for high precision
+
+                # SECTION TO AVOID MULTIPLE OUTPUTS REGARDING PRECISION
+                import sys, os
+
+                # Mute stdout
+                old_stdout = sys.stdout
+                sys.stdout = open(os.devnull, "w")
+
+                grb_model.setParam("MIPGap", Util.eps())
+
+                # Restore
+                sys.stdout.close()
+                sys.stdout = old_stdout
                 grb_model.setParam("OutputFlag", 0)
+                # ENDING SPECIAL SPECTION
 
                 # adding timeout to respect StopTimeIterationCriteria
-                timeout = self.get_min_timeout_milliseconds()
+                timeout = self.get_min_timeout_milliseconds() / 1000.0
                 if timeout:
                     grb_model.setParam("TimeLimit", timeout)
 
@@ -118,11 +130,20 @@ class JobRotationLPSelector(MetaHeuristic):
                 )
 
                 # Set the objective function
-                epsilon = 1e-6
+                # select the first solution from the pool
+                sol = alwabp_solutions[0]
+
+                # 1) positive component: normalized sum of task assignments
+                sum_z = gp.quicksum(z[w, i] for w in workers for i in tasks)
+                total_executed = sum([len(sol.tasks_executed_by_worker[w]) for w in workers])
+                part1 = (self.tasks_executed_factor / float(total_executed)) * sum_z
+
+                # 2) negative component: normalized sum of cycle times
+                part2 = (self.cycle_time_factor / upper_bound) * cycle_time_average
+                # set and maximize the composite objective: part1 minus part2
                 grb_model.setObjective(
-                    gp.quicksum(z[w, t] for w in workers for t in tasks)
-                    - epsilon * cycle_time_average,
-                    GRB.MAXIMIZE,
+                    part1 - part2,
+                    GRB.MAXIMIZE
                 )
 
                 # Constraints
@@ -150,32 +171,24 @@ class JobRotationLPSelector(MetaHeuristic):
                         )
 
                 grb_model.addConstr(
-                    cycle_time_average
+                    cycle_time_average * self.number_of_periods
                     == gp.quicksum(
-                        solution[i, j]
-                        * (
-                            alwabp_solutions[j].get_max_cycle_time()
-                            / self.number_of_periods
-                        )
+                        solution[i, j] * alwabp_solutions[j].get_max_cycle_time()
                         for i in range(self.number_of_periods)
                         for j in range(number_of_solutions)
                     )
                 )
 
-                if self.tolerance_percentage is not None:
-                    grb_model.addConstr(
-                        cycle_time_average
-                        <= self.cycle_time_limit * (1 + self.tolerance_percentage),
-                        name="cycle_time_tolerance_constraint",
-                    )
+                # Reset StopCriteria in case of using StopTimeIterationCriteria
+                self.stop_criteria.reset()
 
                 # Optimize the model
                 grb_model.optimize()
 
-                # Check if the solution is valid (could be OPTIMAL, SUBOPTIMAL)
-                valid_status_codes = {GRB.OPTIMAL, GRB.SUBOPTIMAL}
+                # Check if the solution is valid (could be OPTIMAL, SUBOPTIMAL or TIME_LIMIT)
+                valid_status_codes = {GRB.OPTIMAL, GRB.SUBOPTIMAL, GRB.TIME_LIMIT}
 
-                if grb_model.status in valid_status_codes:
+                if grb_model.status in valid_status_codes and grb_model.SolCount > 0:
                     solve_seconds = grb_model.Runtime
                     optimality_gap = grb_model.MIPGap
                     simplex_iterations = grb_model.IterCount
@@ -201,7 +214,7 @@ class JobRotationLPSelector(MetaHeuristic):
                 )
                 for i in range(self.number_of_periods):
                     for j in range(number_of_solutions):
-                        if solution[i, j].x > 0.5:  # type: ignore
+                        if solution[i, j].x > Util.eps():  # type: ignore
                             job_rotation_solution.assign_solution_to_period(
                                 i, alwabp_solutions[j]
                             )

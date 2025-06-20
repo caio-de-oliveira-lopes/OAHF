@@ -43,7 +43,7 @@ class PerturbationDrivenLocalSearch(MetaHeuristic):
         self.perturbation = perturbation
         self.local_search = local_search
 
-    def copy(self, thread: int) -> "MetaHeuristic":
+    def copy(self, thread: int) -> "PerturbationDrivenLocalSearch":
         """Creates a copy of the current PerturbationDrivenLocalSearch instance."""
         return PerturbationDrivenLocalSearch(
             thread,

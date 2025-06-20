@@ -39,6 +39,11 @@ class Constraint(Entity, ABC):
 
     @classmethod
     @abstractmethod
+    def reset_penalty(cls) -> None:
+        pass
+
+    @classmethod
+    @abstractmethod
     def set_penalty(cls, value: float) -> None:
         """
         Set the penalty value for the constraint violations.

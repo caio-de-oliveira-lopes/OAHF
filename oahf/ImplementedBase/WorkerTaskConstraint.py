@@ -7,6 +7,7 @@ from oahf.ImplementedBase.AlwabpSolution import AlwabpSolution
 
 
 class WorkerTaskConstraint(Constraint):
+    _original_penalty = 60.0
     _penalty = 60.0  # Default penalty value; can be adjusted.
     _worker_task_violations_memo: Dict[int, int] = {}
 
@@ -35,6 +36,10 @@ class WorkerTaskConstraint(Constraint):
             return
 
         cls._penalty *= multiplier
+
+    @classmethod
+    def reset_penalty(cls) -> None:
+        cls._penalty = cls._original_penalty
 
     @classmethod
     def set_penalty(cls, value: float) -> None:

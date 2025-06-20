@@ -9,21 +9,19 @@ from oahf.Base.Solution import Solution
 from oahf.Base.StopCriteria import StopCriteria
 
 
-class GRASP(MetaHeuristic):
+class IterativeConstruction(MetaHeuristic):
     def __init__(
         self,
         thread_id: int,
         stop_criteria: StopCriteria,
         evaluator: Evaluator,
         constructions: MetaHeuristic,
-        local_search: MetaHeuristic,
         acceptance_criteria: AcceptanceCriteria,
-        temporary_set_mh_parameters: Dict[str, Dict[str, Any]],
         override_construction_ns: List[NeighborhoodSelection],
         origin_pool: Optional[Pool] = None,
         destination_pool: Optional[Pool] = None,
     ) -> None:
-        """Initialize the GRASP meta-heuristic.
+        """Initialize the IterativeConstruction meta-heuristic.
 
         Args:
             thread_id (int): The ID of the thread.
@@ -39,39 +37,34 @@ class GRASP(MetaHeuristic):
             evaluator,
             acceptance_criteria,
             None,
-            [constructions, local_search],
+            [constructions],
             origin_pool,
             destination_pool,
         )
-        # list of dicts: each maps MH index to parameter dicts
-        self.temporary_set_mh_parameters: dict[str, dict[str, any]] = temporary_set_mh_parameters
-        # storage for original parameters when apply is called
-        self._stored_mh_parameters: dict[int, dict[str, any]] = {}
         # list of neighborhood selection to iterate over and override the construction mh ns
         self._override_construction_ns = override_construction_ns
 
-    def copy(self, thread: int) -> "GRASP":
-        """Creates a copy of the GRASP instance.
+    def copy(self, thread: int) -> "IterativeConstruction":
+        """Creates a copy of the IterativeConstruction instance.
 
         Args:
             thread (int): The ID of the thread for the copied instance.
 
         Returns:
-            GRASP: A new instance of GRASP that is a copy of this instance.
+            IterativeConstruction: A new instance of IterativeConstruction that is a copy of this instance.
         """
-        return GRASP(
+        return IterativeConstruction(
             thread,
             self.stop_criteria.copy(),
             self.evaluator,
             self.meta_heuristics_used[0].copy(thread),
-            self.meta_heuristics_used[1].copy(thread),
             self.acceptance_criteria.copy(),
             self.origin_pool.copy() if self.origin_pool is not None else None,
             self.destination_pool.copy() if self.destination_pool is not None else None,
         )
 
     def run(self, sol: Solution) -> Solution:
-        """Executes the GRASP meta-heuristic.
+        """Executes the IterativeConstruction meta-heuristic.
 
         Args:
             solution (Solution): The initial solution.
@@ -82,7 +75,7 @@ class GRASP(MetaHeuristic):
         raise NotImplementedError("Use run_operation() method for this class.")
 
     def run_operation(self, origin_pool: Pool, destination_pool: Pool, parent: Optional["MetaHeuristic"] = None) -> Pool:
-        """Executes the GRASP meta-heuristic.
+        """Executes the IterativeConstruction meta-heuristic.
 
         Args:
             origin_pool (Pool): The initial solution pool, which can be empty.
@@ -93,16 +86,9 @@ class GRASP(MetaHeuristic):
         """
         self.parent_metaheuristic = parent
         construction = self.meta_heuristics_used[0]
-        local_search = self.meta_heuristics_used[1]
-
-        # Setting parent MetaHeuristic
-        local_search.named_parent = self
-
         best_sol = origin_pool.solutions[0].copy()
         best_sol.reset(complete_reset=True)
         best_eval = self.evaluator.evaluate(best_sol)
-
-        self.apply_temporary_set_mh_parameters()
 
         all_ns = self._override_construction_ns or [construction.get_neighborhood_selection()]
         for ns in all_ns:
@@ -123,47 +109,11 @@ class GRASP(MetaHeuristic):
                     else:
                         continue
 
-                curr_pool = local_search.run_operation(curr_pool, None, self)
-                curr_sol = curr_pool.get_best(self.evaluator)
-
                 if curr_sol:
                     curr_eval = self.evaluator.evaluate(curr_sol)
                     if not (curr_eval.infeasible() or curr_eval.has_penalty()):
                         destination_pool.add_solution(curr_sol, self)
 
                 self.stop_criteria.increment_counter()
-        self.unapply_temporary_set_mh_parameters()
 
         return destination_pool
-
-    def apply_temporary_set_mh_parameters(self) -> None:
-        """
-        Apply temporary parameter values to each specified meta-heuristic,
-        storing the original values so they can be restored later.
-        """
-        # reset storage
-        self._stored_mh_parameters: dict[int, dict[str, any]] = {}
-
-        for index, params in self.temporary_set_mh_parameters.items():
-            mh = self.meta_heuristics_used[int(index)]
-            orig_values: dict[str, any] = {}
-            for name, value in params.items():
-                if hasattr(mh, name):
-                    # store original value
-                    orig_values[name] = getattr(mh, name)
-                    # apply temporary value
-                    setattr(mh, name, value)
-            if orig_values:
-                self._stored_mh_parameters[int(index)] = orig_values
-
-    def unapply_temporary_set_mh_parameters(self) -> None:
-        """
-        Restore the original parameter values for each meta-heuristic
-        from the stored configurations, undoing the apply operation.
-        """
-        for index, orig_params in self._stored_mh_parameters.items():
-            mh = self.meta_heuristics_used[index]
-            for name, value in orig_params.items():
-                setattr(mh, name, value)
-        # clear storage after restoring
-        self._stored_mh_parameters.clear()

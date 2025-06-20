@@ -128,9 +128,24 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
             tiebreaker_rule = tuple(
                 first_tiebreaker[task][w_idx] for task in task_order_rule
             )
-            c_min = min(worker_related_values)
-            c_max = max(worker_related_values)
-            threshold_value = c_min + ((1 - self.greediness) * (c_max - c_min))
+
+            if len(solution_unassigned_tasks) <= 0:
+                return None
+
+            it = iter(solution_unassigned_tasks)
+            first_task = next(it)
+            val = worker_related_values[first_task - 1]
+            c_min = c_max = val
+
+            for t in it:
+                v = worker_related_values[t - 1]
+                if v < c_min:
+                    c_min = v
+                elif v > c_max:
+                    c_max = v
+
+            # can be (1 - self.greediness)
+            threshold_value = c_min + (1 * (c_max - c_min))
             self.threshold_value = threshold_value
 
             # Filter unassigned tasks first then sort; this should reduce sorting overhead
@@ -192,12 +207,14 @@ class AlwabpWorkerOrientedInsertNS(Neighborhood):
                 if not available_in_order:
                     break
 
-                # Select a task randomly among the available ones using ThreadManager
-                task_index = ThreadManager.get_next(
-                    self.thread_id, 0, len(available_in_order) - 1
-                )
                 # Select the first element of the list
-                # task_index = 0
+                if self.greediness > 0:
+                    task_index = 0
+                else:
+                    # Select a task randomly among the available ones using ThreadManager
+                    task_index = ThreadManager.get_next(
+                        self.thread_id, 0, len(available_in_order) - 1
+                    )
 
                 chosen_task = available_in_order.pop(task_index)
                 available_positions.pop(task_index)

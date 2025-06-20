@@ -83,7 +83,7 @@ class Solution(Entity, ABC):
         return True
 
     @abstractmethod
-    def reset(self) -> None:
+    def reset(self, complete_reset: bool = False) -> None:
         """
         Resets the solution to its initial state.
         """
@@ -270,7 +270,7 @@ class Solution(Entity, ABC):
 
     def get_default_limit_stop_criteria(self) -> StopCriteria:
         "Abstract Method: must be implemented by child classes."
-        from oahf.ImplementedBase.AlwabpSolution import NoStopCriteria
+        from oahf.ImplementedBase.NoStopCriteria import NoStopCriteria
         return NoStopCriteria()
 
     def increase_bounds(self) -> None:

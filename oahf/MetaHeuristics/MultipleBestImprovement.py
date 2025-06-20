@@ -43,7 +43,7 @@ class MultipleBestImprovement(MetaHeuristic):
         )
         self.num_selections = ns.num_neighborhoods()
 
-    def copy(self, thread: int) -> "MetaHeuristic":
+    def copy(self, thread: int) -> "MultipleBestImprovement":
         """Creates a copy of the current MultipleBestImprovement instance."""
         return MultipleBestImprovement(
             thread,

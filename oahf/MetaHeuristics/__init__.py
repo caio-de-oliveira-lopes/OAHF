@@ -6,12 +6,16 @@ from .GRASP import GRASP
 from .GRC import GRC
 from .HGA import HGA
 from .ILS import ILS
+from .IterativeConstruction import IterativeConstruction
+from .JobRotationLPLocalSearch import JobRotationLPLocalSearch
 from .JobRotationLPSelector import JobRotationLPSelector
 from .MultipleBestImprovement import MultipleBestImprovement
 from .Pertubation import Pertubation
 from .PerturbationDrivenLocalSearch import PerturbationDrivenLocalSearch
 from .PILS import PILS
 from .RetryingMetaheuristic import RetryingMetaheuristic
+from .SinglePeriodJobRotationLocalSearch import SinglePeriodJobRotationLocalSearch
+from .SubperiodJobRotationLocalSearch import SubperiodJobRotationLocalSearch
 from .TabuSearch import TabuSearch
 
 __all__ = [
@@ -23,11 +27,15 @@ __all__ = [
     "GRC",
     "HGA",
     "ILS",
+    "IterativeConstruction",
+    "JobRotationLPLocalSearch",
     "JobRotationLPSelector",
     "MultipleBestImprovement",
     "Pertubation",
     "PerturbationDrivenLocalSearch",
     "PILS",
     "RetryingMetaheuristic",
+    "SinglePeriodJobRotationLocalSearch",
+    "SubperiodJobRotationLocalSearch",
     "TabuSearch"
 ]

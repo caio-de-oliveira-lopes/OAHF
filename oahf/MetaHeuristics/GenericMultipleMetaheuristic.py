@@ -93,7 +93,7 @@ class GenericMultipleMetaheuristic(MetaHeuristic):
 
                 current_origin_pool = (
                     mh.origin_pool
-                    if mh.origin_pool is not None
+                    if mh.origin_pool is not None and mh.origin_pool.count() > 0
                     else origin_pool
                 )
 

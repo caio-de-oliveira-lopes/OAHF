@@ -99,6 +99,32 @@ class Pool(Entity, ABC):
         self._solution_set.add(solution)
         return True
 
+    def remove_solution(self, solution: Solution) -> bool:
+        """
+        Remove a solution from the pool entirely, including all internal records.
+        Returns True if the solution was present and removed, False otherwise.
+        """
+        sol_id = solution.id
+
+        # Check if we actually know about this solution
+        if solution not in self._solution_set and sol_id not in self._solution_info:
+            return False
+
+        # 1. Remove from the list
+        try:
+            self.solutions.remove(solution)
+        except ValueError:
+            pass
+
+        # 2. Remove from the set
+        self._solution_set.discard(solution)
+
+        # 3. Remove any metadata
+        if sol_id in self._solution_info:
+            del self._solution_info[sol_id]
+
+        return True
+
     def get_best(self, evaluator: Optional[Evaluator] = None) -> Optional[Solution]:
         """
         Get the best solution from the pool based on evaluation.
@@ -117,6 +143,26 @@ class Pool(Entity, ABC):
                         best = solution
                         best_eval = new_eval
                 return best
+        return None
+
+    def get_worst(self, evaluator: Optional[Evaluator] = None) -> Optional[Solution]:
+        """
+        Get the worst solution from the pool based on evaluation.
+        The evaluator is optional; if the pool already has its own evaluator, it'll be used if None is passed.
+        """
+
+        evaluator = evaluator or self.evaluator
+
+        if evaluator:
+            if self.any():
+                worst = self.get_solution_at(0)
+                worst_eval = evaluator.evaluate(worst)
+                for solution in self:
+                    new_eval = evaluator.evaluate(solution)
+                    if not new_eval.better_than(worst_eval):
+                        worst = solution
+                        worst_eval = new_eval
+                return worst
         return None
 
     

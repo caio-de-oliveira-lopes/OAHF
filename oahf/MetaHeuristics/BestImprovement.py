@@ -32,7 +32,7 @@ class BestImprovement(MetaHeuristic):
             thread_id, stop_criteria, evaluator, acceptance_criteria, ns.copy()
         )
 
-    def copy(self, thread: int) -> "MetaHeuristic":
+    def copy(self, thread: int) -> "BestImprovement":
         """Creates a copy of the current BestImprovement instance."""
         return BestImprovement(
             thread,

@@ -46,7 +46,7 @@ class PILS(MetaHeuristic):
         )
         # unique pattern lengths
         self.pattern_sizes: Set[int] = pattern_sizes
-        # relative lower bound for pattern frequency (0.0–1.0)
+        # relative lower bound for pattern frequency [0, 1]
         self.frequency_lb = frequency_lb
         # fraction of pool to consider as elite
         self.elite_threshold = elite_threshold
@@ -126,7 +126,7 @@ class PILS(MetaHeuristic):
 
             # prepare output pool
             out_pool = destination_pool or origin_pool.copy()
-            for solution in rng.sample(origin_snapshot.solutions, len(origin_snapshot.solutions)):
+            for solution in rng.sample(elite_sols, len(elite_sols)):
 
                 # Stoping check placed here to contemplate the time stop criteria
                 if self.stop_on_evaluations([]):

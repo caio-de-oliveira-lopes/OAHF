@@ -47,6 +47,10 @@ class MaxCycleTimeConstraint(Constraint):
         pass
 
     @classmethod
+    def reset_penalty(cls) -> None:
+        pass
+
+    @classmethod
     def set_penalty(cls, value: float) -> None:
         """
         Set the penalty value for the constraint violations.

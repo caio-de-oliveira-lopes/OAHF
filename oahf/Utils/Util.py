@@ -280,13 +280,12 @@ class Util:
 
     @classmethod
     def describe_metaheuristic(cls, mh: "MetaHeuristic", line_number: Optional[int]):
-        # collect each meta-heuristic’s class name
+        # collect each metaheuristic class name
         names = []
         current = mh
         while current is not None:
             names.append(type(current).__name__)
             current = getattr(current, 'named_parent', None)
-        # join them in the order “child – parent – grandparent …”
         names.reverse()
         full_name = " => ".join(names)
         return f"{full_name} - Line Number: {line_number}"

@@ -106,5 +106,5 @@ class StopTimeIterationCriteria(StopCriteria):
 
         elapsed = int((time.time() - self.sw_start) * 1000)
         remaining = self.milliseconds - elapsed
-        # don’t go negative
+        # dont go negative
         return remaining if remaining > 0 else 0

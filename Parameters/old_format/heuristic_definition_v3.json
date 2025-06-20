@@ -331,7 +331,7 @@
 			"name": "worker_swap_reconstruct",
 			"parameters": {
 				"reconstruct": {
-					"greediness": 1,
+					"greediness": 0,
 					"stop_criteria": {
 						"max_cycle_time": {
 							"cycle_time_limit": 500

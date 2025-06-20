@@ -103,6 +103,9 @@ class AlwabpSolution(Solution):
     _hash_worker_insertion_map: Dict[int, int] = {}
     _hash_worker_removal_map: Dict[int, int] = {}
 
+    _task_station_frequency: Dict[int, Dict[int, int]] = {}
+    _worker_station_frequency: Dict[int, Dict[int, int]] = {}
+
     def __init__(
         self, number_of_tasks: int, number_of_workers: int, number_of_stations: int
     ) -> None:
@@ -163,6 +166,7 @@ class AlwabpSolution(Solution):
             worker: set() for worker in self.workers
         }
         self._cycle_time_limit: Optional[float] = None
+        self._initial_cycle_time_limit: Optional[float] = None
 
         # Initialize all precedences (immediate and transitive) for tasks.
         self.all_task_precedences: Dict[GraphOrientation, Dict[int, List[int]]] = {  # type: ignore
@@ -236,6 +240,7 @@ class AlwabpSolution(Solution):
         result.workers = self.workers
         result.stations = self.stations
         result._cycle_time_limit = self._cycle_time_limit
+        result._initial_cycle_time_limit = self._initial_cycle_time_limit
         result._default_graph_orientation = self._default_graph_orientation
         result._reverse_default_graph_orientation = (
             self._reverse_default_graph_orientation
@@ -315,7 +320,7 @@ class AlwabpSolution(Solution):
         if self.cycle_time_limit:
             self.cycle_time_limit = self.cycle_time_limit + 1
 
-    def reset(self) -> None:
+    def reset(self, complete_reset: bool = False) -> None:
         """
         Resets the solution state.
 
@@ -331,6 +336,9 @@ class AlwabpSolution(Solution):
         self._station_cycle_time_memo = {station: 0.0 for station in self.stations}
         self._first_unassigned_station = 1
         self._hash_memo = self._empty_sol_hash[self.default_graph_orientation]
+
+        if complete_reset and self._initial_cycle_time_limit:
+            self._cycle_time_limit = self._initial_cycle_time_limit
 
     def process_graph_data(self) -> None:
         """
@@ -450,6 +458,7 @@ class AlwabpSolution(Solution):
             self.print_update(f"Updated cycle time limit to {str(int(value))}.")
         else:
             print(f"Starting with cycle time limit as {str(int(value))}.")
+            self._initial_cycle_time_limit = float(value)
         self._cycle_time_limit = float(value)
 
     @property
@@ -2334,7 +2343,7 @@ class AlwabpSolution(Solution):
         calling_mh: Optional["MetaHeuristic"]
     ) -> "AlwabpSolution":
         new_solution = self.copy()
-        new_solution.reset()
+        new_solution.reset(complete_reset=True)
 
         number_of_tasks = new_solution._number_of_tasks
         number_of_workers = new_solution._number_of_workers
@@ -2379,8 +2388,8 @@ class AlwabpSolution(Solution):
         stop_criteria = decoder_stop_criteria or NoStopCriteria()
         acceptance_criteria = BetterAcceptanceCriteria()
         neighborhood = AlwabpWorkerOrientedInsertNS(
-            TaskOrderingRule.MAX_F, GraphOrientation.FORWARD, 0
-        )
+            TaskOrderingRule.MAX_F, GraphOrientation.FORWARD, greediness
+            )
         task_ordering_rule_dict = break_into_task_ordering_rule_dict(
             random_keys, number_of_tasks, number_of_workers
         )
@@ -2458,4 +2467,4 @@ class AlwabpSolution(Solution):
     def get_default_limit_stop_criteria(self) -> StopCriteria:
         from oahf.ImplementedBase.MaxCycleTimeStopCriteria import MaxCycleTimeStopCriteria
         from oahf.Utils.Util import Util
-        return MaxCycleTimeStopCriteria(int(Util.max_finite_execution_time(self._task_execution_times)))
+        return MaxCycleTimeStopCriteria(int(Util.max_finite_execution_time(self._task_execution_times) * self._number_of_tasks))

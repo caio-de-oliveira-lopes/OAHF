@@ -23,13 +23,16 @@ class JobRotationAlwabpEvaluator(Evaluator):
         :return: An Evaluation object.
         """
         if isinstance(sol, JobRotationAlwabpSolution):
+            alwabp_sol = sol.period_solutions[0]
+            max_possible_task = sum([len(alwabp_sol.tasks_executed_by_worker[w]) for w in alwabp_sol.workers])
             return JobRotationAlwabpEvaluation(
                 (constraint.evaluate(sol, cache) for constraint in self._constraints),
                 sol.calculate_total_distinct_tasks(),
                 sol.get_average_cycle_time(),
+                max_possible_task
             )
         else:
-            return JobRotationAlwabpEvaluation((), int(0), float("inf"))
+            return JobRotationAlwabpEvaluation((), int(0), float("inf"), int(1))
 
     def get_solution_type(self) -> Type[JobRotationAlwabpSolution]:
         return JobRotationAlwabpSolution

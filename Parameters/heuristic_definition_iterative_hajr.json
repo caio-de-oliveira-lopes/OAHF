@@ -359,25 +359,6 @@
 		{
 			"id": 42,
 			"name": "alwabp_worker_diversification"
-		},
-		{
-			"id": 43,
-			"name": "worker_swap_reconstruct",
-			"parameters": {
-				"reconstruct": {
-					"greediness": 0,
-					"stop_criteria": {
-						"max_cycle_time": {
-							"cycle_time_limit": 500
-						}
-					},
-					"acceptance_criteria": {
-						"better": {}
-					},
-					"order_moves": "false",
-					"neighborhood_ids": [0]
-				}
-			}
 		}
 	],
 	"neighborhood_selections": [
@@ -792,7 +773,7 @@
 			},
 			"metaheuristics_used": [0],
 			"parameters": {
-				"override_construction_ns": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 ] 
+				"override_construction_ns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31] 
 			},
 			"execution_order": 0,
 			"destination_pool": 0
@@ -807,7 +788,7 @@
 						{
 							"time_iteration": {
 								"iterations": 1,
-								"seconds": 20
+								"seconds": 11
 							}
 						},
 						{
@@ -842,7 +823,7 @@
 						{
 							"time_iteration": {
 								"iterations": 1,
-								"seconds": 20
+								"seconds": 10
 							}
 						},
 						{
@@ -886,7 +867,7 @@
 			"stop_criteria": {
 				"time_iteration": {
 					"iterations": 5000,
-					"seconds": 540
+					"seconds": 300
 				}
 			},
 			"acceptance_criteria": {
@@ -926,7 +907,7 @@
 			"name": "hga",
 			"stop_criteria": {
 				"time_iteration": {
-					"seconds": 540
+					"seconds": 180
 				}
 			},
 			"acceptance_criteria": {
@@ -971,7 +952,6 @@
 				"number_of_periods": 4,
 				"tasks_executed_factor": 0.6
 			},
-			"execution_order": 2,
 			"origin_pool": 0,
 			"destination_pool": 1
 		},
@@ -1034,11 +1014,12 @@
 			},
 			"parameters": {
 				"main_metaheuristic": 10,
-				"local_searches": [12, 13],
+				"local_searches": [11, 12, 13],
 				"use_destination_pool_evaluator": true,
-				"always_run_local_searches": true,
-				"retry_on_same_iteration": false
+				"always_run_local_searches": false,
+				"retry_on_same_iteration": true
 			},
+			"execution_order": 2,
 			"origin_pool": 0,
 			"destination_pool": 1
 		},
@@ -1046,10 +1027,7 @@
 			"id": 15,
 			"name": "generic_multiple_metaheuristic",
 			"stop_criteria": {
-				"time_iteration": { 
-					"seconds": 1800, 
-					"iterations": 1
-				}
+				"time_iteration": { "seconds": 1800 }
 			},
 			"parameters": {
 				"metaheuristics": [4, 5, 7, 9, 14]

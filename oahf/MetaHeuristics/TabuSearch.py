@@ -92,8 +92,9 @@ class TabuSearch(MetaHeuristic):
             isinstance(stop_criteria, StopTimeIterationCriteria)
             and stop_criteria.max_iterations is not None
         )
+        self.intensification = True
 
-    def copy(self, thread: int) -> "MetaHeuristic":
+    def copy(self, thread: int) -> "TabuSearch":
         """Creates a copy of the current TabuSearch instance."""
         return TabuSearch(
             thread,
@@ -160,13 +161,16 @@ class TabuSearch(MetaHeuristic):
         # Reset criteria and structures
         stop_criteria.reset()
         acceptance.reset()
-        intensification_criteria.reset()
-        type(best_sol).reset_intensification_diversification_structures()
+        best_eval.reset_penalties()
+
+        # To increase the usage of these criterias we do not reset in case of multiple callings for TabuSearch
+        #intensification_criteria.reset()
+        #type(best_sol).reset_intensification_diversification_structures()
+        #self.intensification = True
 
         counter = 0
-        intensification = True
-
         pbar = None
+
         if self.use_progress_bar:
             max_iterations = stop_criteria.max_iterations  # type: ignore
             pbar = tqdm(
@@ -223,13 +227,17 @@ class TabuSearch(MetaHeuristic):
                                     self.second_level_ns,
                                 )
 
+                                # Stoping check placed here to contemplate the time stop criteria
+                                if self.stop_on_evaluations([]):
+                                    break
+
                                 best_improv.named_parent = self
                                 previous_curr_sol = curr_sol
                                 curr_sol = best_improv.run(curr_sol)
                                 curr_eval = evaluator.evaluate(curr_sol)
 
                                 if (destination_pool and not (curr_eval.infeasible() or curr_eval.has_penalty())):
-                                    destination_pool.add_solution(curr_sol, self)
+                                    destination_pool.add_solution(curr_sol.copy(), self,  line_number=235)
 
                                 if (not (curr_eval.infeasible() or curr_eval.has_penalty()) 
                                     and acceptance.accept(best_eval, curr_eval, curr_sol)
@@ -252,6 +260,10 @@ class TabuSearch(MetaHeuristic):
 
                         move.unapply()
 
+                # Stoping check placed here to contemplate the time stop criteria
+                if self.stop_on_evaluations([]):
+                    break
+
                 intensification_criteria.increment_counter()                
                 stop_criteria.increment_counter(pbar)
 
@@ -259,7 +271,7 @@ class TabuSearch(MetaHeuristic):
                     best_move.apply()
                     curr_eval = evaluator.evaluate(curr_sol)
                     if (destination_pool and not (curr_eval.infeasible() or curr_eval.has_penalty())):
-                        destination_pool.add_solution(curr_sol, self)
+                        destination_pool.add_solution(curr_sol.copy(), self, line_number=265)
                     # Update best solution if criteria are met
                     if (
                         not (curr_eval.infeasible() or curr_eval.has_penalty())
@@ -281,15 +293,15 @@ class TabuSearch(MetaHeuristic):
 
                     selected_ns = (
                         self.intensification_ns.copy()
-                        if intensification
+                        if self.intensification
                         else self.diversification_ns.copy()
                     )
                     selected_ls = (
                         self.intensification_ls.copy(thread_id)
-                        if intensification
+                        if self.intensification
                         else self.diversification_ls.copy(thread_id)
                     )
-                    intensification = not intensification
+                    self.intensification = not self.intensification
 
                     pool = ListPool(solutions=[curr_sol])
                     while search := selected_ns.get_next(thread_id):
@@ -305,7 +317,9 @@ class TabuSearch(MetaHeuristic):
                         )
                         perturbation_ls = PerturbationDrivenLocalSearch(
                             thread_id,
-                            StopTimeIterationCriteria(iterations=1),
+                            MultipleStopCriteria(True, 
+                                                 StopTimeIterationCriteria(iterations=1), 
+                                                 curr_sol.get_default_limit_stop_criteria()),
                             evaluator,
                             acceptance,
                             perturbation,
@@ -321,12 +335,12 @@ class TabuSearch(MetaHeuristic):
                         if not (perturbated_evaluation.infeasible() or perturbated_evaluation.has_penalty()):
                             pool.add_solution(perturbated_sol, self)
                             if destination_pool:
-                                destination_pool.add_solution(perturbated_sol, self)
+                                destination_pool.add_solution(perturbated_sol, self, line_number=327)
 
                     curr_sol = pool.get_best(evaluator)
                     curr_eval = evaluator.evaluate(curr_sol)
                     if (destination_pool and not (curr_eval.infeasible() or curr_eval.has_penalty())):
-                        destination_pool.add_solution(curr_sol, self)
+                        destination_pool.add_solution(curr_sol, self, line_number=332)
 
                     if (
                         curr_sol and not (curr_eval.infeasible() or curr_eval.has_penalty())
@@ -347,7 +361,8 @@ class TabuSearch(MetaHeuristic):
                     curr_sol = best_sol.copy()
                 ns.allow_infeasible_movements = False
 
-        type(best_sol).reset_intensification_diversification_structures()
+        #type(best_sol).reset_intensification_diversification_structures()        
+        best_eval.reset_penalties()
 
         return best_sol
 

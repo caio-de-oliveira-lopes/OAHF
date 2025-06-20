@@ -6,8 +6,6 @@ from typing import Optional
 from oahf.Base import Solution
 from oahf.Base.ThreadManager import ThreadManager
 from oahf.Commons.ProblemData import ProblemData
-from oahf.ImplementedBase.AlwabpEvaluator import AlwabpEvaluator
-from oahf.ImplementedBase.MaxCycleTimeConstraint import MaxCycleTimeConstraint
 from oahf.MetaHeuristicsParser.HeuristicParser import HeuristicParser
 from oahf.Utils import Util
 
@@ -29,7 +27,7 @@ def main(args=sys.argv[1:]) -> None:
     )
 
     print(Util.line())
-    Util.logger().info(f"Optimizing instance {problem_data.file_name}.")
+    Util.logger().info(f"Optimizing instance {problem_data.file_name} using seed {problem_data.random_seed}.")
     print(Util.line())
 
     heuristic_parser = HeuristicParser(problem_data)
@@ -52,9 +50,12 @@ def main(args=sys.argv[1:]) -> None:
             # DEBUG TO CHECK IF ANY INFEASIBLE SOLUTIONS WERE ADDED
             #for pool in heuristic_parser.solution_pools.values():
             #    for solution in pool:
-            #        evaluation = evaluator.evaluate(solution, cache = False)
+            #        previous_eval = pool.evaluator.evaluate(solution)
+            #        evaluation = pool.evaluator.evaluate(solution, cache = False)
             #        if evaluation.infeasible() or evaluation.has_penalty():
-            #            print("INFEASIBLE SOLUTION ADDED TO THE POOL")
+            #            print(f"INFEASIBLE SOLUTION ADDED TO THE POOL! ID: {solution.output_id}")
+            #            if not(previous_eval.infeasible() or previous_eval.has_penalty()):
+            #                print(f"Possibly a hashing problem.")
 
             if final_solution:
                 final_solution.write_json()

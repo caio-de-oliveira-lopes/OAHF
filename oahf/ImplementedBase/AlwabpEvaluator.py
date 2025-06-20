@@ -24,9 +24,9 @@ class AlwabpEvaluator(Evaluator):
         :return: An Evaluation object.
         """
         if sol:
-            dgo = sol.default_graph_orientation
+            #dgo = sol.default_graph_orientation
 
-            sol.default_graph_orientation = GraphOrientation.FORWARD
+            #sol.default_graph_orientation = GraphOrientation.FORWARD
 
             solution_eval = AlwabpEvaluation(
                 (constraint.evaluate(sol, cache) for constraint in self._constraints),
@@ -37,7 +37,7 @@ class AlwabpEvaluator(Evaluator):
                 sol.get_number_of_critical_workstations(),
             )
 
-            sol.default_graph_orientation = dgo
+            #sol.default_graph_orientation = dgo
 
             return solution_eval
         else:

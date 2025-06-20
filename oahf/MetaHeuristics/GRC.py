@@ -28,7 +28,6 @@ class GRC(MetaHeuristic):
         evaluator: Evaluator,
         acceptance_criteria: AcceptanceCriteria,
         ns: NeighborhoodSelection,
-        order_moves: bool = False,
         destination_pool: Optional[Pool] = None,
     ) -> None:
         """Initialize the GRC meta-heuristic.
@@ -43,11 +42,10 @@ class GRC(MetaHeuristic):
         """
 
         super().__init__(
-            thread_id, stop_criteria, evaluator, acceptance_criteria, ns.copy()
+            thread_id, stop_criteria, evaluator, acceptance_criteria, ns.copy(), [], None, destination_pool
         )
         self.greediness = greediness
         self.original_greediness = greediness
-        self.order_moves = order_moves
 
     def copy(self, thread: int) -> "GRC":
         """Creates a copy of the GRC instance.
@@ -65,7 +63,6 @@ class GRC(MetaHeuristic):
             self.evaluator,
             self.acceptance_criteria.copy(),
             self.neighborhood_selection.copy(),  # type: ignore
-            self.order_moves,
             destination_pool=(
                 self.destination_pool.copy() if self.destination_pool else None
             ),
@@ -91,7 +88,13 @@ class GRC(MetaHeuristic):
         self.stop_criteria.reset()
         self.acceptance_criteria.reset()
 
+        prev_greediness: Optional[float] = None
+
         while ns and not self.stop_on_evaluations([best_eval]):
+
+            if hasattr(ns, "greediness") and not prev_greediness:
+                prev_greediness = float(ns.greediness)
+                setattr(ns, "greediness", self.greediness)
             try:
                 build = ns.build_neighborhood_operation(self.thread_id, curr_sol)
                 if build:
@@ -104,23 +107,19 @@ class GRC(MetaHeuristic):
                     if not all_moves:
                         break  # no moves and no ns available
 
-                    num_chosen = max(1, int(len(all_moves) * (1 - self.greediness)))
-                    ordered_moves = sorted(all_moves, key=lambda x: x.get_cost())[
-                        :num_chosen
-                    ]
-                    if self.order_moves:
-                        ordered_moves.sort(
-                            key=lambda x: (
-                                x.get_cost()
-                                if self.greediness > 0.9999
-                                else ThreadManager.get_next_float(
-                                    self.thread_id, 0, len(ordered_moves)
-                                )
-                            )
+                    #num_chosen = max(1, int(len(all_moves) * (1 - self.greediness)))
+                    ordered_moves = sorted(all_moves, key=lambda x: x.get_cost())#[:num_chosen]
+                    # Select the first element of the list
+                    if self.greediness > 0:
+                        move_index = 0
+                    else:
+                        # Select a move_index randomly among the available ones using ThreadManager
+                        move_index = ThreadManager.get_next(
+                            self.thread_id, 0, len(ordered_moves) - 1
                         )
 
                     while ordered_moves and not self.stop_on_evaluations([best_eval]):
-                        move = ordered_moves.pop()
+                        move = ordered_moves.pop(move_index)
                         worked = move.apply()
 
                         if worked:
@@ -132,6 +131,8 @@ class GRC(MetaHeuristic):
                                 break
                             else:
                                 move.unapply()
+                                if not ordered_moves:
+                                    return curr_sol
                         self.stop_criteria.increment_counter()
 
                 else:
@@ -141,5 +142,8 @@ class GRC(MetaHeuristic):
                 LogManager.something_went_wrong(str(ns), ex)
                 traceback.print_exc()
                 raise
+
+        if hasattr(ns, "greediness") and prev_greediness:
+            setattr(ns, "greediness", prev_greediness)
 
         return curr_sol
