@@ -25,7 +25,7 @@ class JobRotationAlwabpSolution(Solution):
         self._distinct_tasks_memo = {}  # Memorization for distinct tasks per worker
         self.lp_execution_data = lp_execution_data
         self.name = "JobRotationAlwabpSolution"
-        
+
     @classmethod
     def add_to_job_rotation_pools(cls, pool: Optional[Pool]):
         if pool:
@@ -39,12 +39,13 @@ class JobRotationAlwabpSolution(Solution):
     @classmethod
     def get_best_alwabp_solution_from_pools(cls):
         from oahf.Base.MetaHeuristic import ListPool
+
         if cls._alwabp_pools:
             evaluator = list(cls._alwabp_pools)[0].evaluator
         else:
             return None  # No pools available
 
-        new_pool = ListPool(evaluator = evaluator)
+        new_pool = ListPool(evaluator=evaluator)
         for pool in cls._alwabp_pools:
             new_pool.add_solution(pool.get_best(), None)
         return new_pool.get_best()
@@ -77,12 +78,16 @@ class JobRotationAlwabpSolution(Solution):
             cycle_time_limit = best_alwabp_sol.get_max_cycle_time()
 
         # Updating max tolerance allowed for average cycle time
-        JobRotationAlwabpSolution.set_max_tolerance(cycle_time_limit * cls._tolerance_percentage)
+        JobRotationAlwabpSolution.set_max_tolerance(
+            cycle_time_limit * cls._tolerance_percentage
+        )
 
     @classmethod
     def update_current_alwabp_upper_bound(cls):
         worst_alwabp_sol = cls.get_worst_alwabp_solution_from_pools()
-        if worst_alwabp_sol is not None and isinstance(worst_alwabp_sol, AlwabpSolution):
+        if worst_alwabp_sol is not None and isinstance(
+            worst_alwabp_sol, AlwabpSolution
+        ):
             cycle_time_limit = worst_alwabp_sol.get_max_cycle_time()
 
         # Updating max tolerance allowed for average cycle time
@@ -91,22 +96,27 @@ class JobRotationAlwabpSolution(Solution):
     @classmethod
     def set_max_tolerance(cls, value: float):
         if value != cls._max_tolerance:
-            Util.logger().info(f"Updated max cycle time tolerance to {str(value)} at {Util.get_duration_from_start_timestamp()}.")
+            Util.logger().info(
+                f"Updated max cycle time tolerance to {str(value)} at {Util.get_duration_from_start_timestamp()}."
+            )
             cls._max_tolerance = value
             cls.check_pool_feasibility()
-            
+
     @classmethod
     def set_current_alwabp_upper_bound(cls, value: float):
         if value != cls._current_alwabp_upper_bound:
-            Util.logger().info(f"Updated current Alwabp upper bound to {str(value)} at {Util.get_duration_from_start_timestamp()}.")
+            Util.logger().info(
+                f"Updated current Alwabp upper bound to {str(value)} at {Util.get_duration_from_start_timestamp()}."
+            )
             cls._current_alwabp_upper_bound = value
             cls.reevaluate_job_rotation_pools()
 
     @classmethod
     def reevaluate_job_rotation_pools(cls):
         for pool in cls._job_rotation_pools:
-            for sol in pool:
-                pool.evaluator.evaluate(sol, cache = False)
+            if pool.evaluator:
+                for sol in pool:
+                    pool.evaluator.evaluate(sol, cache=False)
 
     @classmethod
     def check_pool_feasibility(cls):
@@ -134,7 +144,10 @@ class JobRotationAlwabpSolution(Solution):
     @classmethod
     def _log_removal(cls, removal_counter: int, pool_id: int):
         from oahf.Utils.Util import Util
-        Util.logger().info(f"Removed {removal_counter} solutions from pool {pool_id} due to max tolerance update.")
+
+        Util.logger().info(
+            f"Removed {removal_counter} solutions from pool {pool_id} due to max tolerance update."
+        )
 
     def assign_solution_to_period(self, period: int, solution: AlwabpSolution):
         """
@@ -212,7 +225,6 @@ class JobRotationAlwabpSolution(Solution):
         copy_solution.period_solutions = [
             solution.copy() if solution else None for solution in self.period_solutions
         ]
-        copy_solution.max_tolerance_used = self.max_tolerance_used
         return copy_solution
 
     def decompose_solution(self, k: int):
