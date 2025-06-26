@@ -121,7 +121,7 @@ for algo_key, algo_dir in algorithms.items():
 # Compute average percentages
 percentages = {
     algo: {
-        fam: {cat: (sum_ratios[algo][fam][cat] / (run_counts[algo][fam] or 1)) * 100
+        fam: {cat: float(f"{((sum_ratios[algo][fam][cat] / (run_counts[algo][fam] or 1)) * 100):.1f}")
               for cat in all_categories}
         for fam in families
     }
