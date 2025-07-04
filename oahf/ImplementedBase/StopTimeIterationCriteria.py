@@ -17,7 +17,7 @@ class StopTimeIterationCriteria(StopCriteria):
         """
         super().__init__()
         self.sw_start = time.time()
-        self.milliseconds = int(seconds * 1000) if seconds is not None else None
+        self.milliseconds = int(float(seconds) * 1000) if seconds is not None else None
         self.counter = 0
         self.max_iterations = iterations
         self.perc_progress_counter = 0

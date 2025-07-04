@@ -24,9 +24,9 @@ def pareto_front(points):
 
 # Dictionary mapping dataset names to file paths
 datasets = {
-    "Hes_80_s1": "C:\Projetos\Outputs\Iterative_HAJR\seed_144911535910197828289965286135314374916\80_hes\output_06-25-2025_01h-55m-06s\output_list_pool_1.json",
-    "Hes_80_s2": "C:\Projetos\Outputs\Iterative_HAJR\seed_294165949277890002569088467705991431954\80_hes\output_06-25-2025_01h-24m-36s\output_list_pool_1.json",
-    "Hes_80_s3": "C:\Projetos\Outputs\Iterative_HAJR\seed_34707186982903718312397416735273231795\80_hes\output_06-25-2025_02h-27m-02s\output_list_pool_1.json"
+    "Wee_80_s1": "C:\Projetos\Outputs\Iterative_HAJR\seed_144911535910197828289965286135314374916\80_wee\output_06-19-2025_20h-30m-05s\output_list_pool_1.json",
+    "Wee_80_s2": "C:\Projetos\Outputs\Iterative_HAJR\seed_294165949277890002569088467705991431954\80_wee\output_06-19-2025_19h-54m-39s\output_list_pool_1.json",
+    "Wee_80_s3": "C:\Projetos\Outputs\Iterative_HAJR\seed_34707186982903718312397416735273231795\80_wee\output_06-19-2025_21h-05m-13s\output_list_pool_1.json"
 }
 
 plt.figure(figsize=(10, 7))

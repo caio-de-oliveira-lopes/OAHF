@@ -308,7 +308,7 @@ class TabuSearch(MetaHeuristic):
                         perturbation = Pertubation(
                             thread_id,
                             MultipleStopCriteria(True, 
-                                                 StopTimeIterationCriteria(iterations=1), 
+                                                 StopTimeIterationCriteria(iterations=1, seconds=30.0), 
                                                  curr_sol.get_default_limit_stop_criteria()),
                             evaluator,
                             ListSelection(False, search.copy()),
@@ -318,7 +318,7 @@ class TabuSearch(MetaHeuristic):
                         perturbation_ls = PerturbationDrivenLocalSearch(
                             thread_id,
                             MultipleStopCriteria(True, 
-                                                 StopTimeIterationCriteria(iterations=1), 
+                                                 StopTimeIterationCriteria(iterations=1, seconds=30.0), 
                                                  curr_sol.get_default_limit_stop_criteria()),
                             evaluator,
                             acceptance,
